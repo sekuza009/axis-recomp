@@ -26,6 +26,25 @@
 #define AXIS_API
 #endif
 
+/* a host's sound (AxisHostConfig.sound): the game's sounds as DirectSound has them - buffers of PCM samples (the
+   format a WAVEFORMATEX), each played once or looping, with a volume in hundredths of a decibel (0 .. -10000) and a
+   pan (-10000 left .. 10000 right) - and its music, a file played as a stream. Every call gets config.user */
+typedef struct {
+	void *(*create)(void *user, const void *waveFormat, unsigned bytes);   /* a buffer; NULL: failed */
+	void *(*duplicate)(void *user, void *buffer);                         /* another buffer playing the same samples */
+	void (*write)(void *user, void *buffer, const void *data, unsigned bytes);   /* its samples */
+	void (*play)(void *user, void *buffer, int loop);   /* from the start, unless it is playing (then as it is) */
+	void (*volume)(void *user, void *buffer, int hundredthsOfDb);
+	void (*pan)(void *user, void *buffer, int pan);
+	void (*release)(void *user, void *buffer);
+	int (*music_open)(void *user, const char *file);    /* the file (from the game folder); 0: opened */
+	void (*music_run)(void *user, int run);
+	double (*music_time)(void *user);                   /* seconds */
+	double (*music_length)(void *user);
+	void (*music_seek)(void *user, double seconds);
+	void (*music_close)(void *user);
+} AxisSound;
+
 /* a host's configuration (before axis_load; optional - without it the game is a Windows program as before) */
 typedef struct {
 	void *window;   /* the host's window (an HWND): sound plays while it has the focus; 0: the game's own */
@@ -37,6 +56,7 @@ typedef struct {
 	                   window stays hidden */
 	int nogl;       /* 1 (with frame): no OpenGL at all - the calls are only recorded for the host, the game's GL
 	                   queries answered in software (standalone/glstate.c); no context, no drawing in the hidden window */
+	const AxisSound *sound;   /* the host plays the sounds and the music (no DirectSound / DirectShow); NULL: Windows' */
 } AxisHostConfig;
 AXIS_API void axis_host(const AxisHostConfig *config);
 /* the stream's header (an AXGLREC1 file's start: its calls' table) into out; its size (out 0 or room too small: only

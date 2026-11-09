@@ -341,6 +341,13 @@ static void host_install(void)
 {
 	if (g_host.window)
 		g_platHostWindow = g_host.window;
+	if (g_host.sound) {   /* (the host's sound: no DirectSound / DirectShow) */
+		extern const AxisSound *g_platSound;
+		extern void *g_platSoundUser;
+		g_platSound = g_host.sound;
+		g_platSoundUser = g_host.user;
+		fprintf(g_log, "host: the sounds and music played by the host\n");
+	}
 	if (g_host.frame) {
 		int glrec_install_live(void **(*slot)(const char *), const char *, void (*)(void *, const unsigned *, unsigned, int, int), void *);
 		char dir[MAX_PATH];
