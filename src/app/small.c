@@ -841,7 +841,7 @@ static int set_part(u8 *stage, int p, int type, const PartKind *k)
 	if (GAME_VAR(int, pl + k->field) == type)
 		return 1;
 	if (type >= GAME_VAR(int, stage + k->count))
-		sys_fatalError(AP(char, OBJ(g_logStage)), (const char *)(uintptr_t)k->message, type);
+		sys_fatalError(AP(char, OBJ(g_logStage)), AP(const char, k->message), type);
 	ShapeManager_releaseShapes(pl + k->shapes);
 	SkeletonManager_releaseSkeletons(pl + k->skels);
 	strcpy((char *)pl + k->name, (const char *)stage + k->names + type * k->stride);

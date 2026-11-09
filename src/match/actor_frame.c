@@ -93,7 +93,7 @@ static void clamp450(float *out, long double v)
 /* a part's joint matrix: the model's matrix block (*base) at the joint index for this pose */
 static const float *part_matrix(u8 *base, const int *joints, int pose)
 {
-	return (const float *)(uintptr_t)(GAME_VAR(u32, base) + joints[pose] * 100 + 0xc);
+	return AP(const float, GAME_VAR(u32, base) + joints[pose] * 100 + 0xc);
 }
 
 /* the local player's weapon at its grip (negated), drawn back by 600 while it comes up (or out, for the sixth) */
@@ -116,12 +116,12 @@ static void emit(u8 *s, u8 *a, const int (*joint)[0x20], const int *count, const
 			continue;
 		u32 r = (*(u32 *)&g_randTable[g_randPos & 0xfff]) & 7;
 		g_randPos++;
-		const ListedObject *m = (const ListedObject *)(uintptr_t)GAME_VAR(u32, mx) + joint[0][k];
+		const ListedObject *m = AP(const ListedObject, GAME_VAR(u32, mx)) + joint[0][k];
 		fx[0] = booster->thrustType + 5;
 		fx[1] = r;
 		memcpy(fx + 2, m->centre, 12);
 		memcpy(fx + 5, scratch, 12);   /* scale, alpha, and whatever the third word last held */
-		fx[8] = (u32)(uintptr_t)m->matrix;
+		fx[8] = AV(m->matrix);
 		fx[9] = fx[10] = fx[11] = fx[12] = 0;
 		particle_spawn(s, fx);
 	}
@@ -835,7 +835,7 @@ void THISCALL (actor_processFrame)(u8 *s, int i, u32 dt_bits)
 	glRotatef(f32(FMUL(AC->lean, k_0_1f)), 1, 0, 0);
 	glGetFloatv(0xba6, AC->bodyMatrix);
 	ObjectList_poseBones((u8 *)&AC->chestModel, AC->bodyMatrix);
-	glLoadMatrixf((const float *)(uintptr_t)((u32)AC->chestModel.entries + chest->legsJoint[AC->lowDetail] * 100 + 0xc));
+	glLoadMatrixf(AP(const float, (u32)AC->chestModel.entries + chest->legsJoint[AC->lowDetail] * 100 + 0xc));
 	glRotatef(f32(FMUL(AC->pose[2], k_0_1f)), 0, 1, 0);
 	ObjectList_poseBones((u8 *)&AC->legsModel, 0);
 	glLoadMatrixf(part_matrix((u8 *)&AC->chestModel.entries, chest->armsJoint, AC->lowDetail));
@@ -995,7 +995,7 @@ void THISCALL (actor_processFrame)(u8 *s, int i, u32 dt_bits)
 					long double x = ((FMUL(grip_shift[8], scratch[2]) + FMUL(grip_shift[4], scratch[1])) + FMUL(grip_shift[0], scratch[0])) + grip_shift[12];
 					long double y = ((FMUL(grip_shift[9], scratch[2]) + FMUL(grip_shift[5], scratch[1])) + FMUL(grip_shift[1], scratch[0])) + grip_shift[13];
 					long double z = ((FMUL(grip_shift[10], scratch[2]) + FMUL(grip_shift[6], scratch[1])) + FMUL(grip_shift[2], scratch[0])) + grip_shift[14];
-					const float *q = (const float *)(uintptr_t)((u32)model->entries + muzzle[0] * 100 + 0xc);
+					const float *q = AP(const float, (u32)model->entries + muzzle[0] * 100 + 0xc);
 					shot_at[0] = f32(((fmul_m(z, &q[8]) + fmul_m(y, &q[4])) + fmul_m(x, &q[0])) + q[12]);
 					shot_at[1] = f32(((fmul_m(x, &q[1]) + fmul_m(z, &q[9])) + fmul_m(y, &q[5])) + q[13]);
 					shot_at[2] = f32(((fmul_m(x, &q[2]) + fmul_m(z, &q[10])) + fmul_m(y, &q[6])) + q[14]);
@@ -1039,7 +1039,7 @@ void THISCALL (actor_processFrame)(u8 *s, int i, u32 dt_bits)
 					memcpy(rec->from, shot_at, 12);
 					rec->hitPlane = -1;
 					memcpy(rec->dir, shot_dir, 12);
-					rec->muzzle = (u32)(uintptr_t)q;
+					rec->muzzle = AV(q);
 					int target;
 					if (i == ST->playerActor) {
 						int c = ST->lockCount;
@@ -1082,7 +1082,7 @@ void THISCALL (actor_processFrame)(u8 *s, int i, u32 dt_bits)
 				long double x = ((FMUL(grip_shift[8], o[2]) + FMUL(grip_shift[4], o[1])) + FMUL(grip_shift[0], o[0])) + grip_shift[12];
 				long double y = ((FMUL(grip_shift[9], o[2]) + FMUL(grip_shift[5], o[1])) + FMUL(grip_shift[1], o[0])) + grip_shift[13];
 				long double z = ((FMUL(grip_shift[10], o[2]) + FMUL(grip_shift[6], o[1])) + FMUL(grip_shift[2], o[0])) + grip_shift[14];
-				const float *q = (const float *)(uintptr_t)((u32)model->entries + muzzle[0] * 100 + 0xc);
+				const float *q = AP(const float, (u32)model->entries + muzzle[0] * 100 + 0xc);
 				shot_at[0] = f32(((fmul_m(z, &q[8]) + fmul_m(y, &q[4])) + fmul_m(x, &q[0])) + q[12]);
 				shot_at[1] = f32(((fmul_m(x, &q[1]) + fmul_m(z, &q[9])) + fmul_m(y, &q[5])) + q[13]);
 				shot_at[2] = f32(((fmul_m(x, &q[2]) + fmul_m(z, &q[10])) + fmul_m(y, &q[6])) + q[14]);
@@ -1092,7 +1092,7 @@ void THISCALL (actor_processFrame)(u8 *s, int i, u32 dt_bits)
 				memcpy(rec->from, shot_at, 12);
 				rec->hitPlane = f[2];
 				memcpy(rec->dir, f + 4, 12);
-				rec->muzzle = (u32)(uintptr_t)q;
+				rec->muzzle = AV(q);
 				*bullet = bullet_spawn(s, -1, i, -1, rec, 0);
 				AC->fireAnim = 0.0001f;
 				long double v = fadd_m(fdiv_m(fld_m(dt), &weapon->cycleTime), &AC->fireCycle);
