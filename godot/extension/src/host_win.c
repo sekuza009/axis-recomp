@@ -15,7 +15,11 @@ int host_load(const char *library, const char *game_dir, AxisFunctions *f, char 
 	}
 	struct { void **at; const char *name; } k[] = {
 		{ (void **)&f->host, "axis_host" }, { (void **)&f->stream_header, "axis_stream_header" }, { (void **)&f->load, "axis_load" },
+#ifdef _WIN64   /* (64-bit: no stdcall decoration) */
+		{ (void **)&f->init, "axis_init" }, { (void **)&f->frame, "axis_frame" }, { (void **)&f->running, "axis_running" },
+#else
 		{ (void **)&f->init, "axis_init@16" }, { (void **)&f->frame, "axis_frame" }, { (void **)&f->running, "axis_running" },
+#endif
 		{ (void **)&f->text_input, "axis_textInput" }, { (void **)&f->input, "axis_input" }, { (void **)&f->key, "axis_key" },
 		{ (void **)&f->ch, "axis_char" }, { (void **)&f->exit, "axis_exit" }, { (void **)&f->shutdown, "axis_shutdown" },
 	};

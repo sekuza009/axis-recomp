@@ -39,6 +39,19 @@ instance binding callbacks for class 'Object'"). godot-cpp's own test suite pass
 
 Import the project once (`Godot --path project --headless --import`), then run it.
 
+**64-bit (2026-11-09).** The official 64-bit editor (`Tools/godot/editor64`, Godot_v4.7.2-stable_win64) runs the
+project directly - no large-address-aware copy needed. It needs:
+- the game library `bin/axis64.dll` (`bash standalone/build64.sh windows`, then copy build/axis64.dll here; game.gd
+  picks axis64.dll or axis.dll by Godot's architecture);
+- the extension for x86_64, built against a godot-cpp of its own (`Tools/godot/godot-cpp64`: godot-cpp's generated
+  bindings bake in the type sizes of the architecture they were made for, so the 32-bit checkout's cannot serve):
+
+      GODOT_CPP=C:/Users/Alexander/Tools/godot/godot-cpp64 python -m SCons platform=windows arch=x86_64 use_mingw=yes           use_llvm=yes mingw_prefix=<zig-mingw> target=template_debug use_static_cpp=no debug_symbols=yes           custom_api_file=<extension_api.json> generate_bindings=yes -j8
+
+  (the zig-mingw launchers named x86_64-w64-mingw32-<tool>.exe pick the 64-bit target from their name);
+- for an export, `bash godot/export.sh release install 64` (the "Windows Desktop 64-bit" preset, the x86_64 export
+  templates; installed to <Axis>/Godot64).
+
 ## Checked
 
 The skirmish session's first 2,000 frames (title, menus) recorded with the game's own images at frames 500, 1,000

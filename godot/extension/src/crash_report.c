@@ -38,14 +38,30 @@ static void report(FILE *f, EXCEPTION_POINTERS *e)
 	CONTEXT c = *e->ContextRecord;
 	STACKFRAME64 s;
 	memset(&s, 0, sizeof s);
+#ifdef _WIN64
+	s.AddrPC.Offset = c.Rip;
+#else
 	s.AddrPC.Offset = c.Eip;
+#endif
 	s.AddrPC.Mode = AddrModeFlat;
+#ifdef _WIN64
+	s.AddrFrame.Offset = c.Rbp;
+#else
 	s.AddrFrame.Offset = c.Ebp;
+#endif
 	s.AddrFrame.Mode = AddrModeFlat;
+#ifdef _WIN64
+	s.AddrStack.Offset = c.Rsp;
+#else
 	s.AddrStack.Offset = c.Esp;
+#endif
 	s.AddrStack.Mode = AddrModeFlat;
 	for (int i = 0; i < 40; i++) {
+#ifdef _WIN64
+		if (!StackWalk64(IMAGE_FILE_MACHINE_AMD64, p, GetCurrentThread(), &s, &c, NULL, SymFunctionTableAccess64, SymGetModuleBase64, NULL))
+#else
 		if (!StackWalk64(IMAGE_FILE_MACHINE_I386, p, GetCurrentThread(), &s, &c, NULL, SymFunctionTableAccess64, SymGetModuleBase64, NULL))
+#endif
 			break;
 		if (!s.AddrPC.Offset)
 			break;
