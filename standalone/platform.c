@@ -15,9 +15,15 @@ Settings g_settings = { 1, 1, 16.0f / 9.0f, 1, 1.0f, 1.0f };
 void platform_loadSettings(void)
 {
 	char ini[MAX_PATH], v[32];
-	GetModuleFileNameA(NULL, ini, MAX_PATH);   /* (next to the exe) */
-	char *p = strrchr(ini, '\\');
-	strcpy(p ? p + 1 : ini, "axisnet.ini");
+	if (GetEnvironmentVariableA("AXIS_GAME_DIR", ini, MAX_PATH - 16)) {   /* (a host's game folder, axis_api.h) */
+		size_t n = strlen(ini);
+		if (n && ini[n - 1] != '\\') strcat(ini, "\\");
+		strcat(ini, "axisnet.ini");
+	} else {
+		GetModuleFileNameA(NULL, ini, MAX_PATH);   /* (next to the exe) */
+		char *p = strrchr(ini, '\\');
+		strcpy(p ? p + 1 : ini, "axisnet.ini");
+	}
 	g_settings.menu43 = GetPrivateProfileIntA("hud", "menu43", 1, ini);
 	g_settings.hudProportional = GetPrivateProfileIntA("hud", "proportional", 1, ini);
 	g_settings.sharpText = GetPrivateProfileIntA("hud", "sharptext", 1, ini);
@@ -29,7 +35,9 @@ void platform_loadSettings(void)
 	g_settings.escMenuSens = (float)atof(v);
 }
 
-int platform_isForeground(void *window) { return GetForegroundWindow() == (HWND)window; }
+/* (a host supplying the input - axis_api.h axis_host - says whether its window has the focus: -1 none) */
+int g_platformHostFocus = -1;
+int platform_isForeground(void *window) { return g_platformHostFocus >= 0 ? g_platformHostFocus : GetForegroundWindow() == (HWND)window; }
 unsigned platform_ticks(void) { return GetTickCount(); }
 
 float platform_pointerSpeed(void)

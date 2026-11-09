@@ -441,9 +441,21 @@ static void dump_header(void)
 	}
 }
 
+/* the live mode (glrec_install_live, for a host - axis_api.h): each frame's stream handed to the host's callback at
+   SwapBuffers (its words valid during the call), then the frame shown as before */
+static void (*g_live)(void *user, const u32 *words, unsigned count, int width, int height);
+static void *g_liveUser;
+
 static BOOL S w_SwapBuffers(HDC dc)
 {
 	g_frames++;
+	if (g_live) {
+		RECT r;
+		GetClientRect(WindowFromDC(dc), &r);
+		g_live(g_liveUser, g_buf, (unsigned)g_len, r.right, r.bottom);
+		g_len = 0;
+		return r_SwapBuffers(dc);
+	}
 	int check = g_frames % g_every == 0;
 	RECT rc;
 	HWND wnd = WindowFromDC(dc);
@@ -547,6 +559,37 @@ static int S w_wglMakeCurrent(HDC dc, HGLRC rc)
 }
 
 /* the layer put in front of the game's GL slots (slot(name): a slot's place). Returns the number wrapped */
+int glrec_install(void **(*slot)(const char *name), const char *dir);
+int glrec_install_live(void **(*slot)(const char *name), const char *dir,
+                       void (*live)(void *user, const u32 *words, unsigned count, int width, int height), void *user)
+{
+	g_live = live;
+	g_liveUser = user;
+	return glrec_install(slot, dir);
+}
+
+/* the stream's header as a dump writes it ("AXGLREC1", the plain calls' table), for a host that reads frames live */
+unsigned glrec_header(unsigned char *out, unsigned room)
+{
+	unsigned n = 12;
+	for (int i = 0; i < NPLAIN; i++)
+		n += 8 + (unsigned)strlen(k_plain[i].name);
+	if (!out || room < n)
+		return n;
+	memcpy(out, "AXGLREC1", 8);
+	u32 c = NPLAIN;
+	memcpy(out + 8, &c, 4);
+	unsigned o = 12;
+	for (int i = 0; i < NPLAIN; i++) {
+		u32 w = (u32)k_plain[i].words, l = (u32)strlen(k_plain[i].name);
+		memcpy(out + o, &w, 4);
+		memcpy(out + o + 4, &l, 4);
+		memcpy(out + o + 8, k_plain[i].name, l);
+		o += 8 + l;
+	}
+	return n;
+}
+
 int glrec_install(void **(*slot)(const char *name), const char *dir)
 {
 	strcpy(g_dir, dir);

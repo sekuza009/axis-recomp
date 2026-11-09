@@ -26,6 +26,29 @@
 #define AXIS_API
 #endif
 
+/* a host's configuration (before axis_load; optional - without it the game is a Windows program as before) */
+typedef struct {
+	void *window;   /* the host's window (an HWND): sound plays while it has the focus; 0: the game's own */
+	/* each frame's drawing: the stream's words (standalone/glrec.c's format - axis_stream_header() gives the file
+	   header that names its calls) and the frame's size; valid during the call. 0: none */
+	void (*frame)(void *user, const unsigned *words, unsigned count, int width, int height);
+	void *user;
+	int input;      /* 1: the host supplies keyboard and mouse (axis_input / axis_key / axis_char) and the game's own
+	                   window stays hidden */
+} AxisHostConfig;
+AXIS_API void axis_host(const AxisHostConfig *config);
+/* the stream's header (an AXGLREC1 file's start: its calls' table) into out; its size (out 0 or room too small: only
+   the size) */
+AXIS_API unsigned axis_stream_header(unsigned char *out, unsigned room);
+/* the input for the next frame (with config.input): the keyboard (256 bytes by DirectInput key code - the PC scan
+   code, extended keys + 0x80 - bit 7 held), the mouse's movement and wheel since the last call (added up), its
+   buttons (bit 0 left, 1 right, 2 middle), the pointer in the game's window (pixels) and whether the host's window
+   has the focus */
+AXIS_API void axis_input(const unsigned char keys[256], int dx, int dy, int wheel, unsigned buttons, int x, int y, int focused);
+/* a key (a Windows virtual-key code) down / up and a typed character, for an open text field (axis_textInput()) */
+AXIS_API void axis_key(unsigned vk, int down);
+AXIS_API void axis_char(unsigned ch);
+
 /* the library made ready (once, before axis_init): the game's data placed, its imports and C runtime set up, the
    network layer started, the static constructors run. 1, or 0 (the reason in standalone.log / a message box) */
 AXIS_API int axis_load(void);

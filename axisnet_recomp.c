@@ -144,8 +144,12 @@ static void trim(char *s) {
 
 static void load_config(void) {
     char ini[MAX_PATH], mode[32];
+    if (GetEnvironmentVariableA("AXIS_GAME_DIR", g_dir, MAX_PATH - 2)) {  /* (a host's game folder: axis_api.h) */
+        size_t n = strlen(g_dir); if (n && g_dir[n - 1] != '\\') strcat(g_dir, "\\");
+    } else {
     GetModuleFileNameA(NULL, g_dir, MAX_PATH);  /* settings and log live next to the game exe */
     char *p = strrchr(g_dir, '\\'); if (p) p[1] = 0; else g_dir[0] = 0;
+    }
     snprintf(ini, sizeof ini, "%saxisnet.ini", g_dir);
     GetPrivateProfileStringA("net", "mode", "local", mode, sizeof mode, ini);
     g_local = _stricmp(mode, "server") != 0;

@@ -877,9 +877,26 @@ unsigned axis_frame(void)
 {
 	if (!g_gameRunning)   /* (stopped - the window may be gone: no frame, as the original's loop ran none) */
 		return 0;
+	/* (the x87 control word the game's maths needs - 53-bit precision, standalone/main.c - for the frame; a host may
+	   run with its own) */
+	unsigned short was, cw = 0x027f;
+	__asm__ volatile("fnstcw %0" : "=m"(was));
+	__asm__ volatile("fldcw %0" : : "m"(cw));
 	editField_readTyping();
 	app_frame();
+	__asm__ volatile("fldcw %0" : : "m"(was));
 	return g_gameRunning != 0;
+}
+/* a key and a typed character for the open text field (its hidden EDIT control, as Windows would send them) */
+void axis_key(unsigned vk, int down)
+{
+	if (g_textFieldOpen && g_hEditField)
+		SendMessageA(g_hEditField, down ? 0x100 : 0x101, vk, 0);   /* WM_KEYDOWN / WM_KEYUP */
+}
+void axis_char(unsigned ch)
+{
+	if (g_textFieldOpen && g_hEditField)
+		SendMessageA(g_hEditField, 0x102, ch, 0);   /* WM_CHAR */
 }
 int axis_running(void) { return g_gameRunning != 0; }
 /* the game quitting (its window destroyed: the original ended the process there, without its exit list) */
