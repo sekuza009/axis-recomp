@@ -276,12 +276,12 @@ _Static_assert(sizeof(WavHeader) == 0x2c, "WavHeader");
    open or the buffer is not made ("SoundBuffer create error") */
 Sound *(sound_loadWav)(const char *name)
 {
-	void *file = CreateFileA(name, 0x80000000, 1, NULL, 3, 0x80, NULL);   /* GENERIC_READ, share read, OPEN_EXISTING */
+	void *file = FILE_OPEN_READ(name);   /* GENERIC_READ, share read, OPEN_EXISTING */
 	if (file == (void *)-1)
 		return NULL;
 	WavHeader header;
 	u32 done;
-	ReadFile(file, &header, sizeof header, &done, NULL);
+	FILE_READ(file, &header, sizeof header, &done);
 	WaveDesc desc;
 	memset(&desc, 0, sizeof desc);
 	desc.formatTag = 1;
@@ -297,8 +297,8 @@ Sound *(sound_loadWav)(const char *name)
 	desc.format = &desc;
 	u8 *data = operator_new(size);
 	Sound *sound = operator_new(100);
-	ReadFile(file, data, size, &done, NULL);
-	CloseHandle(file);
+	FILE_READ(file, data, size, &done);
+	FILE_CLOSE(file);
 	void *ds = g_directSound;
 	if (SND_CREATE_BUFFER(ds, &desc.size, &sound->buffers[0])) {
 		MessageBoxA(NULL, (const char *)STR(0x4c4dc4, "SoundBuffer create error"), (const char *)STR(0x4c4de0, "Error"), 0);

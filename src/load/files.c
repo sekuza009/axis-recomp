@@ -3,6 +3,7 @@
    character, map-info and skirmish data files (data_load*), the component catalogue, the chat macros (Chat.scp), the
    archives' item files, the replay file opened and closed, the launcher's files and the command line. */
 #include "../game.h"
+#include "../plat/plat.h"
 #include <string.h>
 #include <stdarg.h>
 
@@ -264,8 +265,8 @@ u32 (app_invalidateLauncherMarks)(void)
 		crt_fwrite(&mark, 4, 1, f);
 		fclose(f);
 	}
-	DeleteFileA((const char *)STR(0x4b040c, "save\\axisgame.dat"));   /* DeleteFileA */
-	return DeleteFileA((const char *)STR(0x4b0420, "game.dat"));
+	FILE_DELETE((const char *)STR(0x4b040c, "save\\axisgame.dat"));   /* DeleteFileA */
+	return FILE_DELETE((const char *)STR(0x4b0420, "game.dat"));
 }
 
 /* ---- a .dat archive opened (unless already): its file (named by format), the entry count, then the 0x44-byte
@@ -1308,7 +1309,7 @@ void (profile_scanSaves)(void)
 {
 	if (crt_chdir((const char *)STR(0x4b2adc, "save"))) {
 		crt_chdir(g_dataDir);
-		DeleteFileA((const char *)STR(0x4b2acc, "axisuser.dat"));   /* DeleteFileA("axisuser.dat") */
+		FILE_DELETE((const char *)STR(0x4b2acc, "axisuser.dat"));   /* DeleteFileA("axisuser.dat") */
 		crt_chdir((const char *)STR(0x4b2a80, ".."));
 		return;
 	}
@@ -1337,7 +1338,7 @@ void (profile_scanSaves)(void)
 		char name[32] = { 0 };
 		memcpy(name, files[i], strlen(files[i]) - 4);
 		if (strcmp((const char *)OBJ(g_profileHeader), (const char *)STR(0x4b0fa0, "AXIS USER PROFILE DATA Master ver 1.0..."))) {
-			DeleteFileA(files[i]);   /* DeleteFileA */
+			FILE_DELETE(files[i]);   /* DeleteFileA */
 			continue;
 		}
 		ProfileRecord *profile = (ProfileRecord *)g_profiles + valid;

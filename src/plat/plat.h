@@ -131,6 +131,30 @@ long plat_inputRelease(void *object);
 #endif
 
 
+/* ---- files the game reaches past the C runtime: a whole file read (the sounds' WAVs: opened for reading - (void *)-1
+   when it cannot be - read, closed), files deleted (nonzero = deleted), the current directory. (The C runtime's file
+   functions - fopen, _findfirst ... - are bound by the loader: standalone/crt.c on Windows; plat/posix/files.c has
+   their POSIX side: Windows paths, case-insensitive names, Windows-style directory listing.) */
+#ifdef AXIS_PORTABLE
+void *plat_fileOpenRead(const char *path);
+int plat_fileRead(void *file, void *out, u32 size, u32 *done);
+int plat_fileClose(void *file);
+u32 plat_fileDelete(const char *path);
+u32 plat_currentDirectory(u32 size, char *out);
+#define FILE_OPEN_READ(path) plat_fileOpenRead(path)
+#define FILE_READ(file, out, size, done) plat_fileRead(file, out, size, done)
+#define FILE_CLOSE(file) plat_fileClose(file)
+#define FILE_DELETE(path) plat_fileDelete(path)
+#define FILE_CURRENT_DIRECTORY(size, out) plat_currentDirectory(size, out)
+#else
+#define FILE_OPEN_READ(path) 	IMPORT_FN(CreateFileA, void *, const char *, u32, u32, void *, u32, u32, void *)(path, 0x80000000, 1, NULL, 3, 0x80, NULL)
+#define FILE_READ(file, out, size, done) IMPORT_FN(ReadFile, int, void *, void *, u32, u32 *, void *)(file, out, size, done, NULL)
+#define FILE_CLOSE(file) IMPORT_FN(CloseHandle, int, void *)(file)
+#define FILE_DELETE(path) IMPORT_FN(DeleteFileA, u32, const char *)(path)
+#define FILE_CURRENT_DIRECTORY(size, out) IMPORT_FN(GetCurrentDirectoryA, u32, u32, char *)(size, out)
+#endif
+
+
 /* ---- time: the high-resolution counter and its frequency (the game clock, timer.c), milliseconds (timeGetTime: the
    clock check; GetTickCount: the network's waits), sleeping, and the date and time (SYSTEMTIME's eight 16-bit
    fields: year, month, weekday, day, hour, minute, second, milliseconds - local, or UTC) */
