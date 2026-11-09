@@ -426,6 +426,7 @@ static void replay(const u32 *p, const u32 *end)
    Godot branch). The file: "AXGLREC1", the plain calls' table (count, then each: words, name length, name), then
    per frame: width, height, the number of words, the words. The ops from 64 are as in replay() above */
 static FILE *g_dump;
+static char g_dumpShots[512];   /* ",500,1000," */
 static unsigned g_dumpFrames = 600;
 static void dump_header(void)
 {
@@ -449,6 +450,22 @@ static BOOL S w_SwapBuffers(HDC dc)
 	GetClientRect(wnd, &rc);
 	int w = rc.right, h = rc.bottom;
 	if (g_dump) {
+		if (g_dumpShots[0] && w > 0 && h > 0) {   /* (AXIS_GLREC_DUMP_SHOTS=n,m,..: those frames' images saved, to compare with a replay) */
+			char key[16];
+			snprintf(key, sizeof key, ",%u,", g_frames);
+			if (strstr(g_dumpShots, key)) {
+				unsigned char *img = malloc((size_t)w * h * 4);
+				int was;
+				g_getIntegerv(0x0c02, &was);
+				g_readBuffer(0x0405);
+				g_readPixels(0, 0, w, h, 0x1908, 0x1401, img);
+				g_readBuffer((u32)was);
+				char name[32];
+				snprintf(name, sizeof name, "frame%u", g_frames);
+				save_ppm(name, img, w, h);
+				free(img);
+			}
+		}
 		if (g_frames <= g_dumpFrames) {
 			u32 head[3] = { (u32)w, (u32)h, (u32)g_len };
 			fwrite(head, 4, 3, g_dump);
@@ -539,6 +556,9 @@ int glrec_install(void **(*slot)(const char *name), const char *dir)
 		char path[MAX_PATH];
 		if (GetEnvironmentVariableA("AXIS_GLREC_DUMP", path, sizeof path) && (g_dump = fopen(path, "wb")))
 			dump_header();
+		char shots[500];
+		if (GetEnvironmentVariableA("AXIS_GLREC_DUMP_SHOTS", shots, sizeof shots))
+			snprintf(g_dumpShots, sizeof g_dumpShots, ",%s,", shots);
 		if (GetEnvironmentVariableA("AXIS_GLREC_DUMP_FRAMES", v, sizeof v) && atoi(v) > 0)
 			g_dumpFrames = (unsigned)atoi(v);
 	}
