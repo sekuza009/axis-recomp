@@ -181,6 +181,37 @@ void AxisGame::m_close(void *u) {
 	g->musicStream.unref();
 }
 
+// the game's message box: Godot's own (a native OK box on each platform), the pointer let go while it is up
+int AxisGame::s_message(void *u, const char *title, const char *text) {
+	AxisGame *g = static_cast<AxisGame *>(u);
+	host_confine(g->hostWindow, 0);
+	g->confined = false;
+	Input::get_singleton()->set_mouse_mode(Input::MOUSE_MODE_VISIBLE);
+	OS::get_singleton()->alert(String(text), String(title));
+	Input::get_singleton()->set_mouse_mode(Input::MOUSE_MODE_HIDDEN);
+	return 1;   // IDOK
+}
+
+// a program the game starts: "AxisGL.exe" is the game itself again (after a graphics change) - this host restarts once
+// the game has ended; the original's patcher and server tool are run when they are there (Windows), else declined
+int AxisGame::s_launch(void *u, const char *program, const char *arguments) {
+	AxisGame *g = static_cast<AxisGame *>(u);
+	const String p = String(program).replace("\\", "/");
+	const String name = p.get_file().to_lower();
+	UtilityFunctions::print("AxisGame: the game asks to start ", p, " ", String(arguments));
+	if (name == "axisgl.exe") {
+		g->restartRequested = true;
+		return 1;
+	}
+	const String path = p.is_absolute_path() ? p : g->gameDir.path_join(p);
+	if (!OS::get_singleton()->has_feature("windows") || !FileAccess::file_exists(path))
+		return 0;
+	PackedStringArray args;
+	if (arguments && *arguments)
+		args = String(arguments).split(" ", false);
+	return OS::get_singleton()->create_process(path, args) > 0;
+}
+
 String AxisGame::take_frame_events() {
 	String s = frameEvents;
 	frameEvents = String();
@@ -265,6 +296,13 @@ bool AxisGame::start(const String &p_game_dir, const String &p_library, bool p_d
 	config.input = 1;
 	config.nogl = p_driver ? 0 : 1;   // (no OpenGL: the game's calls only recorded, its queries answered in software)
 	config.sound = &k_sound;           // (the sound and music through Godot: no DirectSound / DirectShow)
+	config.message = &AxisGame::s_message;   // (the game's message boxes: Godot's)
+	config.launch = &AxisGame::s_launch;     // (the programs it starts: itself again after a graphics change)
+	{
+		const Vector2i screen = DisplayServer::get_singleton()->screen_get_size(DisplayServer::get_singleton()->window_get_current_screen());
+		config.screen_w = screen.x;
+		config.screen_h = screen.y;
+	}
 	api.host(&config);
 	if (!api.load()) { status = "AxisGame: axis_load failed (standalone.log in the game folder)"; return false; }
 	if (!api.init(host_instance(), nullptr, "", 1)) {
@@ -391,6 +429,24 @@ void AxisGame::_process(double p_delta) {
 		UtilityFunctions::print("AxisGame: the game quit (code ", code, ")");
 		host_confine(hostWindow, 0);
 		Input::get_singleton()->set_mouse_mode(Input::MOUSE_MODE_VISIBLE);
+		if (restartRequested) {   // (a graphics change: the game started again - this program, with its arguments)
+			// (Godot leaves out the arguments it consumed itself - the project and the scene - so they are given again when
+			// this runs from the editor's program; an exported game needs only the game's own, after "--")
+			PackedStringArray args;
+			if (!OS::get_singleton()->has_feature("template")) {
+				args.push_back("--path");
+				args.push_back(ProjectSettings::get_singleton()->globalize_path("res://"));
+				Node *scene = get_tree()->get_current_scene();
+				args.push_back(scene && !scene->get_scene_file_path().is_empty() ? scene->get_scene_file_path() : String("res://game.tscn"));
+			}
+			const PackedStringArray user = OS::get_singleton()->get_cmdline_user_args();
+			if (user.size()) {
+				args.push_back("--");
+				args.append_array(user);
+			}
+			const int pid = OS::get_singleton()->create_instance(args);
+			UtilityFunctions::print("AxisGame: the game started again (process ", pid, ")");
+		}
 		get_tree()->quit(code);
 	}
 }

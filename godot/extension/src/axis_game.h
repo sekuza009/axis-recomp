@@ -25,6 +25,9 @@ public:
 	String get_audio_status();
 	String get_input_status();
 	String take_frame_events();
+	static int s_message(void *user, const char *title, const char *text);   // (the game's message boxes: OS.alert)
+	static int s_launch(void *user, const char *program, const char *arguments);   // (AxisGL.exe: the game restarted)
+	bool restartRequested = false;
 	void set_music_near_end(double s) { musicNearEnd = s; }   // (a check: each track started s seconds before its end)   // (the frame log: game steps that took long, and the frames drawn in them)
 	void _process(double p_delta) override;
 	void _input(const Ref<InputEvent> &p_event) override;

@@ -27,6 +27,9 @@ typedef struct {
 	int input;
 	int nogl;
 	const AxisSound *sound;
+	int (*message)(void *user, const char *title, const char *text);
+	int (*launch)(void *user, const char *program, const char *arguments);
+	int screen_w, screen_h;
 } AxisHostConfig;   /* (as src/axis_api.h's) */
 
 typedef struct {
