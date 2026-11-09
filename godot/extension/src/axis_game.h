@@ -24,7 +24,8 @@ public:
 	Vector2i get_game_size() const { return Vector2i(lastW, lastH); }
 	String get_audio_status();
 	String get_input_status();
-	String take_frame_events();   // (the frame log: game steps that took long, and the frames drawn in them)
+	String take_frame_events();
+	void set_music_near_end(double s) { musicNearEnd = s; }   // (a check: each track started s seconds before its end)   // (the frame log: game steps that took long, and the frames drawn in them)
 	void _process(double p_delta) override;
 	void _input(const Ref<InputEvent> &p_event) override;
 
@@ -50,7 +51,9 @@ private:
 	bool confined = false;
 	int rawRetaken = 0;
 	String frameEvents;
-	String keyEvents;   // (the input log: key events since the last status)
+	String keyEvents;
+	double musicNearEnd = 0;
+	int musicLoops = 0;   // (the game's seeks: a track looped)   // (the input log: key events since the last status)
 	bool rawSeen = false;
 	bool cursorMouse = false;   // the movement as the cursor moves (the original's); else raw counts (--raw-mouse)
 	// (a long game step - a loading screen - shown as it draws: RenderingServer.force_draw from the frame callback)

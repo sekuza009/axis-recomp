@@ -51,6 +51,9 @@ func _ready() -> void:
 			frame_log = FileAccess.open(args[i], FileAccess.WRITE)
 		elif a == "--raw-mouse":
 			pass
+		elif a == "--music-near-end":   # (a check: each track started that many seconds before its end)
+			i += 1
+			$Game.set_music_near_end(float(args[i]))
 		elif a == "--step-shots":
 			i += 1
 		elif a == "--gl":

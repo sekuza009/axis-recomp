@@ -105,6 +105,7 @@ void AxisGame::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_audio_status"), &AxisGame::get_audio_status);
 	ClassDB::bind_method(D_METHOD("get_input_status"), &AxisGame::get_input_status);
 	ClassDB::bind_method(D_METHOD("take_frame_events"), &AxisGame::take_frame_events);
+	ClassDB::bind_method(D_METHOD("set_music_near_end", "seconds"), &AxisGame::set_music_near_end);
 }
 
 void AxisGame::on_frame(void *user, const unsigned *words, unsigned count, int width, int height) {
@@ -148,6 +149,8 @@ int AxisGame::m_open(void *u, const char *file) {
 	g->musicStream->set_data(data);
 	g->music->set_stream(g->musicStream);
 	g->musicSeekTo = 0;
+	if (g->musicNearEnd > 0)   // (a check: the track started that many seconds before its end, to see it loop)
+		g->musicSeekTo = MAX(0.0, g->musicStream->get_length() - g->musicNearEnd);
 	return 0;
 }
 void AxisGame::m_run(void *u, int run) {
@@ -169,6 +172,7 @@ void AxisGame::m_seek(void *u, double s) {
 	AxisGame *g = static_cast<AxisGame *>(u);
 	g->musicSeekTo = s;
 	if (g->musicStream.is_valid()) g->music->play((float)s);   // (the game seeks to replay from the start)
+	g->musicLoops++;
 }
 void AxisGame::m_close(void *u) {
 	AxisGame *g = static_cast<AxisGame *>(u);
@@ -204,7 +208,7 @@ String AxisGame::get_audio_status() {
 	String s = String("sounds playing ") + String::num_int64(mixer.playing_count()) + ", peak " + String::num(mixer.peak, 3);
 	mixer.peak = 0;
 	if (musicStream.is_valid())
-		s += String(", music ") + (music->is_playing() ? "playing " : "stopped ") + String::num(music->get_playback_position(), 1) + " / " + String::num(musicStream->get_length(), 1) + " s";
+		s += String(", music ") + (music->is_playing() ? "playing " : "stopped ") + String::num(music->get_playback_position(), 1) + " / " + String::num(musicStream->get_length(), 1) + " s, seeks " + String::num_int64(musicLoops);
 	else
 		s += ", no music";
 	return s;
