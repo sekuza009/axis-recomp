@@ -200,3 +200,40 @@ most of them OpenGL (recorded for the host, glrec.c). The rest, by group, with t
   (SO_REUSEADDR, which on Windows would mean something else). Not on POSIX: UPnP and the clipboard (logged).
   tools/plat_tests/posix_directplay_test.c plays a session between two processes on Linux - host, find, join, the
   players, a message and its answer, the join and leave seen - and passes, 32- and 64-bit (170 checks in all).
+
+## Stage 6: 64-bit (begun 2026-11-09)
+
+The game keeps addresses in 32-bit places everywhere: record fields, tables, the data image's own pointers, values
+it sends and saves. Widening them all would change every record's layout. Instead the 64-bit build keeps them 32 bits
+and gives them a 4 GB space of their own:
+
+- **The arena.** `g_arena` is a 4 GB block reserved at start-up; every address the game holds is an offset into it.
+  The image's data sits at its original addresses there (0x4a9000 .. 0xb13000), so an address in the data image, a
+  named global's address (`ADDR`, `OBJ`: src/addr_consts.h, tools/mkaddrc.py) and the original's own numbers all stay
+  what they were - and stay compile-time constants for the tables that hold them. The split variables go back to their
+  original places (src/data/split64.h). The heap the game allocates from, the stacks it runs on and every buffer it
+  keeps an address of are in the arena too.
+- **The conversions** (src/axis.h), the plain casts and pointer types in the 32-bit builds, so master's objects do not
+  change (checked with tools/objcmp.py after every step):
+  `AP(T, v)` an address as a T pointer (g_arena + v), `AV(p)` a pointer's address (p - g_arena), `APTR(T)` a pointer
+  field of a record or a pointer global (scene.h, layout.h, globals.h: u32 in 64-bit), `AREF(p)` a pointer stored in
+  one, `ADDR_AT` / `ADDR_ATF` an element's / member's address, `ASTATIC` a function's table of game pointers (made per
+  call in 64-bit). AP and AV take a pointer as well and pass it on; 0 and NULL map to each other.
+- **Functions the game keeps** (handler tables, vtables, callbacks: `FN(name)`) are their original addresses, which
+  `FNP(type, v)` looks up when called; a system's function kept in game memory (an extension's entry point) is a
+  number from `FNREF`. **Handles** (a window, a device, a sound buffer) are 32-bit numbers in the same way: the 64-bit
+  platform hands out and takes back arena-relative values.
+- **Done (2026-11-09):** every file of src/ compiles for x86-64 without a pointer-size warning, with
+  tools/to_arena.py (the mechanical cast rewrite) and tools/fix64.py (rewrites driven by the compiler's 64-bit
+  diagnostics, with a check mode, AXIS_64CHECK, that turns every address constant into a run-time value so that its
+  casts are reported too). The remaining hand edits are listed in the commits.
+- **Next:** the 64-bit runtime - the arena with its heap and stacks (the game runs on an arena stack: its locals'
+  addresses go into its records), the function table, the C runtime's entries (files as arena handles, VC6's printf
+  and rand), and every system call as a C function: under a host the game needs no real window, so the 64-bit
+  platform is the host one (the window and messages stood in, drawing recorded for the host, sound and input from it)
+  on Windows x64, Linux and macOS alike, sharing src/plat/posix where it can. Then the structures the game hands the
+  system with pointers in them (window classes, sound buffer descriptions, DirectPlay's session and player records,
+  hostent) translated at that boundary. Tested first headless on Linux (the drawing streams compared with the 32-bit
+  build's), then in Godot on Windows x64 - the official 64-bit editor then works with the project.
+- Not 64-bit-specific but needed for arm64 (Apple Silicon): the x87 helpers (x87.h, fld_m ...) need a plain-C form
+  there; x86-64 still has the x87 unit and keeps them.
