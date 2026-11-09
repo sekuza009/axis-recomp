@@ -131,6 +131,15 @@ long plat_inputRelease(void *object);
 #endif
 
 
+/* ---- the game's window's messages delivered each frame when a host runs it without a window (standalone/host_window.c) */
+#ifdef AXIS_PORTABLE
+extern void (*g_platPump)(void);
+#define PLAT_PUMP() do { if (g_platPump) g_platPump(); } while (0)
+#else
+#define PLAT_PUMP() ((void)0)
+#endif
+
+
 /* ---- a check (AXIS_LOADLOG, standalone/portable.c): each loading-screen frame's timer, logged */
 #ifdef AXIS_PORTABLE
 extern void (*g_platLoadLog)(const void *timeSync, int mode);

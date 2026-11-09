@@ -455,22 +455,33 @@ static void dump_header(void)
    SwapBuffers (its words valid during the call), then the frame shown as before */
 static void (*g_live)(void *user, const u32 *words, unsigned count, int width, int height);
 static void *g_liveUser;
+/* the frame's size, when the loader knows it without a window (standalone/host_window.c); else the DC's window's */
+void (*g_glrecFrameSize)(int *width, int *height);
+static void frame_size(HDC dc, int *w, int *h)
+{
+	if (g_glrecFrameSize) {
+		g_glrecFrameSize(w, h);
+		return;
+	}
+	RECT r = { 0, 0, 0, 0 };
+	GetClientRect(WindowFromDC(dc), &r);
+	*w = r.right;
+	*h = r.bottom;
+}
 
 static BOOL S w_SwapBuffers(HDC dc)
 {
 	g_frames++;
 	if (g_live) {
-		RECT r;
-		GetClientRect(WindowFromDC(dc), &r);
-		g_live(g_liveUser, g_buf, (unsigned)g_len, r.right, r.bottom);
+		int fw, fh;
+		frame_size(dc, &fw, &fh);
+		g_live(g_liveUser, g_buf, (unsigned)g_len, fw, fh);
 		g_len = 0;
 		return r_SwapBuffers(dc);
 	}
 	int check = g_frames % g_every == 0;
-	RECT rc;
-	HWND wnd = WindowFromDC(dc);
-	GetClientRect(wnd, &rc);
-	int w = rc.right, h = rc.bottom;
+	int w, h;
+	frame_size(dc, &w, &h);
 	if (g_dump) {
 		if (g_dumpShots[0] && w > 0 && h > 0) {   /* (AXIS_GLREC_DUMP_SHOTS=n,m,..: those frames' images saved, to compare with a replay) */
 			char key[16];

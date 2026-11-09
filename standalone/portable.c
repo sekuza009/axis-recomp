@@ -324,7 +324,8 @@ static void mouse_log(long dx, long dy)
 	if (g_testEnding > 0 && --g_testEnding == 0) {
 		extern unsigned char g_exitCode_v[], g_mainWindow_v[];
 		*(int *)g_exitCode_v = 99;   /* (app_closeWindow(0x63): game_postMatch after mission 15) */
-		PostMessageA(*(HWND *)g_mainWindow_v, WM_CLOSE, 0, 0);
+		/* (through the game's own slot, as app_closeWindow posts it: a host's stand-in window gets it too) */
+		((BOOL (WINAPI *)(HWND, UINT, WPARAM, LPARAM))*slot_by_name("PostMessageA"))(*(HWND *)g_mainWindow_v, WM_CLOSE, 0, 0);
 	}
 	if (!g_mouseLog)
 		return;
@@ -410,13 +411,22 @@ static HWND WINAPI h_CreateWindowExA(DWORD ex, LPCSTR cls, LPCSTR title, DWORD s
 	return r;
 }
 static BOOL WINAPI h_ShowWindow(HWND w, int cmd) { return r_ShowWindow(w, w == g_gameWnd ? SW_HIDE : cmd); }
-static HWND WINAPI h_GetForegroundWindow(void) { return g_hostFocus ? g_gameWnd : r_GetForegroundWindow(); }
+HWND hostwin_main(void);
+void hostwin_origin(int *x, int *y);
+static HWND game_window(void) { return g_gameWnd ? g_gameWnd : hostwin_main(); }   /* (the hidden one, or the stand-in) */
+static HWND WINAPI h_GetForegroundWindow(void) { return g_hostFocus ? game_window() : r_GetForegroundWindow(); }
 static BOOL WINAPI h_GetCursorPos(POINT *p)   /* the host's pointer, as a screen point over the game's window */
 {
 	p->x = g_hostX;
 	p->y = g_hostY;
 	if (g_gameWnd)
 		ClientToScreen(g_gameWnd, p);
+	else {
+		int x, y;
+		hostwin_origin(&x, &y);
+		p->x += x;
+		p->y += y;
+	}
 	return TRUE;
 }
 static BOOL WINAPI h_SetCursorPos(int x, int y) { (void)x; (void)y; return TRUE; }   /* (the host's pointer is its own) */
@@ -440,6 +450,34 @@ static SHORT WINAPI h_GetKeyState(int vk) { return key_state(vk); }
    took the focus from the host's window (its keys stopped, it left the foreground). The host's keys reach the field
    directly (axis_key / axis_char), so the focus stays where it is */
 static HWND WINAPI h_SetFocus(HWND w) { (void)w; return GetFocus(); }
+
+/* AXIS_MSGLOG=<file> (a check, PORTING.md stage 3): every message the game's window procedures get from Windows,
+   in order - the game's own window class's procedure wrapped (RegisterClassA / RegisterClassExA) */
+static FILE *g_msgLog;
+static WNDPROC g_msgLogProc;
+static LRESULT CALLBACK msg_log_proc(HWND w, UINT m, WPARAM wp, LPARAM lp)
+{
+	fprintf(g_msgLog, "%lu msg %04x w %08lx l %08lx\n", GetTickCount(), m, (unsigned long)wp, (unsigned long)lp);
+	fflush(g_msgLog);
+	LRESULT r = CallWindowProcA(g_msgLogProc, w, m, wp, lp);
+	return r;
+}
+static ATOM (WINAPI *r_RegisterClassA)(const WNDCLASSA *);
+static ATOM WINAPI h_RegisterClassA(const WNDCLASSA *c)
+{
+	WNDCLASSA w = *c;
+	g_msgLogProc = w.lpfnWndProc;
+	w.lpfnWndProc = msg_log_proc;
+	return r_RegisterClassA(&w);
+}
+static ATOM (WINAPI *r_RegisterClassExA)(const WNDCLASSEXA *);
+static ATOM WINAPI h_RegisterClassExA(const WNDCLASSEXA *c)
+{
+	WNDCLASSEXA w = *c;
+	g_msgLogProc = w.lpfnWndProc;
+	w.lpfnWndProc = msg_log_proc;
+	return r_RegisterClassExA(&w);
+}
 
 static void host_install(void)
 {
@@ -471,11 +509,38 @@ static void host_install(void)
 		g_platformHostFocus = 0;
 #define SWAP(name) do { void **p = slot_by_name(#name); *(void **)&r_##name = *p; *p = (void *)h_##name; } while (0)
 #define SET(name) do { *slot_by_name(#name) = (void *)h_##name; } while (0)
-		SWAP(CreateWindowExA); SWAP(ShowWindow); SWAP(GetForegroundWindow);
+		{
+			char rw[4];
+			if (GetEnvironmentVariableA("AXIS_REALWINDOW", rw, sizeof rw)) {   /* (the old way: a real window, hidden) */
+				SWAP(CreateWindowExA); SWAP(ShowWindow);
+			} else {
+				extern void (*g_platPump)(void);
+				int hostwin_install(void **(*slot)(const char *name));
+				void hostwin_pump(void);
+				fprintf(g_log, "host: no window - its messages, timers and socket events delivered each frame (%d calls answered)\n",
+				        hostwin_install(slot_by_name));
+				g_platPump = hostwin_pump;
+				extern void (*g_glrecFrameSize)(int *, int *);
+				void hostwin_size(int *w, int *h);
+				g_glrecFrameSize = hostwin_size;   /* (the recorder's frame size: the window's, without a window) */
+			}
+		}
+		SWAP(GetForegroundWindow);
 		SET(GetCursorPos); SET(SetCursorPos); SET(GetAsyncKeyState); SET(GetKeyState); SET(SetFocus);
 #undef SWAP
 #undef SET
 		fprintf(g_log, "host: the input from the host, the game's window hidden\n");
+	}
+	{
+		char p[MAX_PATH];
+		if (GetEnvironmentVariableA("AXIS_MSGLOG", p, sizeof p) && (g_msgLog = fopen(p, "w"))) {
+			void **s = slot_by_name("RegisterClassA");
+			*(void **)&r_RegisterClassA = *s;
+			*s = (void *)h_RegisterClassA;
+			s = slot_by_name("RegisterClassExA");
+			*(void **)&r_RegisterClassExA = *s;
+			*s = (void *)h_RegisterClassExA;
+		}
 	}
 }
 

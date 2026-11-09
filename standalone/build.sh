@@ -52,7 +52,8 @@ if [ -n "$PORTABLE" ]; then
 	$CC -c -O2 -Wall $NDEF -o build/standalone_main$NSUF.o standalone/portable.c
 	$CC -c -O2 -Wall -msse2 -mfpmath=sse -o build/standalone_glstate.o standalone/glstate.c   # (SSE float maths, as drivers)
 	$CC -c -O2 -Wall -o build/standalone_glrec.o standalone/glrec.c
-	LOADER="build/standalone_main$NSUF.o build/standalone_crt$NSUF.o build/plat_imports.o build/standalone_glstate.o build/standalone_glrec.o -lopengl32"
+	$CC -c -O2 -Wall -o build/standalone_host_window.o standalone/host_window.c
+	LOADER="build/standalone_main$NSUF.o build/standalone_crt$NSUF.o build/plat_imports.o build/standalone_glstate.o build/standalone_glrec.o build/standalone_host_window.o -lopengl32"
 else
 	$CC -c -O2 -Wall $NDEF -o build/standalone_main$NSUF.o standalone/main.c
 	LOADER="build/standalone_main$NSUF.o build/standalone_crt$NSUF.o build/gamedata.o build/standalone_hooks.o"
