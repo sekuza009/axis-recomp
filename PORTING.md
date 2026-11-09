@@ -254,6 +254,13 @@ and gives them a 4 GB space of their own:
   axis_frame shows it and axis_running stays 1 until it ends or a new Esc press skips it. Works with any host, no
   change to Godot's side; tested in Godot (all 210 s, the sound, Esc) and headless on Linux. AXIS_TEST_ENDING=<frames>
   triggers it (as in the 32-bit build).
+- **Linux as a host's library, the user folder (2026-11-09):** `standalone/build64.sh linux-gnu` makes
+  build/libaxis64.so (glibc 2.28, position-independent, only axis_* exported - standalone/axis64.map) for the Godot
+  build on Linux; `linux` also makes a musl .so and a dlopen test that WSL's musl distribution runs. On Linux and macOS
+  the game's writes go to a user folder laid over the game folder (src/plat/posix/files.c: ~/.local/share/axis or
+  $AXIS_USER_DIR; reads fall back to the game folder, deletes of its files are recorded, listings merge, chdir is
+  kept in the layer), so the game runs from a read-only install and existing saves carry over untouched. Windows
+  keeps writing its own folder.
 - **Earlier note - the runtime as planned:** the arena with its heap and stacks (the game runs on an arena stack: its locals'
   addresses go into its records), the function table, the C runtime's entries (files as arena handles, VC6's printf
   and rand), and every system call as a C function: under a host the game needs no real window, so the 64-bit
