@@ -200,12 +200,26 @@ const char *crt_install(int *count)
 
 /* the runtime's start-up, for the game: its static constructors in table order (some through the compiler's jump
    stubs), WinMain(the exe, NULL, the command line after the program's name, how the window is to be shown), exit */
-void crt_start(void)
+/* the game's C++ static constructors, in table order (some through the compiler's jump stubs) */
+void crt_construct(void)
 {
 	for (const unsigned *f = (const unsigned *)AT(0x4ad000); f < (const unsigned *)AT(0x4ad0fc); f++)
 		if (*f)
 			((void (__cdecl *)(void))*f)();
 	sa_log("the game's static constructors run (%d)", 0);
+}
+
+/* the game's exit with WinMain's result: msvcrt's exit (the game's atexit list: its destructors), the process ends */
+void crt_exit(int r)
+{
+	sa_log("WinMain returned %d", r);
+	CRT_EXIT(r);
+}
+
+#ifndef AXIS_DLL   /* (axis.dll: the host runs the parts - axis_load, axis_exit) */
+void crt_start(void)
+{
+	crt_construct();
 	char *cmd = GetCommandLineA();
 	if (*cmd == '"') {
 		for (cmd++; *cmd && *cmd != '"'; cmd++)
@@ -228,6 +242,6 @@ void crt_start(void)
 #else
 	int r = game_WinMain(GetModuleHandleA(NULL), NULL, cmd, show);   /* the rebuilt WinMain (0x43f9d0), called directly */
 #endif
-	sa_log("WinMain returned %d", r);
-	CRT_EXIT(r);
+	crt_exit(r);
 }
+#endif

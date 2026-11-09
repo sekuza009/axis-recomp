@@ -192,6 +192,7 @@ static void resolve_imports(void)
 	fprintf(g_log, "%u imports resolved by name\n", (unsigned)(sizeof k / sizeof k[0]));
 }
 
+#ifndef AXIS_DLL
 /* AXISRC_MULTI=1 (a test, as the trace builds have it): the game's FindWindowA does not see another copy's "AXIS"
    window, so two copies run on one PC (the two-copy sessions) */
 static HWND WINAPI find_window(LPCSTR cls, LPCSTR name)
@@ -221,18 +222,43 @@ int host_run(void *instance, const char *cmd, int show)
 	return 1;
 }
 
+#else
+static HWND WINAPI find_window(LPCSTR cls, LPCSTR name)   /* (AXISRC_MULTI, as above) */
+{
+	if ((ULONG_PTR)cls > 0xffff && !strcmp(cls, "AXIS"))
+		return NULL;
+	return FindWindowA(cls, name);
+}
+void crt_construct(void);
+void crt_exit(int r);
+AXIS_API void axis_exit(int code) { crt_exit(code); }
+#endif
+
+#ifdef AXIS_DLL
+AXIS_API int axis_load(void)
+{
+	HINSTANCE inst = GetModuleHandleA(NULL);
+#else
 int WINAPI WinMain(HINSTANCE inst, HINSTANCE prev, LPSTR cmd, int show)
 {
-	char path[MAX_PATH];
 	(void)prev; (void)cmd; (void)show;
+#endif
+	char path[MAX_PATH];
 	GetModuleFileNameA(NULL, path, sizeof path);
 	strcpy(strrchr(path, '\\') + 1, "standalone.log");
 	strcpy(g_logPath, path);
 	g_log = fopen(path, "w");
 	if (!g_log)
 		fail("cannot write %s", path);
+#ifdef AXIS_DLL
+	MEMORY_BASIC_INFORMATION mbi;
+	VirtualQuery((void *)axis_load, &mbi, sizeof mbi);
+	fprintf(g_log, "axis.dll at %p (host %p), the image's remains (text_data) at %p\n", mbi.AllocationBase,
+	        (void *)GetModuleHandleA(NULL), (void *)g_image);
+#else
 	fprintf(g_log, "portable build: AxisRC.exe at %p, the image's remains (text_data) at %p\n",
 	        (void *)GetModuleHandleA(NULL), (void *)g_image);
+#endif
 #ifndef AXIS_RELOCATABLE
 	DWORD old;
 	if ((BYTE *)g_space > (BYTE *)GAME_BASE || (BYTE *)g_space + sizeof g_space < g_image + GAME_SIZE)
@@ -268,6 +294,11 @@ int WINAPI WinMain(HINSTANCE inst, HINSTANCE prev, LPSTR cmd, int show)
 	}
 	fclose(g_log);
 	g_log = NULL;
+#ifdef AXIS_DLL
+	crt_construct();
+	return 1;
+#else
 	crt_start();
 	return 0;
+#endif
 }

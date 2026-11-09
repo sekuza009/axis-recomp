@@ -12,11 +12,14 @@ cd "$(dirname "$0")/.."
 # PORTING.md). Still linked as AxisRC.exe is, so the original's range stays guarded and any original address left is caught.
 # PORTABLE=2: build/AxisRC_reloc.exe - the same with the image an ordinary array and the exe linked with ASLR (no
 # reserved or guarded range): the game loaded wherever Windows puts it.
+# PORTABLE=3: build/axis.dll and build/AxisHost.exe - the game as a library (src/axis_api.h) and its Windows host
+# (host/win32/main.c); both go in the game folder, AxisHost.exe is what is run.
 # PATCHLAYER=1: build/AxisRC_patchlayer.exe - the earlier AxisRC.exe, where the patch layer (axisnet_recomp.c)
 # applies the fixes from outside as the patch DLL does to AxisGL.exe (its objects in build/obj_patchlayer), for
 # comparison. recomp.dll (build.sh) is unaffected either way: it is checked against AxisGL.exe and its patch DLL.
 if [ -n "$NATIVE" ]; then echo "(NATIVE=1 is the default now: building AxisRC.exe)"; fi
 if [ -n "$PATCHLAYER" ]; then OBJD=build/obj_patchlayer; NDEF=; OUT=AxisRC_patchlayer.exe; NSUF=_patchlayer;
+elif [ "$PORTABLE" = 3 ]; then OBJD=build/obj_dll; NDEF="-DAXIS_NATIVE -DAXIS_PORTABLE -DAXIS_RELOCATABLE -DAXIS_DLL"; OUT=axis.dll; NSUF=_dll;
 elif [ "$PORTABLE" = 2 ]; then OBJD=build/obj_portable; NDEF="-DAXIS_NATIVE -DAXIS_PORTABLE -DAXIS_RELOCATABLE"; OUT=AxisRC_reloc.exe; NSUF=_reloc;
 elif [ -n "$PORTABLE" ]; then OBJD=build/obj_portable; NDEF="-DAXIS_NATIVE -DAXIS_PORTABLE"; OUT=AxisRC_portable.exe; NSUF=_portable;
 else OBJD=build/obj_direct; NDEF=-DAXIS_NATIVE; OUT=AxisRC.exe; NSUF=; fi
@@ -59,12 +62,13 @@ $CC -c -O2 -DAXIS_STANDALONE $NDEF -fno-omit-frame-pointer -I../axisnet -Ibuild 
 IV=../axisnet/iv32
 # (-Wl,--subsystem,windows, not -mwindows: zig ignores -mwindows, and a console exe opens a console window)
 LINKBASE="-Wl,--image-base=0x10000"; test "$PORTABLE" = 2 && LINKBASE="-Wl,--dynamicbase"   # (PORTABLE=2: loaded anywhere)
+test "$PORTABLE" = 3 && LINKBASE="-shared -Wl,--dynamicbase -Wl,--out-implib,build/libaxis.a"   # (PORTABLE=3: the DLL)
 $CC -O2 -Wl,--subsystem,windows $LINKBASE -Wl,--stack=0x100000 -o build/$OUT \
 	$LOADER build/standalone_axisnet$NSUF.o $OBJD/*.o $PLAT $NEXTRA \
 	$IV/iv32.o $IV/indeo3.o $IV/hpeldsp.o -lws2_32 -lole32 -loleaut32 -luser32 -lwinmm -lgdi32
 python - build/$OUT "$PORTABLE" <<'EOF'
 import sys, struct, pefile
-reloc = sys.argv[2:] == ['2']   # (PORTABLE=2: loaded anywhere)
+reloc = sys.argv[2:] in (['2'], ['3'])   # (PORTABLE=2 / 3: loaded anywhere)
 b = bytearray(open(sys.argv[1], 'rb').read()); pe = struct.unpack_from('<I', b, 0x3c)[0]
 o = pe + 0x18 + 0x46; flags = struct.unpack_from('<H', b, o)[0]
 struct.pack_into('<H', b, o, flags | 0x40 if reloc else flags & ~0x40)   # ASLR on for PORTABLE=2, else off
@@ -86,3 +90,8 @@ for s in pe.sections:
 assert sym, 'no section covers 0x400000..0xb6b000 (the code grew past 0x400000?)'
 print('built ' + sys.argv[1])
 EOF
+# (PORTABLE=3: the host, linked against axis.dll's import library)
+if [ "$PORTABLE" = 3 ]; then
+	$CC -O2 -Wall -Wl,--subsystem,windows -Wl,--dynamicbase -o build/AxisHost.exe host/win32/main.c build/libaxis.a -luser32 || exit 1
+	echo "built build/AxisHost.exe (the host of build/axis.dll)"
+fi

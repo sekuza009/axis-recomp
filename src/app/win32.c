@@ -545,6 +545,7 @@ long STDCALL (editField_editProc)(void *wnd, u32 msg, u32 w, u32 l)
 #ifdef AXIS_PORTABLE
 /* (the portable build: this is axis_init, the start-up only - the host runs the frames, see the end of this file
    and src/axis_api.h) */
+#include "../axis_api.h"
 #define game_WinMain axis_init
 #endif
 u32 STDCALL (game_WinMain)(void *inst, void *prev, const char *cmd, int show)
@@ -865,7 +866,6 @@ long STDCALL (game_wndProc)(void *wnd, u32 msg, u32 w, u32 l)
 
 #ifdef AXIS_PORTABLE
 /* ---- the host's side (src/axis_api.h): the original loop's body, one round per call ---- */
-#include "../axis_api.h"
 unsigned axis_frame(void)
 {
 	editField_readTyping();

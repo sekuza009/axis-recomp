@@ -27,7 +27,7 @@ own `godot` branch) drives frame by frame. Decided 2026-11-08:
    sites move behind it.
 4. **The host drives the frame.** *(first pass done 2026-11-08: src/axis_api.h, below)* The game's own WinMain loop becomes `axis_init` / `axis_frame(dt, input)` /
    `axis_shutdown`; a small Windows host (`host/win32`) calls them, so the library has no message loop of its own.
-5. **Library build.** `axis.dll` (or a static library) with that API, plus the Windows host exe; play-tested against
+5. **Library build.** *(first pass done 2026-11-08: PORTABLE=3, below)* `axis.dll` (or a static library) with that API, plus the Windows host exe; play-tested against
    master's behaviour (the scripted sessions, replays).
 6. **Later: 64-bit.** Pointers kept in 32-bit fields (u32 addresses in records and tables, ADDR / OBJ), the x87
    helpers, stdcall / thiscall, the inline assembly.
@@ -66,3 +66,10 @@ in Godot, then replaced piece by piece.
   stage 1-3 runs above its second copy stopped at the "already running" check and the session tested nothing.
   portable.c now honours AXISRC_MULTI too; with it the stage-4 build played the two-copy team match (both
   players in, chat across).
+- 2026-11-08, stage 5 (first pass): `PORTABLE=3 bash standalone/build.sh` builds `build/axis.dll` (the game, with its
+  data, C runtime table, platform layer and network layer; relocatable, ASLR) and `build/AxisHost.exe`
+  (host/win32/main.c: nothing of the game - it loads axis.dll from the game folder and calls `axis_load`,
+  `axis_init`, then pumps messages and calls `axis_frame` until the game stops). axis.dll exports only the API of
+  src/axis_api.h. Still to do for a clean library: the game ends the process itself on quitting (its window's
+  close path calls ExitProcess), the game creates its own window and GL context, and its logs go to the game
+  folder as AxisRC's did.
