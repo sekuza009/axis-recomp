@@ -99,3 +99,13 @@ counts (-150, 40 -> -150, 40) and move the menu pointer. game.gd --input-log <fi
 - Loading: the original shows each frame it draws while it loads (one game step of ~1 s draws hundreds of frames).
   In Godot a step runs inside Godot's frame, so only its last frame was shown. Now a step that has run for more than
   30 ms shows its frames with RenderingServer.force_draw, up to ~120 a second (measured: ~117 shown in a 1 s load).
+
+2026-11-09, Shift and the loading pace (measured against the original, AXIS_LOADLOG):
+- Godot sends a Shift's press but not its release: the modifiers are released from Windows' key state each frame.
+- The original's SwapBuffers waits for the display's refresh, so each frame of a step that draws several (the
+  loading screen, the start-up screen, the fades) takes a refresh interval. Godot showed them without waiting: the
+  load into a skirmish took 1093 ms (the original 1421) and the backdrop scrolled 86 ms of time (the original
+  418). Now each such frame is shown with RenderingServer.force_draw (vsync) before the next is drawn: 1434 ms,
+  425 ms scrolled, median frame 8.31 ms (the original 8.33).
+- Godot's boot splash is off and the game starts after Godot's window is shown (the game's start-up screen is drawn
+  in its first step).

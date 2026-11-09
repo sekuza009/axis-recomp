@@ -56,7 +56,7 @@ private:
 	// (a long game step - a loading screen - shown as it draws: RenderingServer.force_draw from the frame callback)
 	bool inStep = false;
 	uint64_t stepStart = 0, lastShown = 0;
-	int shownInStep = 0;   // the raw reader has had events (until then Godot's motion events are used)   // the mouse's movement read as raw input (host_win.c), not from Godot's motion events
+	int shownInStep = 0, framesInStep = 0;   // the raw reader has had events (until then Godot's motion events are used)   // the mouse's movement read as raw input (host_win.c), not from Godot's motion events
 	int nRaw = 0;
 	static void on_frame(void *user, const unsigned *words, unsigned count, int width, int height);
 	// the sound (AxisSound): the buffers mixed here into a generator stream; the music an MP3 player

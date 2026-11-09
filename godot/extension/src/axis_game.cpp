@@ -105,20 +105,19 @@ void AxisGame::_bind_methods() {
 
 void AxisGame::on_frame(void *user, const unsigned *words, unsigned count, int width, int height) {
 	AxisGame *g = static_cast<AxisGame *>(user);
+	// a game step that draws more than one frame (a loading screen, the start-up screen): the original's SwapBuffers
+	// shows each frame and waits for the display's refresh (vsync), which paces the loading; here the frame before
+	// is shown (and waited for) before the next is drawn over it. A step's last frame is shown by Godot's own loop.
+	if (g->inStep && g->framesInStep++ > 0) {
+		RenderingServer::get_singleton()->force_draw(true, 0.0);
+		g->feed_audio();
+		g->shownInStep++;
+	}
 	g->emu.run_words(words, count, width, height);
 	g->submit(width, height);
 	g->lastW = width;
 	g->lastH = height;
 	g->gameFrames++;
-	if (g->inStep) {   // (a step still running after 30 ms - a loading screen: shown now, ~120 times a second, as the original shows each frame it draws)
-		const uint64_t now = Time::get_singleton()->get_ticks_usec();
-		if (now - g->stepStart > 30000 && now - g->lastShown > 8000) {
-			RenderingServer::get_singleton()->force_draw(true, 0.0);
-			g->feed_audio();
-			g->lastShown = now;
-			g->shownInStep++;
-		}
-	}
 }
 
 // ---- the sound: the game's buffers into the mixer, its music into an MP3 player ----
@@ -367,6 +366,7 @@ void AxisGame::_process(double p_delta) {
 	inStep = true;
 	stepStart = t0;
 	shownInStep = 0;
+	framesInStep = 0;
 	api.frame();
 	inStep = false;
 	const uint64_t took = Time::get_singleton()->get_ticks_usec() - t0;
