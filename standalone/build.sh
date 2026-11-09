@@ -57,7 +57,7 @@ else
 	$CC -c -O2 -Wall $NDEF -o build/standalone_main$NSUF.o standalone/main.c
 	LOADER="build/standalone_main$NSUF.o build/standalone_crt$NSUF.o build/gamedata.o build/standalone_hooks.o"
 fi
-PLAT=; if [ -z "$PATCHLAYER" ]; then $CC -c -O2 -Wall -o build/standalone_platform.o standalone/platform.c; PLAT=build/standalone_platform.o; fi
+PLAT=; if [ -z "$PATCHLAYER" ]; then $CC -c -O2 -Wall $NDEF -o build/standalone_platform$NSUF.o standalone/platform.c; PLAT=build/standalone_platform$NSUF.o; fi
 $CC -c -O2 -Wall $NDEF -o build/standalone_crt$NSUF.o standalone/crt.c
 $CC -c -O2 -Istandalone -o build/standalone_hooks.o build/standalone_hooks.c
 $CC -c -O2 -DAXIS_STANDALONE $NDEF -fno-omit-frame-pointer -I../axisnet -Ibuild -w -o build/standalone_axisnet$NSUF.o axisnet_recomp.c
