@@ -260,6 +260,103 @@ AXIS_API int axis_exit(int code)
 	return code;
 }
 
+
+/* ---- a host (axis_api.h axis_host): its drawing callback, its input, the game's window kept hidden ---- */
+static AxisHostConfig g_host;
+static int g_hostSet;
+extern int g_platHostInput, g_platformHostFocus;   /* src/plat/win32/devices.c, platform.c */
+extern unsigned char g_platKeys[256];
+extern int g_platMouse[3];
+extern unsigned g_platButtons;
+extern void *g_platHostWindow;
+static HWND g_gameWnd;           /* the game's own window (class "AXIS"), hidden */
+static int g_hostX, g_hostY, g_hostFocus;
+static HWND (WINAPI *r_CreateWindowExA)(DWORD, LPCSTR, LPCSTR, DWORD, int, int, int, int, HWND, HMENU, HINSTANCE, LPVOID);
+static BOOL (WINAPI *r_ShowWindow)(HWND, int);
+static HWND (WINAPI *r_GetForegroundWindow)(void);
+
+AXIS_API void axis_host(const AxisHostConfig *config)
+{
+	g_host = *config;
+	g_hostSet = 1;
+}
+
+unsigned glrec_header(unsigned char *out, unsigned room);   /* glrec.c */
+AXIS_API unsigned axis_stream_header(unsigned char *out, unsigned room) { return glrec_header(out, room); }
+
+AXIS_API void axis_input(const unsigned char keys[256], int dx, int dy, int wheel, unsigned buttons, int x, int y, int focused)
+{
+	memcpy(g_platKeys, keys, 256);
+	g_platMouse[0] += dx;
+	g_platMouse[1] += dy;
+	g_platMouse[2] += wheel;
+	g_platButtons = buttons;
+	g_hostX = x;
+	g_hostY = y;
+	g_hostFocus = focused != 0;
+	g_platformHostFocus = g_hostFocus;
+}
+
+static HWND WINAPI h_CreateWindowExA(DWORD ex, LPCSTR cls, LPCSTR title, DWORD style, int x, int y, int w, int h, HWND parent,
+                                     HMENU menu, HINSTANCE inst, LPVOID param)
+{
+	HWND r = r_CreateWindowExA(ex, cls, title, style & ~WS_VISIBLE, x, y, w, h, parent, menu, inst, param);
+	if (!parent && !g_gameWnd)   /* (the game's own window: hidden, the host shows the game) */
+		g_gameWnd = r;
+	return r;
+}
+static BOOL WINAPI h_ShowWindow(HWND w, int cmd) { return r_ShowWindow(w, w == g_gameWnd ? SW_HIDE : cmd); }
+static HWND WINAPI h_GetForegroundWindow(void) { return g_hostFocus ? g_gameWnd : r_GetForegroundWindow(); }
+static BOOL WINAPI h_GetCursorPos(POINT *p)   /* the host's pointer, as a screen point over the game's window */
+{
+	p->x = g_hostX;
+	p->y = g_hostY;
+	if (g_gameWnd)
+		ClientToScreen(g_gameWnd, p);
+	return TRUE;
+}
+static BOOL WINAPI h_SetCursorPos(int x, int y) { (void)x; (void)y; return TRUE; }   /* (the host's pointer is its own) */
+static short key_state(int vk)
+{
+	if (vk == VK_LBUTTON) return g_platButtons & 1 ? (short)0x8000 : 0;
+	if (vk == VK_RBUTTON) return g_platButtons & 2 ? (short)0x8000 : 0;
+	if (vk == VK_MBUTTON) return g_platButtons & 4 ? (short)0x8000 : 0;
+	UINT sc = MapVirtualKeyA((UINT)vk, MAPVK_VK_TO_VSC);
+	if (vk == VK_LEFT || vk == VK_RIGHT || vk == VK_UP || vk == VK_DOWN || vk == VK_INSERT || vk == VK_DELETE ||
+	    vk == VK_HOME || vk == VK_END || vk == VK_PRIOR || vk == VK_NEXT || vk == VK_RCONTROL || vk == VK_RMENU)
+		sc |= 0x80;   /* (the extended keys' DirectInput codes) */
+	if (vk == VK_SHIFT) return (g_platKeys[0x2a] | g_platKeys[0x36]) & 0x80 ? (short)0x8000 : 0;
+	if (vk == VK_CONTROL) return (g_platKeys[0x1d] | g_platKeys[0x9d]) & 0x80 ? (short)0x8000 : 0;
+	if (vk == VK_MENU) return (g_platKeys[0x38] | g_platKeys[0xb8]) & 0x80 ? (short)0x8000 : 0;
+	return sc < 256 && g_platKeys[sc] & 0x80 ? (short)0x8000 : 0;
+}
+static SHORT WINAPI h_GetAsyncKeyState(int vk) { return g_hostFocus ? key_state(vk) : 0; }
+static SHORT WINAPI h_GetKeyState(int vk) { return key_state(vk); }
+
+static void host_install(void)
+{
+	if (g_host.window)
+		g_platHostWindow = g_host.window;
+	if (g_host.frame) {
+		int glrec_install_live(void **(*slot)(const char *), const char *, void (*)(void *, const unsigned *, unsigned, int, int), void *);
+		char dir[MAX_PATH];
+		strcpy(dir, g_logPath);
+		*(strrchr(dir, '\\') + 1) = 0;
+		fprintf(g_log, "host: each frame's drawing to the host (%d GL calls recorded)\n", glrec_install_live(slot_by_name, dir, g_host.frame, g_host.user));
+	}
+	if (g_host.input) {
+		g_platHostInput = 1;
+		g_platformHostFocus = 0;
+#define SWAP(name) do { void **p = slot_by_name(#name); *(void **)&r_##name = *p; *p = (void *)h_##name; } while (0)
+#define SET(name) do { *slot_by_name(#name) = (void *)h_##name; } while (0)
+		SWAP(CreateWindowExA); SWAP(ShowWindow); SWAP(GetForegroundWindow);
+		SET(GetCursorPos); SET(SetCursorPos); SET(GetAsyncKeyState); SET(GetKeyState);
+#undef SWAP
+#undef SET
+		fprintf(g_log, "host: the input from the host, the game's window hidden\n");
+	}
+}
+
 #ifdef AXIS_DLL
 AXIS_API int axis_load(void)
 {
@@ -270,8 +367,15 @@ int WINAPI WinMain(HINSTANCE inst, HINSTANCE prev, LPSTR cmd, int show)
 	(void)prev; (void)cmd; (void)show;
 #endif
 	char path[MAX_PATH];
-	GetModuleFileNameA(NULL, path, sizeof path);
-	strcpy(strrchr(path, '\\') + 1, "standalone.log");
+	if (GetEnvironmentVariableA("AXIS_GAME_DIR", path, MAX_PATH - 20)) {   /* (a host's game folder: the game's files, settings, logs) */
+		size_t n = strlen(path);
+		if (n && path[n - 1] != '\\') strcat(path, "\\");
+		SetCurrentDirectoryA(path);
+		strcat(path, "standalone.log");
+	} else {
+		GetModuleFileNameA(NULL, path, sizeof path);
+		strcpy(strrchr(path, '\\') + 1, "standalone.log");
+	}
 	strcpy(g_logPath, path);
 	g_log = fopen(path, "w");
 	if (!g_log)
@@ -304,6 +408,8 @@ int WINAPI WinMain(HINSTANCE inst, HINSTANCE prev, LPSTR cmd, int show)
 	platform_loadSettings();
 	axisnet_attach(inst, DLL_PROCESS_ATTACH, NULL);
 	fprintf(g_log, "network layer started\n");
+	if (g_hostSet)
+		host_install();
 	if (GetEnvironmentVariableA("AXIS_GLREC", NULL, 0)) {   /* (a check: the drawing recorded and replayed, glrec.c) */
 		int glrec_install(void **(*slot)(const char *name), const char *dir);
 		char dir[MAX_PATH];

@@ -3,13 +3,23 @@
    DirectSound, music DirectShow's multimedia stream (both through the game's import slots, which the network layer
    may hook). */
 #include "../../game.h"
+#include <string.h>
 #ifdef AXIS_PORTABLE
 #undef AXIS_PORTABLE   /* (plat.h's master definitions: the original's calls) */
 #include "../plat.h"
 #define AXIS_PORTABLE
 
+/* a host supplying the input (axis_api.h axis_host / axis_input; set by standalone/portable.c): no DirectInput
+   devices - the keyboard's 256 bytes and the mouse's movement, wheel and buttons come from the host each frame */
+int g_platHostInput;
+unsigned char g_platKeys[256];
+int g_platMouse[3];          /* x, y, wheel since the last read */
+unsigned g_platButtons;      /* bit 0 left, 1 right, 2 middle, 3 the fourth */
+void *g_platHostWindow;      /* the host's window: sound has the focus with it */
+#define HOST_DEVICE ((void *)0x41584953)   /* (a handle that is not one) */
+
 long plat_soundCreate(void **device) { return SND_CREATE(device); }
-long plat_soundSetWindow(void *ds, void *window) { return SND_SET_WINDOW(ds, window); }
+long plat_soundSetWindow(void *ds, void *window) { return SND_SET_WINDOW(ds, g_platHostWindow ? g_platHostWindow : window); }
 long plat_soundCreateBuffer(void *ds, void *desc, void **buffer) { return SND_CREATE_BUFFER(ds, desc, buffer); }
 long plat_soundDuplicate(void *ds, void *buffer, void **copy) { return SND_DUPLICATE(ds, buffer, copy); }
 u32 plat_soundRelease(void *object) { return SND_RELEASE(object); }
@@ -30,16 +40,36 @@ u32 plat_musicTime(void *s, u32 *time) { return MUS_TIME(s, time); }
 u32 plat_musicSeek(void *s, u32 low, u32 high) { return MUS_SEEK(s, low, high); }
 long plat_musicRelease(void *s) { return MUS_RELEASE(s); }
 
-long plat_inputCreate(void *instance, void **input) { return IN_CREATE(instance, input); }
-long plat_inputCreateKeyboard(void *di, void **keyboard) { return IN_CREATE_KEYBOARD(di, keyboard); }
-long plat_inputCreateMouse(void *di, void **mouse) { return IN_CREATE_MOUSE(di, mouse); }
-long plat_inputSetKeyboardFormat(void *k) { return IN_SET_KEYBOARD_FORMAT(k); }
-long plat_inputSetMouseFormat(void *m) { return IN_SET_MOUSE_FORMAT(m); }
-long plat_inputSetWindow(void *d, void *window, u32 mode) { return IN_SET_WINDOW(d, window, mode); }
-long plat_inputAcquire(void *d) { return IN_ACQUIRE(d); }
-long plat_inputUnacquire(void *d) { return IN_UNACQUIRE(d); }
-long plat_inputRead(void *d, u32 size, void *state) { return IN_READ(d, size, state); }
-long plat_inputRelease(void *object) { return IN_RELEASE(object); }
+long plat_inputCreate(void *instance, void **input) { if (g_platHostInput) { *input = HOST_DEVICE; return 0; } return IN_CREATE(instance, input); }
+long plat_inputCreateKeyboard(void *di, void **keyboard) { if (g_platHostInput) { *keyboard = HOST_DEVICE; return 0; } return IN_CREATE_KEYBOARD(di, keyboard); }
+long plat_inputCreateMouse(void *di, void **mouse) { if (g_platHostInput) { *mouse = HOST_DEVICE; return 0; } return IN_CREATE_MOUSE(di, mouse); }
+long plat_inputSetKeyboardFormat(void *k) { return g_platHostInput ? 0 : IN_SET_KEYBOARD_FORMAT(k); }
+long plat_inputSetMouseFormat(void *m) { return g_platHostInput ? 0 : IN_SET_MOUSE_FORMAT(m); }
+long plat_inputSetWindow(void *d, void *window, u32 mode) { return g_platHostInput ? 0 : IN_SET_WINDOW(d, window, mode); }
+long plat_inputAcquire(void *d) { return g_platHostInput ? 0 : IN_ACQUIRE(d); }
+long plat_inputUnacquire(void *d) { return g_platHostInput ? 0 : IN_UNACQUIRE(d); }
+long plat_inputRead(void *d, u32 size, void *state)
+{
+	if (!g_platHostInput)
+		return IN_READ(d, size, state);
+	if (size == 0x100) {   /* the keyboard: DIK codes, bit 7 held */
+		memcpy(state, g_platKeys, 0x100);
+		return 0;
+	}
+	if (size == 0x10) {    /* DIMOUSESTATE: movement x, y, wheel since the last read, 4 buttons */
+		long *m = (long *)state;
+		unsigned char *b = (unsigned char *)state + 12;
+		m[0] = g_platMouse[0];
+		m[1] = g_platMouse[1];
+		m[2] = g_platMouse[2];
+		g_platMouse[0] = g_platMouse[1] = g_platMouse[2] = 0;
+		for (int i = 0; i < 4; i++)
+			b[i] = g_platButtons >> i & 1 ? 0x80 : 0;
+		return 0;
+	}
+	return 0;
+}
+long plat_inputRelease(void *object) { return g_platHostInput || object == HOST_DEVICE ? 0 : IN_RELEASE(object); }
 /* network */
 long plat_netCreate(void **out) { return NET_CREATE(out); }
 long plat_netLobbyCreate(void **out) { return NET_LOBBY_CREATE(out); }
