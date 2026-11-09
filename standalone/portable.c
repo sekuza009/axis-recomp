@@ -174,6 +174,18 @@ static void place_data(void)
 	        "%lu of their old pages guarded\n", guarded, objects, pages);
 }
 
+/* an import's slot by name (glstate.c's layer) */
+static void **slot_by_name(const char *name)
+{
+#define IMPORT_SLOT_(n, d) { #n, IMP_##n },
+	static const struct { const char *name; DWORD slot; } k[] = { IMPORT_LIST(IMPORT_SLOT_) };
+#undef IMPORT_SLOT_
+	for (unsigned i = 0; i < sizeof k / sizeof k[0]; i++)
+		if (!strcmp(k[i].name, name))
+			return (void **)AT(k[i].slot);
+	return NULL;
+}
+
 /* 2. the imports, by name, into their slots in g_rdata */
 static void resolve_imports(void)
 {
@@ -292,6 +304,16 @@ int WINAPI WinMain(HINSTANCE inst, HINSTANCE prev, LPSTR cmd, int show)
 	platform_loadSettings();
 	axisnet_attach(inst, DLL_PROCESS_ATTACH, NULL);
 	fprintf(g_log, "network layer started\n");
+	{	/* AXIS_GLSTATE=1 / 2 (a check): the software GL state in front of the GL slots, glstate.c */
+		char v[8];
+		if (GetEnvironmentVariableA("AXIS_GLSTATE", v, sizeof v)) {
+			int glstate_install(void **(*slot)(const char *name), int mode, const char *dir);
+			char dir[MAX_PATH];
+			strcpy(dir, g_logPath);
+			*(strrchr(dir, '\\') + 1) = 0;
+			fprintf(g_log, "AXIS_GLSTATE=%s: %d GL calls layered (glstate.log)\n", v, glstate_install(slot_by_name, v[0] - '0', dir));
+		}
+	}
 	int n = 0;
 	const char *missing = crt_install(&n);
 	if (missing)

@@ -77,3 +77,16 @@ in Godot, then replaced piece by piece.
   `axis_exit` returns the code to the host, the game's exit list not run (as the original ended there).
   `axis_frame` runs no frame once stopped. The quit, profile and skirmish sessions with axis.dll: "the game quit
   (code 0): back to the host", the host then ending itself.
+- 2026-11-08, rendering seam, step 1 - the GL state the game reads back (standalone/glstate.c, AXIS_GLSTATE).
+  The game uses OpenGL's matrix stack as maths, not only for drawing: it reads the modelview matrix back for actor
+  body matrices, collision, weapons' aiming (gluLookAt) and the view volume (16 call sites), and asks for the
+  projection, viewport and fog. A platform without OpenGL must answer those itself; glstate.c keeps that state in
+  software (matrix stacks, gluLookAt / gluPerspective / gluOrtho2D, viewport, fog), in front of the GL slots.
+  AXIS_GLSTATE=1 compares every answer with the driver's (glstate.log); =2 gives the game the software answers.
+  Measured over a skirmish (NVIDIA RTX 3080, driver 617.42): projection, viewport and fog exact in every query;
+  modelview 70% bit-exact (1.75 of 2.52 million), the rest within ~1e-7 relative. The driver's rotation: sine and
+  cosine in double from the angle times pi/180 held as a float (found from the logged calls, tools/glprobe); axis-
+  aligned unit rotations built directly (exact); other axes normalised with an approximate reciprocal square root
+  close to - but not exactly - the 0x5f3759df trick with two Newton steps (tools/glprobe/fitc.c). Not pursued
+  further: the original game's own maths already depends on the player's GPU driver in those last bits (an AMD or
+  Intel driver rounds differently), so a port only has to stay that close.

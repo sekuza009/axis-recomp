@@ -50,7 +50,8 @@ if [ -n "$PORTABLE" ]; then
 	python tools/mkimportlist.py --thunks build/plat_imports.s > /dev/null
 	$CC -c -o build/plat_imports.o build/plat_imports.s
 	$CC -c -O2 -Wall $NDEF -o build/standalone_main$NSUF.o standalone/portable.c
-	LOADER="build/standalone_main$NSUF.o build/standalone_crt$NSUF.o build/plat_imports.o"
+	$CC -c -O2 -Wall -msse2 -mfpmath=sse -o build/standalone_glstate.o standalone/glstate.c   # (SSE float maths, as drivers)
+	LOADER="build/standalone_main$NSUF.o build/standalone_crt$NSUF.o build/plat_imports.o build/standalone_glstate.o"
 else
 	$CC -c -O2 -Wall $NDEF -o build/standalone_main$NSUF.o standalone/main.c
 	LOADER="build/standalone_main$NSUF.o build/standalone_crt$NSUF.o build/gamedata.o build/standalone_hooks.o"
