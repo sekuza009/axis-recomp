@@ -556,11 +556,11 @@ u32 STDCALL (game_WinMain)(void *inst, void *prev, const char *cmd, int show)
 	void *launcher = FindWindowA((const char *)STR(0x4b2834, "#32770"), (const char *)STR(0x4b2854, "\364\270\315\366\361\375\340\362\312\245\341\334\320\357"));
 	if (launcher) {
 		PostMessageA(launcher, 0x12, 0, 0);   /* WM_QUIT */
-		Sleep(500);
+		TIME_SLEEP(500);
 	}
-	GetSystemTime((void *)OBJ(g_clockLastTime));              /* GetSystemTime */
-	g_startTicks = timeGetTime();       /* timeGetTime */
-	Sleep(2000);
+	TIME_UTC((void *)OBJ(g_clockLastTime));              /* GetSystemTime */
+	g_startTicks = TIME_MS();       /* timeGetTime */
+	TIME_SLEEP(2000);
 	if (FindWindowA((const char *)STR(0x4b0714, "AXIS"), NULL)) {
 		MessageBoxA(NULL, (const char *)STR(0x4b2a00, "This application is already run!!"), (const char *)STR(0x4b2554, "Warning"), 0);
 		return 0;
@@ -672,7 +672,7 @@ void axis_ended(u32 code);
 	u16 now[8];
 	int rect[4];
 	u32 paint[0x10];
-	GetLocalTime(now);   /* GetLocalTime (unused) */
+	TIME_LOCAL(now);   /* GetLocalTime (unused) */
 	switch (msg) {
 	case 1:   /* WM_CREATE */
 		g_windowDC = GetDC(wnd);   /* GetDC */

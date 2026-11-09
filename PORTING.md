@@ -144,3 +144,10 @@ most of them OpenGL (recorded for the host, glrec.c). The rest, by group, with t
   frame size from it (g_glrecFrameSize). AXIS_REALWINDOW=1 keeps the hidden window. Checked in Godot: start-up,
   menus, a skirmish, the timers at 30 / 60 s, the ending (close, destroy, the movie, Esc, back to the host), and the
   two-copy network session (joined by a typed IP, a team match, chat sent). Master unchanged (objcmp: 0 differ).
+- 2026-11-09, stage 3 second pass, time: plat.h TIME_COUNTER / TIME_FREQUENCY / TIME_MS / TIME_TICKS / TIME_SLEEP /
+  TIME_LOCAL / TIME_UTC at every time call (timer.c's game clock, the clock check, the start-up and lobby sleeps,
+  the network's three-second waits, the error log's stamp); master expands them to the original calls (objcmp:
+  0 differ). plat/win32/time.c makes the same calls through the import slots (AXIS_IMPORTLOG: the same counts);
+  plat/posix/time.c is the Linux / macOS version (CLOCK_MONOTONIC in nanoseconds - the game clock shifts it to its
+  2 MHz as it does Windows' counter - nanosleep, localtime_r / gmtime_r into SYSTEMTIME's fields), compile-checked
+  for x86 Linux and x86-64 macOS (zig cc). Checked in Godot: start-up, menus, a skirmish at 120 fps, the ending.

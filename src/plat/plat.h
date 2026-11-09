@@ -131,6 +131,35 @@ long plat_inputRelease(void *object);
 #endif
 
 
+/* ---- time: the high-resolution counter and its frequency (the game clock, timer.c), milliseconds (timeGetTime: the
+   clock check; GetTickCount: the network's waits), sleeping, and the date and time (SYSTEMTIME's eight 16-bit
+   fields: year, month, weekday, day, hour, minute, second, milliseconds - local, or UTC) */
+#ifdef AXIS_PORTABLE
+int plat_timeCounter(void *count);       /* 64-bit count; nonzero = success */
+int plat_timeFrequency(void *frequency); /* 64-bit counts per second; nonzero = success */
+u32 plat_timeMs(void);
+u32 plat_timeTicks(void);
+void plat_sleep(u32 ms);
+void plat_timeLocal(void *systemTime);
+void plat_timeUTC(void *systemTime);
+#define TIME_COUNTER(count) plat_timeCounter(count)
+#define TIME_FREQUENCY(frequency) plat_timeFrequency(frequency)
+#define TIME_MS() plat_timeMs()
+#define TIME_TICKS() plat_timeTicks()
+#define TIME_SLEEP(ms) plat_sleep(ms)
+#define TIME_LOCAL(st) plat_timeLocal(st)
+#define TIME_UTC(st) plat_timeUTC(st)
+#else
+#define TIME_COUNTER(count) IMPORT_FN(QueryPerformanceCounter, int, void *)(count)
+#define TIME_FREQUENCY(frequency) IMPORT_FN(QueryPerformanceFrequency, int, void *)(frequency)
+#define TIME_MS() IMPORT_FN(timeGetTime, u32, void)()
+#define TIME_TICKS() IMPORT_FN(GetTickCount, u32, void)()
+#define TIME_SLEEP(ms) IMPORT_FN(Sleep, void, u32)(ms)
+#define TIME_LOCAL(st) IMPORT_FN(GetLocalTime, void, void *)(st)
+#define TIME_UTC(st) IMPORT_FN(GetSystemTime, void, void *)(st)
+#endif
+
+
 /* ---- the game's window's messages delivered each frame when a host runs it without a window (standalone/host_window.c) */
 #ifdef AXIS_PORTABLE
 extern void (*g_platPump)(void);
