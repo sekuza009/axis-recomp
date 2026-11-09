@@ -13,9 +13,12 @@ syms = re.findall(r'extern void FN_(\w+)\(void\) __asm__\("_(\w+?)(?:@\d+)?"\);'
 addrs = dict((n, int(a, 16)) for n, a in re.findall(r'#define FNADDR_(\w+) (0x[0-9a-f]+)', open(os.path.join(R, 'src', 'fn_addrs.h')).read()))
 out = ['/* fn_syms64.h (tools/mkfn64.py): the rebuilt functions by symbol, for the 64-bit build (AXIS_64) */',
        '#define FN64_STR_(x) #x', '#define FN64_STR(x) FN64_STR_(x)']
+# (names the portable build defines under another: WinMain's start-up is the API's axis_init, game_axis_init in the
+# 64-bit build - src/app/win32.c, src/axis_api.h)
+SYMBOL = {'game_WinMain': 'game_axis_init'}
 for n, s in syms:
     assert n == s, (n, s)
-    out.append('extern void FN_%s(void) __asm__(FN64_STR(__USER_LABEL_PREFIX__) "%s");' % (n, n))
+    out.append('extern void FN_%s(void) __asm__(FN64_STR(__USER_LABEL_PREFIX__) "%s");' % (n, SYMBOL.get(n, n)))
 open(os.path.join(R, 'build', 'fn_syms64.h'), 'w', newline='\n').write('\n'.join(out) + '\n')
 
 table = {}

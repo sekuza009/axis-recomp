@@ -148,7 +148,7 @@ void THISCALL (shape_bindPartTextures)(u8 *shape)
 	for (int i = 0; i < md->partCount; i++) {
 		int id = (AP(ShapePart, (md)->parts) + i)->texture;
 		if (id >= 0)
-			tex_bind(AP(TextureManager, g_textures)->banks[id / 512], id % 512);
+			tex_bind(AP(void, AP(TextureManager, g_textures)->banks[id / 512]), id % 512);
 	}
 	glDisable(GL_TEXTURE_2D);
 }

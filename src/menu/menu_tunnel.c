@@ -7,7 +7,7 @@
 
 static void bind(int texture)
 {
-	tex_bind(AP(TextureManager, g_textures)->banks[texture / 512], texture % 512);
+	tex_bind(AP(void, AP(TextureManager, g_textures)->banks[texture / 512]), texture % 512);
 }
 
 /* the last ring of the chain and the number of rings */

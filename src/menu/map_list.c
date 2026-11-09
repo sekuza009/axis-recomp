@@ -148,7 +148,7 @@ static void map_buttons(int hovered, int first, int y, int label)
 	for (int k = 0; k < 2; k++) {
 		glEnable(GL_TEXTURE_2D);
 		int texture = g_buttonTexture;
-		tex_bind(AP(TextureManager, g_textures)->banks[texture / 512], texture % 512);
+		tex_bind(AP(void, AP(TextureManager, g_textures)->banks[texture / 512]), texture % 512);
 		int x = 0xaa + k * 0xa0;
 		if (hovered == first + k) {
 			glColor4f(1.0f, 1.0f, 1.0f, 1.0f);
@@ -202,7 +202,7 @@ void (mapList_draw)(void)
 	menu_drawLine(0x96, 0x14f, 0x1ea, 0x14f);
 	glEnable(GL_TEXTURE_2D);
 	int texture = g_buttonTexture;
-	tex_bind(AP(TextureManager, g_textures)->banks[texture / 512], texture % 512);
+	tex_bind(AP(void, AP(TextureManager, g_textures)->banks[texture / 512]), texture % 512);
 	glColor4f(1.0f, 1.0f, 1.0f, 1.0f);
 	menu_drawUpArrow(0x1c2, 0x96, 0x1e0, 0xca, hovered == 0x14);
 	menu_drawDownArrow(0x1c2, 0xdc, 0x1e0, 0x110, hovered != 0x14 && hovered == 0x15);

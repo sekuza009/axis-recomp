@@ -20,7 +20,7 @@ static void white_text(void)
 
 static void bind(int texture)
 {
-	tex_bind(AP(TextureManager, g_textures)->banks[texture / 512], texture % 512);
+	tex_bind(AP(void, AP(TextureManager, g_textures)->banks[texture / 512]), texture % 512);
 }
 
 /* "<label> : <value>" at y: the value a number and its unit, or the text none when it is 0 */

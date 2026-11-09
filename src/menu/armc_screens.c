@@ -131,7 +131,7 @@ void (armc_drawColourEditor)(void)
 	/* the slots */
 	glEnable(GL_TEXTURE_2D);
 	int texture = g_buttonTexture;
-	tex_bind(AP(TextureManager, g_textures)->banks[texture / 512], texture % 512);
+	tex_bind(AP(void, AP(TextureManager, g_textures)->banks[texture / 512]), texture % 512);
 	glColor4f(1.0f, 1.0f, 1.0f, 1.0f);
 	for (int k = 0; k < 6; k++) {
 		glColor4f(1.0f, 1.0f, 1.0f, g_slot == k ? 0.8f : 0.4f);
@@ -156,7 +156,7 @@ void (armc_drawColourEditor)(void)
 	/* the sliders' tracks: the hue's rainbow, saturation and value plain */
 	glEnable(GL_TEXTURE_2D);
 	texture = g_buttonTexture;
-	tex_bind(AP(TextureManager, g_textures)->banks[texture / 512], texture % 512);
+	tex_bind(AP(void, AP(TextureManager, g_textures)->banks[texture / 512]), texture % 512);
 	glColor4f(1.0f, 1.0f, 1.0f, 1.0f);
 	glBegin(GL_QUADS);
 	for (int k = 0; k < 3; k++)
@@ -204,7 +204,7 @@ void (armc_drawColourEditor)(void)
 	}
 	glEnable(GL_TEXTURE_2D);
 	texture = g_buttonTexture;
-	tex_bind(AP(TextureManager, g_textures)->banks[texture / 512], texture % 512);
+	tex_bind(AP(void, AP(TextureManager, g_textures)->banks[texture / 512]), texture % 512);
 	rotate_box();
 }
 
@@ -214,7 +214,7 @@ void (armc_drawColourEditor)(void)
 
 static void bind_texture(int texture)
 {
-	tex_bind(AP(TextureManager, g_textures)->banks[texture / 512], texture % 512);
+	tex_bind(AP(void, AP(TextureManager, g_textures)->banks[texture / 512]), texture % 512);
 }
 
 /* a texture's whole quad on (x0, y0) .. (x1, y1) */

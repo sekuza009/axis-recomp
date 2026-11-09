@@ -387,15 +387,16 @@ int (app_init)(void *inst, int show)
 	if (!g_launchedForNetGame && !files_present())
 		return 0;
 
-	struct { u32 style; u32 proc; int cls_extra, wnd_extra; void *inst, *icon, *cursor, *brush; const char *menu, *name; } wc;
+	struct { u32 style; u32 proc; int cls_extra, wnd_extra; APTR(void) inst; APTR(void) icon; APTR(void) cursor; APTR(void) brush;
+	         APTR(const char) menu; APTR(const char) name; } wc;
 	wc.style = 0;
 	wc.proc = FN(game_wndProc);   /* WndProc */
 	wc.cls_extra = wc.wnd_extra = 0;
-	wc.inst = inst;
-	wc.icon = LoadIconA(inst, NULL);   /* LoadIconA */
-	wc.cursor = LoadCursorA(NULL, 0x7f00);   /* LoadCursorA(IDC_ARROW) */
-	wc.brush = GetStockObject(4);   /* GetStockObject(BLACK_BRUSH) */
-	wc.menu = wc.name = AP(const char, STR(0x4b0714, "AXIS"));
+	wc.inst = AREF(inst);
+	wc.icon = AREF(LoadIconA(inst, NULL));   /* LoadIconA */
+	wc.cursor = AREF(LoadCursorA(NULL, 0x7f00));   /* LoadCursorA(IDC_ARROW) */
+	wc.brush = AREF(GetStockObject(4));   /* GetStockObject(BLACK_BRUSH) */
+	wc.menu = wc.name = AREF(AP(const char, STR(0x4b0714, "AXIS")));
 	int extended;   /* (GetVersion asked up to three times, as the original does) */
 	if (GetVersion() < 0x80000000)
 		extended = 0;

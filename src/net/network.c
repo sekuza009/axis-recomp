@@ -1437,6 +1437,11 @@ void (net_recv)(void)
    out as the stack had them. A C local cannot sit there (the saved registers come first), so each sender is an
    entry stub that reserves those bytes the same way and hands them to the C body (thiscall: ecx kept, the
    function's own argument passed on, the packet last). The body's eax is passed back. */
+#ifdef AXIS_64   /* (the 64-bit build: the packet a local, cleared - no x86 stack picture to keep) */
+#define PACKET_ENTRY(name, nargs) PACKET_ENTRY_##nargs(name)
+#define PACKET_ENTRY_0(name) u32 THISCALL (name)(u8 *s) { u8 packet[0x40] = { 0 }; name##_body(s, packet); return 0; }
+#define PACKET_ENTRY_1(name) u32 THISCALL (name)(u8 *s, int p) { u8 packet[0x40] = { 0 }; name##_body(s, p, packet); return 0; }
+#else
 #define PACKET_ENTRY(name, nargs) \
 	__asm__(".text\n.globl _" #name "\n_" #name ":\n" \
 	        "\tsubl $0x40, %esp\n"                      /* the packet: [entry - 0x40, entry), left as it was */ \
@@ -1445,6 +1450,7 @@ void (net_recv)(void)
 	        "\tcalll _" #name "_body\n" \
 	        "\taddl $0x40, %esp\n" \
 	        "\tretl $(" #nargs " * 4)\n")
+#endif
 
 /* a match packet (0x40 bytes) sent and counted (packetsSent); while recording (recording 1) the frame (recordTime),
    the camera's actor (localPlayer), the packet's size and the packet written to the recording (replayFile) */
@@ -1825,6 +1831,13 @@ PACKET_ENTRY(net_sendGamePacket, 1);
 
 /* thiscall fn(self, a1 .. a8), returning what the callee leaves in ecx (the original pushes registers whose upper
    bytes are the callee's leftovers) */
+#ifdef AXIS_64   /* (the 64-bit build: no leftover register to read - the colours' upper bytes are 0 there) */
+static u32 thiscall8_ecx(u32 fn, void *self, u32 a1, u32 a2, u32 a3, u32 a4, u32 a5, u32 a6, u32 a7, u32 a8)
+{
+	FNP(u32 (THISCALL *)(void *, u32, u32, u32, u32, u32, u32, u32, u32), fn)(self, a1, a2, a3, a4, a5, a6, a7, a8);
+	return 0;
+}
+#else
 __attribute__((naked)) static u32 thiscall8_ecx(u32 fn, void *self, u32 a1, u32 a2, u32 a3, u32 a4, u32 a5, u32 a6, u32 a7, u32 a8)
 {
 	__asm__("push %ebx\n\t"
@@ -1837,6 +1850,7 @@ __attribute__((naked)) static u32 thiscall8_ecx(u32 fn, void *self, u32 a1, u32 
 	        "pop %ebx\n\t"
 	        "ret");
 }
+#endif
 
 /* x 10 (a packed position) */
 static float tens(int v) { return f32(fmul_m((long double)v, &k_10f)); }

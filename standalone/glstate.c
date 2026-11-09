@@ -11,7 +11,11 @@
 
    Compiled with SSE float maths (standalone/build.sh), as drivers compute, not the game's x87. The formulas are
    the usual implementations' (Mesa's matrix code; the SGI GLU behind Windows' glu32). */
+#if defined(_WIN32)
 #include <windows.h>
+#else
+#include "shim64.h"   /* (the 64-bit build off Windows) */
+#endif
 #include <math.h>
 #include <stdio.h>
 #include <string.h>

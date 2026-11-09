@@ -213,8 +213,12 @@ void THISCALL (quat_fromMatrix)(float *q, const float *m)
 /* the game's CRT acos (_CIacos: the argument and result on the FPU stack) */
 static X crt_acos(X x)
 {
+#ifdef AXIS_64   /* (VC6's _CIacos: atan2(sqrt(1 - x * x), x) with fsqrt / fpatan on the x87, done here) */
+	return x87_fpatan(x87_fsqrt(1 - x * x), x);
+#else
 	__asm__ volatile("call *%1" : "+t"(x) : "r"(CRT_FN(CIacos)) : "eax", "ecx", "edx", "memory");
 	return x;
+#endif
 }
 
 /* 0x47d260: out = (angle, axis) of the quaternion q = (x, y, z, w): the angle -2 acos(w) (0 for w >= 1, -2 pi for

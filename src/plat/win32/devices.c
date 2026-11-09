@@ -4,7 +4,7 @@
    may hook). */
 #include "../../game.h"
 #include <string.h>
-#ifdef AXIS_PORTABLE
+#if defined(AXIS_PORTABLE) && !defined(AXIS_64)   /* (the 64-bit build: plat/host/devices.c) */
 #undef AXIS_PORTABLE   /* (plat.h's master definitions: the original's calls) */
 #include "../plat.h"
 #define AXIS_PORTABLE

@@ -9,9 +9,9 @@ typedef struct {
 	u32 flags;
 	u8 _04[0x48];
 	int count;
-	const float *verts;     /* +0x50 */
-	const float *normals;   /* +0x54 */
-	const u8 *base;         /* +0x58 */
+	APTR(const float) verts;     /* +0x50 */
+	APTR(const float) normals;   /* +0x54 */
+	APTR(const u8) base;         /* +0x58 */
 	u8 _5c[0xc];
 	float min[3], max[3];   /* +0x68 */
 } Part;
@@ -104,8 +104,8 @@ void (shape_getShadingColorBufferBy)(u8 *out, int first, const Part *part, const
 			} else
 				memcpy(L, l->dir, sizeof L);
 			for (int j = 0; j < part->count; j++) {
-				const float *n = part->normals + j * 3;
-				const u8 *b = part->base + j * 4;
+				const float *n = AP(const float, part->normals + j * 3);
+				const u8 *b = AP(const u8, part->base + j * 4);
 				int k = facing((MUL(&L[2], &n[2]) + MUL(&L[1], &n[1])) + MUL(&L[0], &n[0]));
 				put(out + j * 4, first == 1, mul(mul(b[0], k), R) >> 16, mul(mul(b[1], k), G) >> 16, mul(mul(b[2], k), B) >> 16);
 			}
@@ -134,8 +134,8 @@ void (shape_getShadingColorBufferBy)(u8 *out, int first, const Part *part, const
 			float r2 = f32(rr), inner = f32(fmul_m(rr, &k_0_2f));
 			float range = f32(FSUB(r2, inner));
 			for (int j = 0; j < part->count; j++) {
-				const u8 *b = part->base + j * 4;
-				long double dd = offset(part->verts + j * 3, p, d);
+				const u8 *b = AP(const u8, part->base + j * 4);
+				long double dd = offset(AP(const float, part->verts + j * 3), p, d);
 				float d2 = f32(dd);
 				if (dd >= r2) {   /* out of reach */
 					if (first == 1)
@@ -169,9 +169,9 @@ void (shape_getShadingColorBufferBy)(u8 *out, int first, const Part *part, const
 			long double rr = MUL(&r, &r);
 			float r2 = f32(rr), inner = f32(fmul_m(rr, &k_0_04f));
 			for (int j = 0; j < part->count; j++) {
-				const float *n = part->normals + j * 3;
-				const u8 *b = part->base + j * 4;
-				long double dd = offset(part->verts + j * 3, p, d);
+				const float *n = AP(const float, part->normals + j * 3);
+				const u8 *b = AP(const u8, part->base + j * 4);
+				long double dd = offset(AP(const float, part->verts + j * 3), p, d);
 				float d2 = f32(dd);
 				if (dd >= r2) {
 					if (first == 1)

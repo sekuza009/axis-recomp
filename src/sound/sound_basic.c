@@ -14,7 +14,7 @@ typedef struct {
 	i32 pans[8];         /* and its pan (SetPan) */
 } Sound;                 /* 100 bytes */
 
-#define g_menuSounds (AP(Sound *const, OBJ(g_menuSoundBuffers)))
+#define g_menuSounds (AP(const APTR(Sound), OBJ(g_menuSoundBuffers)))
 
 /* 0x467d70: play the sound's next buffer; the turn moves on (0 .. 7) */
 void (sound_playNext)(Sound *sound)
@@ -45,8 +45,8 @@ void (sound_playMenu)(int id)
 {
 	if (g_soundOn != 1)
 		return;
-	sound_setNextVolume(g_menuSounds[id], g_menuVolume);
-	sound_playNext(g_menuSounds[id]);
+	sound_setNextVolume(AP(Sound, g_menuSounds[id]), g_menuVolume);
+	sound_playNext(AP(Sound, g_menuSounds[id]));
 }
 
 /* 0x457310: the music graph released, then COM let go */
@@ -257,7 +257,7 @@ typedef struct __attribute__((packed)) {
 	u32 samplesPerSec, avgBytesPerSec;
 	u16 blockAlign, bitsPerSample;
 	u32 size, flags, bufferBytes, reserved;   /* DSBUFFERDESC */
-	void *format;
+	APTR(void) format;
 	u8 algorithm3D[16];
 } WaveDesc;
 
@@ -294,7 +294,7 @@ Sound *(sound_loadWav)(const char *name)
 	desc.size = 0x24;
 	desc.flags = 0xe2;
 	desc.bufferBytes = size;
-	desc.format = &desc;
+	desc.format = AREF(&desc);
 	u8 *data = operator_new(size);
 	Sound *sound = operator_new(100);
 	FILE_READ(file, data, size, &done);
@@ -332,7 +332,7 @@ int (sound_init)(void *hwnd)
 	if (SND_SET_WINDOW(ds, hwnd))
 		return 0;
 	struct { u16 format, channels; u32 rate, bytesPerSecond; u16 blockAlign, bits, extra; } wave;   /* WAVEFORMATEX */
-	struct { u32 size, flags, bytes, reserved; void *format; u8 algorithm[16]; } desc;              /* DSBUFFERDESC */
+	struct { u32 size, flags, bytes, reserved; APTR(void) format; u8 algorithm[16]; } desc;              /* DSBUFFERDESC */
 	memset(&desc, 0, sizeof desc);
 	desc.size = 0x24;
 	desc.flags = 1;   /* DSBCAPS_PRIMARYBUFFER */

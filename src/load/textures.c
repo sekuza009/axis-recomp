@@ -88,7 +88,7 @@ void *THISCALL (tex_getItemFileBy)(TextureBank *bank, const char *name)
 int THISCALL (tex_getIdByName)(TextureManager *manager, const char *name, u32 flags, u32 h1, u32 s1, u32 v1, u32 h2, u32 s2, u32 v2)
 {
 	for (int k = 0; k < 6; k++) {
-		void *bank = manager->banks[k];
+		void *bank = AP(void, manager->banks[k]);
 		if (!bank)
 			continue;
 		int i = tex_getIdBy(bank, AV(name), flags, h1, s1, v1, h2, s2, v2);
@@ -187,7 +187,7 @@ void THISCALL (TextureManager_setBanks)(TextureManager *manager, u8 *bank64x64, 
 			sys_fatalErrorN(AP(char, OBJ(g_logTextureManager)), AP(const char, RELOC(sizes[k][2])), mg->width, mg->height);
 	}
 	for (int k = 0; k < 6; k++)
-		manager->banks[k] = banks[k];
+		manager->banks[k] = AREF(banks[k]);
 }
 
 /* 0x456520 (thiscall on a texture bank): its pixels (image, width x height) uploaded to GL texture id: wrapped

@@ -202,7 +202,7 @@ void THISCALL (tex_markMaterialChanged)(TextureBank *self, int m)
 void THISCALL (tex_clearSetCounters)(TextureManager *self)
 {
 	for (int k = 1; k <= 6; k++) {
-		TextureBank *o = (TextureBank *)self->banks[k - 1];
+		TextureBank *o = AP(TextureBank, self->banks[k - 1]);
 		o->loadCount = 0;
 		o->clearedCd13c = 0;
 		o->clearedCd140 = 0;

@@ -455,9 +455,13 @@ int (account_sendChange)(void)
    after it, compiled code may */
 static u32 call_keeping_ebp(u32 address)
 {
+#ifdef AXIS_64   /* (a plain call: no x86 frame register to keep) */
+	return FNP(u32 (CDECL *)(void), address)();
+#else
 	u32 r;
 	__asm__ volatile("pushl %%ebp\n\tcall *%1\n\tpopl %%ebp" : "=a"(r) : "r"(address) : "ecx", "edx", "memory");
 	return r;
+#endif
 }
 
 /* 0x43ede0: the ranking page. A request pending (g_rankingRequestPending) for sort column g_rankingSort: columns 0 .. 2 send their
@@ -755,7 +759,7 @@ static u32 map_preview_box(const int *panel, u32 rotation, u32 reload)
 	} else {
 		glEnable(GL_TEXTURE_2D);
 		int texture = g_mapPreviewTexture;
-		tex_bind(AP(TextureManager, g_textures)->banks[texture / 512], texture % 512);
+		tex_bind(AP(void, AP(TextureManager, g_textures)->banks[texture / 512]), texture % 512);
 		glColor4f(1.0f, 1.0f, 1.0f, 1.0f);
 		glBegin(7);   /* GL_QUADS */
 		glTexCoord2f(0.0f, 0.0f);

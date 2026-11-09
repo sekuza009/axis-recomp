@@ -213,10 +213,10 @@ u32 (cfg_writeKeyBindings)(void *f)
 		{ STR(0x4b1c00, "set_key help1 "), 62 }, { STR(0x4b1bf0, "set_key help2 "), 63 },   /* help */
 	};
 	const int *binding = AP(const int, ADDR(g_keyForward));
-	const char *const *key_name = AP(const char *const, OBJ(g_keyNames));
+	const APTR(const char) *key_name = AP(const APTR(const char), OBJ(g_keyNames));
 	for (int k = 0; k < 64; k++) {
 		FPUTS(keys[k].line);
-		FPUTS(key_name[binding[keys[k].binding]]);
+		FPUTS(AP(const char, key_name[binding[keys[k].binding]]));
 		FPUTS(STR(0x4b182c, "\n"));
 	}
 	FPUTS(STR(0x4b1bd8, "set_mouse convertmouse "));
@@ -1224,7 +1224,7 @@ static int read_binding(int line)
    (ON; g_mouseInvert, g_mouseSmooth), the sensitivity and the crosshairs (g_mouseSensitivity, g_crosshairSetting); then one more line */
 void (cfg_readKeyBindings)(void *f)
 {
-	const char *const *key_name = AP(const char *const, OBJ(g_keyNames));
+	const APTR(const char) *key_name = AP(const APTR(const char), OBJ(g_keyNames));
 	CfgBuf b;
 	__asm__("" : "=m"(b));
 	for (int n = 0; n < 0x44; n++) {
@@ -1235,7 +1235,7 @@ void (cfg_readKeyBindings)(void *f)
 			GAME_VAR(int, OBJ(g_mouseSettings) + 8 + (n - 0x42) * 4) = crt_atoi(b.value);   /* g_mouseSettings[2 + n - 0x42]: sensitivity, crosshair */
 		else
 			for (int k = 0; k < 256; k++)
-				if (!strcmp(b.value, key_name[k]))
+				if (!strcmp(b.value, AP(const char, key_name[k])))
 					g_controls[read_binding(n)] = k;
 	}
 	crt_fgets(b.line, 0x50, f);

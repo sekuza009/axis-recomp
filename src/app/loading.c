@@ -86,7 +86,7 @@ void (loading_draw)(u32 scroll)
 	gfx_setMatchProjection_bits(1, 0x3f800000);   /* gfx_setMatchProjection(1, 1.0) */
 	glEnable(GL_TEXTURE_2D);
 	int texture = g_loadTexture;
-	tex_bind(AP(TextureManager, g_textures)->banks[texture / 512], texture % 512);
+	tex_bind(AP(void, AP(TextureManager, g_textures)->banks[texture / 512]), texture % 512);
 	glColor4f(0.5f, 0.5f, 1.0f, 0.5f);
 	float far = f32(fadd_m(fld_m((const float *)&scroll), AP(const float, ADDR(k_10f))));   /* scroll + 10 */
 	for (int angle = 0, j = 0; angle < 0xfd20; angle += 0xe10, j++) {

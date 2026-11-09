@@ -113,7 +113,7 @@ void fix_hudVertex(int x, int y);
 #define g_flareTextures (AP(const int, (OBJ(g_spiralTextures) + 0x14)))     /* flare k's texture is g_flareTextures[-k] */
 /* ---- textures ---- */
 typedef void (*Cleanup)(void);   /* a fatal error's clean-up before exit(1) (g_errorCleanupHook) */
-typedef struct { u32 vtable; void *banks[6]; i32 count; } TextureManager;   /* the game's TextureManager (0x83a5e0): six texture banks (the game's class Texture, one per size: TextureBank); a texture id names banks[id / 512], slot id % 512 */
+typedef struct { u32 vtable; APTR(void) banks[6]; i32 count; } TextureManager;   /* the game's TextureManager (0x83a5e0): six texture banks (the game's class Texture, one per size: TextureBank); a texture id names banks[id / 512], slot id % 512 */
 #define tex_bind(manager, slot) CALL_THISFN(tex_bind, void, void *, int)(manager, slot)
 #define gfx_getWidth() CALL_FN(gfx_getWidth, int, void)()
 #define gfx_getHeight() CALL_FN(gfx_getHeight, int, void)()

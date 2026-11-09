@@ -22,7 +22,7 @@ static void draw_logo(int first)
 	glEnable(GL_TEXTURE_2D);
 	glColor4f(1.0f, 1.0f, 1.0f, 1.0f);
 	int texture = g_logoTexture;
-	tex_bind(AP(TextureManager, g_textures)->banks[texture / 512], texture % 512);
+	tex_bind(AP(void, AP(TextureManager, g_textures)->banks[texture / 512]), texture % 512);
 	glBegin(GL_QUADS);
 	glTexCoord2d(0.0, 0.0);
 	menu_vertex(0xa0, 0x3c);
@@ -159,7 +159,7 @@ void (replaySelect_drawDialog)(void)
 	menu_drawRect(X0 + 0x10, Y0 + 0x28, X1 - 0x40, Y0 + 0xf5, 0);
 	glEnable(GL_TEXTURE_2D);
 	int texture = g_buttonTexture;
-	tex_bind(AP(TextureManager, g_textures)->banks[texture / 512], texture % 512);
+	tex_bind(AP(void, AP(TextureManager, g_textures)->banks[texture / 512]), texture % 512);
 	glColor4f(1.0f, 1.0f, 1.0f, 1.0f);
 	menu_drawUpArrow(X1 - 0x32, Y0 + 0x48, X1 - 0x12, Y0 + 0x88, hovered == 0);
 	menu_drawDownArrow(X1 - 0x32, Y0 + 0xac, X1 - 0x12, Y0 + 0xec, hovered != 0 && hovered == 1);
@@ -180,7 +180,7 @@ void (replaySelect_drawDialog)(void)
 		for (int k = 0; k < 2; k++) {
 			glEnable(GL_TEXTURE_2D);
 			texture = g_buttonTexture;
-			tex_bind(AP(TextureManager, g_textures)->banks[texture / 512], texture % 512);
+			tex_bind(AP(void, AP(TextureManager, g_textures)->banks[texture / 512]), texture % 512);
 			int lit = hovered == 4 + row * 2 + k;
 			glColor4f(1.0f, 1.0f, 1.0f, lit ? 1.0f : 0.4f);
 			int x = X0 + k * 0xa0, y = Y1 - 0x5c + row * 0x28;

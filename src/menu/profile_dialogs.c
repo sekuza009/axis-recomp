@@ -73,7 +73,7 @@ u32 (profile_drawNameTakenMessage)(void)
 	text_drawCentredLines16(X0, Y0 + 0x20, X1, AP(const char, MSG(126, "NAME ALREADY REGISTRED")));
 	glEnable(GL_TEXTURE_2D);
 	int texture = g_buttonTexture;
-	tex_bind(AP(TextureManager, g_textures)->banks[texture / 512], texture % 512);
+	tex_bind(AP(void, AP(TextureManager, g_textures)->banks[texture / 512]), texture % 512);
 	glColor4f(1.0f, 1.0f, 1.0f, 1.0f);
 	menu_drawWideButton(buttonX, Y0 + 0x50, buttonX + 0x60, Y0 + 0x70, 1);
 	set_colour_bits(g_textColour, colour[0], colour[1], colour[2], colour[3]);
@@ -109,7 +109,7 @@ static u32 two_buttons(const TwoButtons *d)
 	for (int k = 0; k < 2; k++) {
 		glEnable(GL_TEXTURE_2D);
 		int texture = g_buttonTexture;
-		tex_bind(AP(TextureManager, g_textures)->banks[texture / 512], texture % 512);
+		tex_bind(AP(void, AP(TextureManager, g_textures)->banks[texture / 512]), texture % 512);
 		glColor4f(1.0f, 1.0f, 1.0f, 1.0f);
 		const u32 *colour = k == hovered ? panel : dim;
 		glColor4f(1.0f, 1.0f, 1.0f, k == hovered ? 1.0f : 0.4f);
@@ -158,14 +158,14 @@ u32 (profile_drawNewDialog)(void)
 	text_draw16(X0 + 0x14, Y0 + 0x10, AP(const char, MSG(125, "REGISTRY PROFILE")));
 	glEnable(GL_TEXTURE_2D);
 	int texture = g_buttonTexture;
-	tex_bind(AP(TextureManager, g_textures)->banks[texture / 512], texture % 512);
+	tex_bind(AP(void, AP(TextureManager, g_textures)->banks[texture / 512]), texture % 512);
 	glColor4f(1.0f, 1.0f, 1.0f, 1.0f);
 	menu_drawLargeButton(X0 + 0x14, Y0 + 0x30, X1 - 0x14, Y0 + 0x50, 1);
 	for (int k = 0; k < 2; k++) {
 		int x = X0 + k * 0x78;
 		glEnable(GL_TEXTURE_2D);
 		texture = g_buttonTexture;
-		tex_bind(AP(TextureManager, g_textures)->banks[texture / 512], texture % 512);
+		tex_bind(AP(void, AP(TextureManager, g_textures)->banks[texture / 512]), texture % 512);
 		glColor4f(1.0f, 1.0f, 1.0f, 1.0f);
 		const u32 *colour = k == hovered ? panel : dim;
 		glColor4f(1.0f, 1.0f, 1.0f, k == hovered ? 1.0f : 0.4f);
@@ -243,14 +243,14 @@ void (profile_drawManagementWindow)(void)
 		}
 		glEnable(GL_TEXTURE_2D);
 		int texture = g_buttonTexture;
-		tex_bind(AP(TextureManager, g_textures)->banks[texture / 512], texture % 512);
+		tex_bind(AP(void, AP(TextureManager, g_textures)->banks[texture / 512]), texture % 512);
 		menu_drawWideButton(x + 0x28, Y1 - 0x30, x + 0x88, Y1 - 0x10, 1);
 		text_drawCentredLines16(x + 0x28, Y1 - 0x28, x + 0x88, AP(const char, (MSG(121, "$[0] NEW") + k * 0x80)));
 	}
 	profileList_drawNames();   /* the pilot list */
 	glEnable(GL_TEXTURE_2D);
 	int texture = g_buttonTexture;
-	tex_bind(AP(TextureManager, g_textures)->banks[texture / 512], texture % 512);
+	tex_bind(AP(void, AP(TextureManager, g_textures)->banks[texture / 512]), texture % 512);
 	glColor4f(1.0f, 1.0f, 1.0f, 1.0f);
 	menu_drawUpArrow(X0 + 0xe0, Y0 + 0x50, X0 + 0xf8, Y0 + 0x80, hovered == 5);
 	menu_drawDownArrow(X0 + 0xe0, Y0 + 0xb4, X0 + 0xf8, Y0 + 0xe4, hovered != 5 && hovered == 6);
@@ -298,7 +298,7 @@ static void stat_bars(int x, int y, int step, const float *scale, float grey)
 	const float *target = g_statBarTargets;
 	glEnable(GL_TEXTURE_2D);
 	int texture = g_buttonTexture;
-	tex_bind(AP(TextureManager, g_textures)->banks[texture / 512], texture % 512);
+	tex_bind(AP(void, AP(TextureManager, g_textures)->banks[texture / 512]), texture % 512);
 	glColor4f(1.0f, 1.0f, 1.0f, 1.0f);
 	for (int k = 0; k < 9; k++) {
 		glBegin(GL_QUADS);
@@ -351,7 +351,7 @@ void (profile_drawPilotSelect)(void)
 	/* the portraits */
 	glEnable(GL_TEXTURE_2D);
 	int texture = g_characterTexture;
-	tex_bind(AP(TextureManager, g_textures)->banks[texture / 512], texture % 512);
+	tex_bind(AP(void, AP(TextureManager, g_textures)->banks[texture / 512]), texture % 512);
 	glColor4f(1.0f, 1.0f, 1.0f, 1.0f);
 	glBegin(GL_QUADS);
 	glTexCoord2d(0.0, 0.0);
@@ -390,7 +390,7 @@ void (profile_drawPilotSelect)(void)
 	/* its pulsing frame: 5 outside the cell's corner, 90 beyond it */
 	glEnable(GL_TEXTURE_2D);
 	texture = g_fontAsciiLarge;
-	tex_bind(AP(TextureManager, g_textures)->banks[texture / 512], texture % 512);
+	tex_bind(AP(void, AP(TextureManager, g_textures)->banks[texture / 512]), texture % 512);
 	glColor4f(1.0f, 1.0f, 1.0f, f32(fsubr_m(FMUL(g_profileFrameAlpha, k_0_025f), &k_1f)));
 	glBegin(GL_QUADS);
 	glTexCoord2f(0.0f, 0.5f);
@@ -437,7 +437,7 @@ text_draw8(X0 + 0x184, Y0 + 0x48, PILOT(g_pilot)->name);
 	for (int k = 0; k < 2; k++) {
 		glEnable(GL_TEXTURE_2D);
 		texture = g_buttonTexture;
-		tex_bind(AP(TextureManager, g_textures)->banks[texture / 512], texture % 512);
+		tex_bind(AP(void, AP(TextureManager, g_textures)->banks[texture / 512]), texture % 512);
 		glColor4f(1.0f, 1.0f, 1.0f, 1.0f);
 		int lit = hovered == k + 9;
 		glColor4f(1.0f, 1.0f, 1.0f, lit ? 1.0f : 0.4f);
@@ -484,7 +484,7 @@ void (profile_drawChosenPilot)(void)
 		text_draw8(X0 + 0x10c, Y0 + k * 0x14 + 0x24, AP(const char, (MSG(532, "NAME :") + k * 0x80)));
 	glEnable(GL_TEXTURE_2D);
 	int texture = g_characterTexture;
-	tex_bind(AP(TextureManager, g_textures)->banks[texture / 512], texture % 512);
+	tex_bind(AP(void, AP(TextureManager, g_textures)->banks[texture / 512]), texture % 512);
 	float grey = focus ? 1.0f : 0.5f;
 	glColor4f(grey, grey, grey, 1.0f);
 	portrait(g_chosenPilot, X0 + 0x1a4, Y0 + 0x24, 0x40);

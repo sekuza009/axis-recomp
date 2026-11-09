@@ -134,7 +134,7 @@ u32 (hud_drawDigits)(int x, int y, float scale, int value, int count, int padded
 		negative = 1;
 	}
 	glEnable(GL_TEXTURE_2D);
-	tex_bind(AP(TextureManager, g_textures)->banks[g_penFontTexture / 512], g_penFontTexture % 512);
+	tex_bind(AP(void, AP(TextureManager, g_textures)->banks[g_penFontTexture / 512]), g_penFontTexture % 512);
 	glBegin(GL_QUADS);
 	void (STDCALL *tc)(u32, u32) = *texCoord;
 	int place = 10;
@@ -198,7 +198,7 @@ u32 (font_penDraw)(int x, int y, int font, const char *format, ...)
 	}
 	int left = x;
 	glEnable(GL_TEXTURE_2D);
-	tex_bind(AP(TextureManager, g_textures)->banks[g_penFontTexture / 512], g_penFontTexture % 512);
+	tex_bind(AP(void, AP(TextureManager, g_textures)->banks[g_penFontTexture / 512]), g_penFontTexture % 512);
 #ifdef AXIS_NATIVE   /* (the power-up countdown pixel-sharp: fixes/hud.c) */
 	int sharp[2], sharpOn = g_fixPenSharp && g_settings.sharpText && platform_texNearest(sharp);
 #endif

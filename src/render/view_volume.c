@@ -380,7 +380,7 @@ static void identity_matrices(void)
 static void bind(u8 *vv, int t)
 {
 	glEnable(GL_TEXTURE_2D);
-	tex_bind(AP(TextureManager, g_textures)->banks[t / 512], t % 512);
+	tex_bind(AP(void, AP(TextureManager, g_textures)->banks[t / 512]), t % 512);
 	VV->textureBinds++;
 }
 
@@ -394,7 +394,7 @@ static void use_texture(u8 *vv, int t, int mode)
 }
 
 /* texture t's scrolling (its record's scrollMode): 1 / 2 v / u up by b, 3 / 4 down, else none */
-static int tex_scroll(int t) { return ((TextureBank *)AP(TextureManager, g_textures)->banks[t / 512])->records[t % 512].scrollMode; }
+static int tex_scroll(int t) { return (AP(TextureBank, AP(TextureManager, g_textures)->banks[t / 512]))->records[t % 512].scrollMode; }
 
 static void scroll(float *uv, int n, int kind, const float *b)
 {
