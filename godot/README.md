@@ -50,3 +50,9 @@ the skirmish set-up, the match (moving, turning, firing, the HUD at 120 fps, the
 saves unchanged. Not yet: the chat and Esc-menu steps were not captured (the capture needs the window in front).
 The 32-bit editor is not large-address-aware (2 GB): a 4K frame cannot be encoded to PNG in-process, so checks
 capture Godot's window instead.
+
+2026-11-09, face culling fixed: front faces were mapped to Vulkan's clockwise, inverting GL's culling - culled
+surfaces (the arena's walls and floor, the backdrop seen from inside) drew their far sides and the backdrop vanished.
+A match recorded with the game's own images (frames 6,000 / 7,000 / 8,000 of the skirmish session) and replayed:
+before, 2% identical; now 99.5 / 99.1 / 99.2% identical, every pixel within 8 levels. (The menu recording had not
+exercised culling.)

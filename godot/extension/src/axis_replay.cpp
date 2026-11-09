@@ -327,8 +327,9 @@ RID AxisReplay::pipeline_for(const EmuPipe &p) {
 	if (it != pipelines.end()) return it->second;
 	Ref<RDPipelineRasterizationState> ras;
 	ras.instantiate();
-	// (the y flip in gl_emu turns GL's counter-clockwise front faces clockwise)
-	ras->set_front_face(p.frontFace == 0x901 ? RenderingDevice::POLYGON_FRONT_FACE_CLOCKWISE : RenderingDevice::POLYGON_FRONT_FACE_COUNTER_CLOCKWISE);
+	// (gl_emu keeps the image the way up GL draws it, and Vulkan's winding is taken as seen on screen: GL's
+	// counter-clockwise front faces stay counter-clockwise)
+	ras->set_front_face(p.frontFace == 0x901 ? RenderingDevice::POLYGON_FRONT_FACE_COUNTER_CLOCKWISE : RenderingDevice::POLYGON_FRONT_FACE_CLOCKWISE);
 	ras->set_cull_mode(!p.cull ? RenderingDevice::POLYGON_CULL_DISABLED : p.cullFace == 0x404 ? RenderingDevice::POLYGON_CULL_FRONT : p.cullFace == 0x405 ? RenderingDevice::POLYGON_CULL_BACK : RenderingDevice::POLYGON_CULL_DISABLED);
 	if (p.offset) {
 		ras->set_depth_bias_enabled(true);
