@@ -274,6 +274,29 @@ static void crash_handler(void)
 	stack_t st = { .ss_sp = alt, .ss_size = sizeof alt };
 	sigaltstack(&st, NULL);
 }
+#elif defined(_WIN32)
+static LONG WINAPI crashed(EXCEPTION_POINTERS *e)
+{
+	CONTEXT *c = e->ContextRecord;
+	uintptr_t a = e->ExceptionRecord->NumberParameters > 1 ? (uintptr_t)e->ExceptionRecord->ExceptionInformation[1] : 0;
+	HMODULE m = NULL;
+	GetModuleHandleExA(GET_MODULE_HANDLE_EX_FLAG_FROM_ADDRESS | GET_MODULE_HANDLE_EX_FLAG_UNCHANGED_REFCOUNT, (LPCSTR)crashed, &m);
+	hlog("CRASH: exception %08lx at ip %p (module offset %llx), address %p (arena offset %llx)\n",
+	     (unsigned long)e->ExceptionRecord->ExceptionCode, (void *)c->Rip, (unsigned long long)(c->Rip - (uintptr_t)m),
+	     (void *)a, (unsigned long long)(a - (uintptr_t)g_arena));
+	hlog("  calls (module offsets):");
+	uintptr_t bp = c->Rbp;
+	for (int i = 0; i < 24 && bp && !(bp & 7); i++) {
+		uintptr_t *f = (uintptr_t *)bp;
+		hlog(" %llx", (unsigned long long)(f[1] - (uintptr_t)m));
+		if (f[0] <= bp)
+			break;
+		bp = f[0];
+	}
+	hlog("\n");
+	return EXCEPTION_CONTINUE_SEARCH;
+}
+static void crash_handler(void) { SetUnhandledExceptionFilter(crashed); }
 #else
 static void crash_handler(void) {}
 #endif
@@ -329,6 +352,10 @@ AXIS_API int axis_load(void)
 	hlog("the game's data in place; its C runtime: %d entries\n", n);
 	for (int i = 0; i < IMP_COUNT; i++)
 		g_platSlots[i] = k_miss[i];
+#ifdef _WIN32
+	int win64_install(void **(*slot)(const char *name));   /* win64.c */
+	hlog("the Windows platform: %d system calls\n", win64_install(host64_slot));
+#endif
 	SET(GetModuleHandleA, h_GetModuleHandleA); SET(GetModuleFileNameA, h_GetModuleFileNameA);
 	SET(GetCommandLineA, h_GetCommandLineA);
 	if (g_hostSet)

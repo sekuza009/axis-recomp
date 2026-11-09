@@ -5,6 +5,9 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#ifdef _WIN32
+#define setenv(n, v, o) _putenv_s(n, v)   /* (the C runtime's environment, which the library's getenv reads) */
+#endif
 #include "../../src/axis_api.h"
 
 static unsigned g_frames, g_words, g_maxWords;
