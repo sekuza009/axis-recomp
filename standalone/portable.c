@@ -261,6 +261,30 @@ AXIS_API int axis_exit(int code)
 }
 
 
+/* AXIS_MOUSELOG=<file> (a check): the game's mouse reads - each second, how many and the movement they carried, as
+   the game got it (DirectInput's, or a host's) */
+extern void (*g_platMouseLog)(long dx, long dy);
+static FILE *g_mouseLog;
+static DWORD g_mouseT;
+static long g_mReads, g_mDx, g_mDy, g_mMax, g_mMoving;
+static void mouse_log(long dx, long dy)
+{
+	g_mReads++;
+	g_mDx += dx;
+	g_mDy += dy;
+	if (dx || dy) g_mMoving++;
+	long a = dx < 0 ? -dx : dx;
+	if (a > g_mMax) g_mMax = a;
+	DWORD now = GetTickCount();
+	if (now - g_mouseT >= 1000) {
+		fprintf(g_mouseLog, "%lu ms: %ld reads (%ld with movement), dx %ld dy %ld, largest |dx| in a read %ld\n",
+		        now - g_mouseT, g_mReads, g_mMoving, g_mDx, g_mDy, g_mMax);
+		fflush(g_mouseLog);
+		g_mouseT = now;
+		g_mReads = g_mDx = g_mDy = g_mMax = g_mMoving = 0;
+	}
+}
+
 /* ---- a host (axis_api.h axis_host): its drawing callback, its input, the game's window kept hidden ---- */
 static AxisHostConfig g_host;
 static int g_hostSet;
@@ -428,6 +452,13 @@ int WINAPI WinMain(HINSTANCE inst, HINSTANCE prev, LPSTR cmd, int show)
 	fprintf(g_log, "network layer started\n");
 	if (g_hostSet)
 		host_install();
+	{
+		char p[MAX_PATH];
+		if (GetEnvironmentVariableA("AXIS_MOUSELOG", p, sizeof p) && (g_mouseLog = fopen(p, "w"))) {
+			g_mouseT = GetTickCount();
+			g_platMouseLog = mouse_log;
+		}
+	}
 	if (GetEnvironmentVariableA("AXIS_GLREC", NULL, 0)) {   /* (a check: the drawing recorded and replayed, glrec.c) */
 		int glrec_install(void **(*slot)(const char *name), const char *dir);
 		char dir[MAX_PATH];

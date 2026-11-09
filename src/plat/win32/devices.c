@@ -161,7 +161,17 @@ long plat_inputSetMouseFormat(void *m) { return g_platHostInput ? 0 : IN_SET_MOU
 long plat_inputSetWindow(void *d, void *window, u32 mode) { return g_platHostInput ? 0 : IN_SET_WINDOW(d, window, mode); }
 long plat_inputAcquire(void *d) { return g_platHostInput ? 0 : IN_ACQUIRE(d); }
 long plat_inputUnacquire(void *d) { return g_platHostInput ? 0 : IN_UNACQUIRE(d); }
+/* (a check: each mouse read's movement to the loader's mouse log - standalone/portable.c, AXIS_MOUSELOG) */
+void (*g_platMouseLog)(long dx, long dy);
+static long input_read(void *d, u32 size, void *state);
 long plat_inputRead(void *d, u32 size, void *state)
+{
+	long r = input_read(d, size, state);
+	if (g_platMouseLog && size == 0x10 && r >= 0)
+		g_platMouseLog(((long *)state)[0], ((long *)state)[1]);
+	return r;
+}
+static long input_read(void *d, u32 size, void *state)
 {
 	if (!g_platHostInput)
 		return IN_READ(d, size, state);
