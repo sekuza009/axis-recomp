@@ -64,7 +64,7 @@ int THISCALL (collisionTri_setup)(u8 *self, int flags, const float *v0, const fl
 		copy_through_fpu(plane + 2, &p[2]);
 		plane[3] = (float)pd;
 	}
-	tp->unit = AREF((struct SpaceUnit *)(uintptr_t)(u32)unit);
+	tp->unit = AREF(AP(struct SpaceUnit, (u32)unit));
 	tp->part = part;
 	tp->cornerIndices[0] = corner0;
 	tp->cornerIndices[1] = corner1;

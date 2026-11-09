@@ -322,7 +322,12 @@ static struct { int (*vsprintf_)(char *, const char *, va_list); } g_crtLib = { 
 
 AXIS_API int axis_load(void)
 {
+#ifdef _WIN32   /* (a host sets it with SetEnvironmentVariable, which the C runtime's copy may not have) */
+	char dirbuf[1024];
+	const char *dir = GetEnvironmentVariableA("AXIS_GAME_DIR", dirbuf, sizeof dirbuf) ? dirbuf : NULL;
+#else
 	const char *dir = getenv("AXIS_GAME_DIR");
+#endif
 	if (dir && *dir) {
 		snprintf(g_dir, sizeof g_dir, "%s", dir);
 		size_t n = strlen(g_dir);
