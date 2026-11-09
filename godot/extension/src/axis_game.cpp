@@ -98,6 +98,10 @@ void AxisGame::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("is_running"), &AxisGame::is_running);
 	ClassDB::bind_method(D_METHOD("get_game_frames"), &AxisGame::get_game_frames);
 	ClassDB::bind_method(D_METHOD("get_game_size"), &AxisGame::get_game_size);
+	// the game's frame size changed (the view laid out again at once: a step's frames are shown before it returns)
+	ADD_SIGNAL(MethodInfo("game_size_changed", PropertyInfo(Variant::VECTOR2I, "size")));
+	// a frame of a step shown before the step returned (the start-up and loading screens)
+	ADD_SIGNAL(MethodInfo("step_frame_shown", PropertyInfo(Variant::INT, "frame")));
 	ClassDB::bind_method(D_METHOD("get_audio_status"), &AxisGame::get_audio_status);
 	ClassDB::bind_method(D_METHOD("get_input_status"), &AxisGame::get_input_status);
 	ClassDB::bind_method(D_METHOD("take_frame_events"), &AxisGame::take_frame_events);
@@ -109,14 +113,18 @@ void AxisGame::on_frame(void *user, const unsigned *words, unsigned count, int w
 	// shows each frame and waits for the display's refresh (vsync), which paces the loading; here the frame before
 	// is shown (and waited for) before the next is drawn over it. A step's last frame is shown by Godot's own loop.
 	if (g->inStep && g->framesInStep++ > 0) {
+		g->apply_texture();   // (a frame texture made in this step: attached now, not when the step returns)
 		RenderingServer::get_singleton()->force_draw(true, 0.0);
 		g->feed_audio();
 		g->shownInStep++;
+		g->emit_signal("step_frame_shown", g->gameFrames);
 	}
 	g->emu.run_words(words, count, width, height);
 	g->submit(width, height);
+	const bool resized = width != g->lastW || height != g->lastH;
 	g->lastW = width;
 	g->lastH = height;
+	if (resized) g->emit_signal("game_size_changed", Vector2i(width, height));
 	g->gameFrames++;
 }
 

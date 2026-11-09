@@ -189,6 +189,19 @@ void AxisReplay::_set_texture_rid(const RID &p_rid) {
 	texture->set_texture_rd_rid(p_rid);
 }
 
+// the frame texture made on the render thread attached to the shown texture - from the main thread, as soon as it
+// can: within a game step too (AxisGame shows a step's frames before it returns; a deferred call would wait for it)
+void AxisReplay::apply_texture() {
+	RID r;
+	{
+		std::lock_guard<std::mutex> lock(mutex);
+		if (!newColorSet) return;
+		r = newColor;
+		newColorSet = false;
+	}
+	texture->set_texture_rd_rid(r);
+}
+
 // ---- the render thread ----
 
 bool AxisReplay::ensure_shader() {
@@ -265,7 +278,12 @@ void AxisReplay::ensure_framebuffer(int w, int h) {
 	fbH = h;
 	for (auto &kv : pipelines) rd->free_rid(kv.second);
 	pipelines.clear();
-	callable_mp(this, &AxisReplay::_set_texture_rid).call_deferred(color);
+	{	// (the new frame texture attached by the main thread: apply_texture, or the deferred call when idle)
+		std::lock_guard<std::mutex> lock(mutex);
+		newColor = color;
+		newColorSet = true;
+	}
+	callable_mp(this, &AxisReplay::apply_texture).call_deferred();
 }
 
 RID AxisReplay::sampler_for(int minF, int magF, int wrapS, int wrapT) {

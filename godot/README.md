@@ -109,3 +109,8 @@ counts (-150, 40 -> -150, 40) and move the menu pointer. game.gd --input-log <fi
   425 ms scrolled, median frame 8.31 ms (the original 8.33).
 - Godot's boot splash is off and the game starts after Godot's window is shown (the game's start-up screen is drawn
   in its first step).
+- The start-up screen still showed only its last frame: in the game's first step its full-size frame texture was
+  attached by a deferred call (after the step), and the TextureRect's redraw is deferred too. Now the texture is
+  attached before each frame shown in a step (AxisReplay::apply_texture), and on a size change the view is laid out
+  and drawn at once (game.gd refit_now, signal game_size_changed). Checked with --step-shots <dir>: Godot's display
+  at frames 5 / 20 / 35 of the start-up step shows the logo and the progress bar advancing.

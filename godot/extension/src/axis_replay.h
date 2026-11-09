@@ -68,6 +68,11 @@ protected:
 
 	void _render();
 	void _set_texture_rid(const RID &p_rid);
+	RID newColor;   // (a frame texture made on the render thread, not yet attached: apply_texture)
+	bool newColorSet = false;
+public:
+	void apply_texture();
+protected:
 	bool ensure_shader();
 	void ensure_framebuffer(int w, int h);
 	RID sampler_for(int minF, int magF, int wrapS, int wrapT);

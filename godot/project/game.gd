@@ -47,6 +47,8 @@ func _ready() -> void:
 			frame_log = FileAccess.open(args[i], FileAccess.WRITE)
 		elif a == "--raw-mouse":
 			pass
+		elif a == "--step-shots":
+			i += 1
 		elif a == "--gl":
 			pass
 		elif a == "--status":
@@ -62,6 +64,19 @@ func _ready() -> void:
 	$Status.visible = args.find("--status") >= 0
 	game = $Game
 	$View.texture = game.get_texture()
+	if args.find("--no-refit") < 0:
+		game.game_size_changed.connect(refit_now)   # (the view laid out as soon as the game's size is known, mid-step too)
+	if args.find("--step-shots") >= 0:   # (a check: what Godot shows of a step's frames, frames 5 / 20 / 35)
+		game.step_frame_shown.connect(func(fr: int) -> void:
+			if fr == 5 or fr == 20 or fr == 35:
+				var img := get_viewport().get_texture().get_image()
+				if img:
+					img.resize(img.get_width() / 4, img.get_height() / 4)
+					img.save_png(args[args.find("--step-shots") + 1] + "/step_%d.png" % fr)
+				var own: Image = game.get_texture().get_image()   # (the game's own frame, before display)
+				if own:
+					own.resize(own.get_width() / 8, own.get_height() / 8)
+					own.save_png(args[args.find("--step-shots") + 1] + "/game_%d.png" % fr))
 	# the game's start-up screen (logo and progress bar) is drawn in its first step: Godot's window shown first
 	for _f in 3:
 		await get_tree().process_frame
@@ -136,3 +151,18 @@ func fit_view(frame: Vector2i) -> void:
 		view.set_anchors_preset(Control.PRESET_FULL_RECT)
 		view.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
 		view.texture_filter = CanvasItem.TEXTURE_FILTER_LINEAR
+
+## the game's size changed (during a game step too: the start-up screen): the view laid out and its drawing replaced
+## at once - a TextureRect redraws only when the step has returned (its redraw is deferred), and a step's frames are
+## shown before that
+func refit_now(frame: Vector2i) -> void:
+	fit_view(frame)
+	var view: TextureRect = $View
+	var r := Rect2(Vector2.ZERO, view.size)
+	if view.stretch_mode == TextureRect.STRETCH_KEEP_ASPECT_CENTERED and frame.x > 0 and frame.y > 0:
+		var s := minf(view.size.x / frame.x, view.size.y / frame.y)
+		var sz := Vector2(frame) * s
+		r = Rect2((view.size - sz) / 2, sz)
+	var ci := view.get_canvas_item()
+	RenderingServer.canvas_item_clear(ci)
+	RenderingServer.canvas_item_add_texture_rect(ci, r, view.texture.get_rid())
