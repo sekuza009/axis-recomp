@@ -332,6 +332,10 @@ static short key_state(int vk)
 }
 static SHORT WINAPI h_GetAsyncKeyState(int vk) { return g_hostFocus ? key_state(vk) : 0; }
 static SHORT WINAPI h_GetKeyState(int vk) { return key_state(vk); }
+/* the game moves the keyboard focus to its text field's hidden EDIT control and back to its window: with a host that
+   took the focus from the host's window (its keys stopped, it left the foreground). The host's keys reach the field
+   directly (axis_key / axis_char), so the focus stays where it is */
+static HWND WINAPI h_SetFocus(HWND w) { (void)w; return GetFocus(); }
 
 static void host_install(void)
 {
@@ -350,7 +354,7 @@ static void host_install(void)
 #define SWAP(name) do { void **p = slot_by_name(#name); *(void **)&r_##name = *p; *p = (void *)h_##name; } while (0)
 #define SET(name) do { *slot_by_name(#name) = (void *)h_##name; } while (0)
 		SWAP(CreateWindowExA); SWAP(ShowWindow); SWAP(GetForegroundWindow);
-		SET(GetCursorPos); SET(SetCursorPos); SET(GetAsyncKeyState); SET(GetKeyState);
+		SET(GetCursorPos); SET(SetCursorPos); SET(GetAsyncKeyState); SET(GetKeyState); SET(SetFocus);
 #undef SWAP
 #undef SET
 		fprintf(g_log, "host: the input from the host, the game's window hidden\n");
