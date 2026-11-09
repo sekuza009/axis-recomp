@@ -57,6 +57,13 @@ typedef struct {
 	int nogl;       /* 1 (with frame): no OpenGL at all - the calls are only recorded for the host, the game's GL
 	                   queries answered in software (standalone/glstate.c); no context, no drawing in the hidden window */
 	const AxisSound *sound;   /* the host plays the sounds and the music (no DirectSound / DirectShow); NULL: Windows' */
+	/* the game's message boxes (title, text; an OK box - 1 back for OK). NULL: Windows' */
+	int (*message)(void *user, const char *title, const char *text);
+	/* the game asks for a program to be run (ShellExecute "open"): "AxisGL.exe" is the game itself started again (after
+	   a graphics change: the host restarts the game once it has ended); "axispatch.exe" / "DServer.exe" the original's
+	   patcher and server tool. Nonzero: done. NULL: Windows runs it */
+	int (*launch)(void *user, const char *program, const char *arguments);
+	int screen_w, screen_h;   /* the host's screen in pixels (the desktop size the game asks Windows for); 0: Windows' */
 } AxisHostConfig;
 AXIS_API void axis_host(const AxisHostConfig *config);
 /* the stream's header (an AXGLREC1 file's start: its calls' table) into out; its size (out 0 or room too small: only
