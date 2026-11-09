@@ -73,7 +73,7 @@ static void copyf(u32 dst, const float *src) { GAME_VAR(float, dst) = (float)fld
    precision, rounded once on store, the second factor from memory as in the original. Returns the scene */
 u8 *(armc_readMechStats)(void)
 {
-	u8 *g = (*(u8 **)&g_scene);
+	u8 *g = AGET(u8, g_scene);
 	Scene *sc = (Scene *)g;
 	Stage *st = SCENE_STAGE(g);   /* (the scene's stage) */
 	const Actor *A = &sc->players[sc->localPlayer];
@@ -133,7 +133,7 @@ static void panel_name(u32 dst, const char *name)
    (parts[4]) */
 int (armc_readPartPanels)(void)
 {
-	u8 *g = (*(u8 **)&g_scene);
+	u8 *g = AGET(u8, g_scene);
 	Scene *sc = (Scene *)g;
 	Stage *st = SCENE_STAGE(g);   /* (the scene's stage) */
 	const PlayerRecord *record = &sc->playerRecords[sc->players[sc->localPlayer].player];

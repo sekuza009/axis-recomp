@@ -492,7 +492,7 @@ static const u32 k_cameraPresets[6][10] = {
    unwinding a failed construction, is not reproduced.) Returns the object */
 u8 *THISCALL (Console_ctor)(u8 *g)
 {
-#define VECTOR(at, size, count) ((void (STDCALL *)(void *, int, int, u32))FN(crt_vectorConstructorIterator))(at, size, count, FN(class_emptyCtor))   /* (the CRT's iterators are stdcall) */
+#define VECTOR(at, size, count) (FNP(void (STDCALL *)(void *, int, int, u32), FN(crt_vectorConstructorIterator)))(at, size, count, FN(class_emptyCtor))   /* (the CRT's iterators are stdcall) */
 #define VTABLE(at, vt) (GAME_VAR(u32, at) = (vt))
 	u8 *s = (u8 *)SCENE_STAGE(g);
 	Stage *st = (Stage *)s;

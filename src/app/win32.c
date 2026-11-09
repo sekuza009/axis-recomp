@@ -46,7 +46,7 @@ int (sys_messageBox)(const char *format, ...)
 #else
 	g_messageBoxArgs = args;
 	vsprintf(g_messageBoxText, format, args);
-	(*(void **)&g_messageBoxArgs) = NULL;
+	ASET(g_messageBoxArgs, NULL);
 #endif
 	int answer = MessageBoxA(GetActiveWindow(), g_messageBoxText, AP(const char, STR(0x4b043c, "User Message ^_^;")), 0);
 	va_end(args);
@@ -229,15 +229,15 @@ int (app_setDisplayMode)(int width, int height, u32 flags, int bits)
    the sound table released (sound_freeAll) and DirectSound ended (sound_releaseDirectSound, whose eax it returns) */
 u32 (app_shutdown)(void)
 {
-	void *object = (*(void **)&g_scene);
+	void *object = AGET(void, g_scene);
 	if (object)
-		GAME_THISCALL(**(u32 **)object, void, void *, int)(object, 1);   /* scalar deleting destructor */
+		GAME_THISCALL(*AP(u32, *(u32 *)object), void, void *, int)(object, 1);   /* scalar deleting destructor */
 	app_setDisplayMode(g_desktopWidth, g_desktopHeight, 0, g_desktopDepth);
 	SetCursor(LoadCursorA(NULL, 0x7f00));   /* SetCursor(LoadCursorA(IDC_ARROW)) */
 	input_releaseAll();
 	music_stop();
 	for (u32 p = OBJ(g_menuSoundBuffers); p < OBJ(g_menuSoundBuffers) + 10 * 4; p += 4)
-		mem_free(GAME_VAR(void *, p));
+		mem_free(AP(void, GAME_VAR(APTR(void), p)));
 	sound_freeAll();
 	return sound_releaseDirectSound();
 }

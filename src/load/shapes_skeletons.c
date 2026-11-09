@@ -46,8 +46,8 @@ void THISCALL (skel_loadFromFile)(u8 *self, void *f, void *mem, int size)
 		at += keys * 0x20;
 		bn->rotKeys = sko->block + at;
 		at += bn->rotKeyCount * 0x28;
-		crt_fread((*(void * *)&bn->posKeys), 0x20, keys, f);
-		crt_fread((*(void * *)&bn->rotKeys), 0x28, ((u32)bn->rotKeyCount), f);
+		crt_fread(AGET(void, bn->posKeys), 0x20, keys, f);
+		crt_fread(AGET(void, bn->rotKeys), 0x28, ((u32)bn->rotKeyCount), f);
 	}
 }
 
@@ -222,7 +222,7 @@ void THISCALL (ObjectList_load)(u8 *list, void *shapes, void *skels, int ns, con
 	}
 	ol->skeletons = AREF(AP(APTR(struct Skeleton), (ol->block + colours)));
 	for (int j = 0; j < ol->skelCount; j++)
-		AT(void *, ol->skeletons, j * 4) = skel_getSkeletonPtrBy(skels, AV((knames + j * 0x40)));
+		AT(APTR(void), ol->skeletons, j * 4) = AREF(skel_getSkeletonPtrBy(skels, AV((knames + j * 0x40))));
 	if (ol->preLit == 1)
 		ObjectList_relight(list, factors, tint);
 }
@@ -321,23 +321,24 @@ static int tree_lookup(u8 *cache, const char *key, char *out, u32 no_room, u32 f
 	if (mg->capacity == 0)
 		sys_fatalErrorN(out, AP(const char, RELOC(no_room)));
 	u8 *nodes = AP(u8, mg->nodes), *node = nodes;
-	u8 **link = NULL;
+	APTR(u8) *link = NULL;
 	if (mg->count != 0)
 		for (;;) {
 			int c = strcmp(key, (const char *)node);
 			if (c == 0)
 				return ((TreeNode *)node)->index;
-			link = (u8 **)(node + (c < 0 ? 0x44 : 0x48));
+			link = (APTR(u8) *)(node + (c < 0 ? 0x44 : 0x48));
 			if (!*link)
 				break;
-			node = *link;
+			node = AP(u8, *link);
 		}
 	int i = mg->count;
 	if (link) {
 		if (i >= mg->capacity)
 			sys_fatalError(out, AP(const char, RELOC(full)), i);
 		i = mg->count;
-		*link = node = AP(u8, mg->nodes + i * 0x4c);
+		node = AP(u8, mg->nodes + i * 0x4c);
+		*link = AREF(node);
 	}
 	strcpy((char *)node, key);
 	((TreeNode *)node)->index = link ? i : 0;
@@ -634,8 +635,8 @@ void THISCALL (skel_loadAseFrom)(u8 *sk, void *f, u8 *mem, int memSize)
 		return;
 	int size = sko->blockSize = bones * 0x70 + sko->rotKeyTotal * 0x28 + sko->posKeyTotal * 0x20;
 	if (!mem) {
-		(*(void * *)&sko->block) = operator_new(size);
-		if (!(*(void * *)&sko->block))
+		ASET(sko->block, operator_new(size));
+		if (!AGET(void, sko->block))
 			sys_fatalError(AP(char, OBJ(g_logSkeleton)), AP(const char, STR(0x4c4bec, "insufficient memory for dataMemory(%d...")), sko->blockSize);
 		sko->ownsBlock = 1;
 	} else {
@@ -875,8 +876,8 @@ void THISCALL (shape_readObj)(u8 *sh, void *f, u8 *mem, int memSize)
 	float *vs, *ns, *ts;
 	int allocated;
 	if (!mem) {
-		(*(void * *)&md->block) = operator_new(size);
-		if (!(*(void * *)&md->block))
+		ASET(md->block, operator_new(size));
+		if (!AGET(void, md->block))
 			sys_fatalError(AP(char, OBJ(g_logShape)), AP(const char, STR(0x4c4bec, "insufficient memory for dataMemory(%d...")), md->blockSize);
 		md->ownsBlock = 1;
 		if (!(vs = operator_new(nv * 12)))
@@ -935,10 +936,11 @@ void THISCALL (shape_readObj)(u8 *sh, void *f, u8 *mem, int memSize)
 		at += n * 4;
 		pt->colourBase = corner;
 		corner += n;
-		(*(u8 * *)&pt->texCoords) = data + at;
+		ASET(pt->texCoords, data + at);
 		at += n * 8;
 		pt->primCount = 1;
-		u32 *prim = (*(u32 * *)&pt->prims) = (u32 *)(data + at);
+		u32 *prim = (u32 *)(data + at);
+		ASET(pt->prims, prim);
 		at += 0xc;
 		prim[0] = 4;
 		prim[1] = ((u32)pt->vertexCount);
@@ -999,14 +1001,14 @@ void THISCALL (shape_readObj)(u8 *sh, void *f, u8 *mem, int memSize)
 				else
 					c[3][0] = 0;
 				int b = corner;
-				float *pv = (*(float * *)&part->vertices), *pn;
+				float *pv = AGET(float, part->vertices), *pn;
 				obj_corner((u8 *)part, b, c[0], vs, ns, ts);
 				obj_corner((u8 *)part, b + 1, c[1], vs, ns, ts);
 				if (!obj_corner((u8 *)part, b + 2, c[2], vs, ns, ts)) {
 					float tmp[3];
-					pv = (*(float * *)&part->vertices);
+					pv = AGET(float, part->vertices);
 					const float *nrm = math_triangleNormal(tmp, pv + b * 3, pv + (b + 1) * 3, pv + (b + 2) * 3);
-					pn = (*(float * *)&part->normals);
+					pn = AGET(float, part->normals);
 					memcpy(pn + (b + 2) * 3, nrm, 12);
 					memcpy(pn + (b + 1) * 3, pn + (b + 2) * 3, 12);
 					memcpy(pn + b * 3, pn + (b + 2) * 3, 12);
@@ -1022,9 +1024,9 @@ void THISCALL (shape_readObj)(u8 *sh, void *f, u8 *mem, int memSize)
 					memcpy(ts + (q + 2) * 2, ts + (q - 3) * 2, 8);
 					if (!obj_corner((u8 *)part, b + 4, c[3], vs, ns, ts)) {
 						float tmp[3];
-						pv = (*(float * *)&part->vertices);
+						pv = AGET(float, part->vertices);
 						const float *nrm = math_triangleNormal(tmp, pv + q * 3, pv + (b + 4) * 3, pv + (b + 5) * 3);
-						pn = (*(float * *)&part->normals);
+						pn = AGET(float, part->normals);
 						memcpy(pn + (b + 4) * 3, nrm, 12);
 						memcpy(pn + q * 3, pn + (b + 4) * 3, 12);
 						memcpy(pn + (b + 5) * 3, pn + (b + 4) * 3, 12);
@@ -1038,14 +1040,14 @@ void THISCALL (shape_readObj)(u8 *sh, void *f, u8 *mem, int memSize)
 	for (int k = 0; k < md->partCount; k++) {
 		ShapePart *pt = AP(ShapePart, (md->parts + k * 0x80));
 		for (int i = 0; i < pt->vertexCount; i++)
-			GAME_VAR(u32 *, pt->prims + 8)[i] = i;
+			AP(u32, GAME_VAR(APTR(u32), pt->prims + 8))[i] = i;
 	}
 	if (flip)
 		for (int k = 0; k < md->partCount; k++) {
 			ShapePart *pt = AP(ShapePart, (md->parts + k * 0x80));
 			while (pt->vertexCount > 0) {   /* (never moves on, as the original) */
 				k++;
-				float *v = (*(float * *)&pt->vertices), *n = (*(float * *)&pt->normals);
+				float *v = AGET(float, pt->vertices), *n = AGET(float, pt->normals);
 				long double y = fld_m(&v[2]);
 				v[2] = f32(-fld_m(&v[1]));
 				v[1] = f32(y);
@@ -1059,7 +1061,7 @@ void THISCALL (shape_readObj)(u8 *sh, void *f, u8 *mem, int memSize)
 	for (int k = 0; k < md->partCount; k++) {
 		ShapePart *pt = AP(ShapePart, (md->parts + k * 0x80));
 		for (int i = 0; i < pt->vertexCount; i++)
-			(*(u32 * *)&pt->colours)[i] = g_white;
+			AGET(u32, pt->colours)[i] = g_white;
 	}
 	if (allocated == 1) {
 		if (nv > 0)

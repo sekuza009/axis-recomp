@@ -116,7 +116,7 @@ void THISCALL (shape_bindTextureBy)(u8 *shape, const char *suffix, int flags, in
 			strcat(name, AP(const char, STR(0x4b12f4, "*")));
 			strcat(name, suffix);
 		}
-		sp->texture = tex_getIdByName((*(void **)&g_textures), name, flags, h1, s1, v1, h2, s2, v2);
+		sp->texture = tex_getIdByName(AGET(void, g_textures), name, flags, h1, s1, v1, h2, s2, v2);
 	}
 }
 
@@ -298,13 +298,13 @@ void THISCALL (tex_initBy)(u8 *tm, const char *dir, int slots, int format, int w
 		if (!TM->file)
 			fatal(STR(0x4b3ee4, "can't open file(%s) - initBy()"), path);
 		crt_fread(&TM->indexCount, 4, 1, AP(void, TM->file));
-		(*(void **)&TM->index) = operator_new(((u32)TM->indexCount) * 0x44);
-		if (!(*(void **)&TM->index))
+		ASET(TM->index, operator_new(((u32)TM->indexCount) * 0x44));
+		if (!AGET(void, TM->index))
 			fatal(STR(0x4b3eb4, "insufficient memory for itemBuffer(%d..."), TM->indexCount);
-		crt_fread((*(void **)&TM->index), 0x44, ((u32)TM->indexCount), AP(void, TM->file));
+		crt_fread(AGET(void, TM->index), 0x44, ((u32)TM->indexCount), AP(void, TM->file));
 	} else {
 		TM->indexCount = 0;
-		(*(void **)&TM->index) = NULL;
+		ASET(TM->index, NULL);
 		TM->file = AREF(NULL);
 	}
 	TM->recordCount = 0;

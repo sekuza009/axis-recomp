@@ -302,7 +302,7 @@ void THISCALL (stage_build)(u8 *s, u32 stageDir, u32 mapDir, const char *texture
 	char name[0x100];
 	for (int i = 0; i < 10; i++) {
 		sprintf(name, AP(const char, STR(0x4c7410, "%s\\%02d")), textureDir, i);
-		st->effectTextures[i] = tex_getIdByName((*(void **)&g_textures), name, i > 7, 0, 0, 0, 0, 0, 0);
+		st->effectTextures[i] = tex_getIdByName(AGET(void, g_textures), name, i > 7, 0, 0, 0, 0, 0, 0);
 	}
 	Light_clearCounts((u8 *)&st->mapLights);
 	factors_addAmbient((u8 *)&st->mapLights, AP(const void, OBJ(g_packedWhite)));
@@ -415,7 +415,7 @@ void THISCALL (stage_build)(u8 *s, u32 stageDir, u32 mapDir, const char *texture
 	static const u32 names[3] = { STR(0x4c73f4, "Texture\\Item_damagemap_ani0"), STR(0x4c73d8, "Texture\\Item_booster_ani0"), STR(0x4c73bc, "Texture\\Item_shield_ani0") };
 	for (int k = 0; k < 3; k++) {
 		sprintf(name, AP(const char, RELOC(names[k])));
-		st->itemTextures[k] = tex_getIdByName((*(void **)&g_textures), name, 0, 0, 0, 0, 0, 0, 0);
+		st->itemTextures[k] = tex_getIdByName(AGET(void, g_textures), name, 0, 0, 0, 0, 0, 0, 0);
 	}
 	for (int k = 0; k < 16; k++) {
 		BITS(st->faintActorMatrix[k]) = k % 5 == 0 ? 0x3f800000 : 0;

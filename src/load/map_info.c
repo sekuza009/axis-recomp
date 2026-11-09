@@ -332,7 +332,7 @@ void THISCALL (map_loadActorInfoFrom)(u8 *scene, const char *name)
 	for (int i = 1; i < st->mapActorCount; i++)
 		st->mapActors[i].bot = 1;
 	sprintf(path, AP(const char, STR(0x4c7724, "Stage\\%s\\Clan")), st->stageName);
-	st->clanTexture = tex_getIdByName((*(void **)&g_textures), path, 0, 0, 0, 0, 0, 0, 0);
+	st->clanTexture = tex_getIdByName(AGET(void, g_textures), path, 0, 0, 0, 0, 0, 0, 0);
 	for (int p = 0; p < st->mapPlayerCount; p++) {
 		st->playerRecords[p].flagShown = 1;
 		st->playerRecords[p].flagSent = 0x180;
@@ -357,7 +357,7 @@ static u8 *pool_take(u8 *s, int n)
 static u32 ground_tex(const char *dir, u32 fmt, int n, char *name)
 {
 	sprintf(name, AP(const char, RELOC(fmt)), dir, n);
-	return tex_getIdByName((*(void **)&g_textures), name, 0, 0, 0, 0, 0, 0, 0);
+	return tex_getIdByName(AGET(void, g_textures), name, 0, 0, 0, 0, 0, 0, 0);
 }
 
 /* the grey value of a height-map pixel (r = g = b), or -1 */

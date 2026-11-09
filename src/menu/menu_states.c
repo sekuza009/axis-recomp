@@ -734,7 +734,7 @@ u32 (game_postMatch)(void)
 	case 2:
 		if (g_isHost) {
 			send_host_leaving();
-			RoomRecord *to = (*(RoomRecord **)&g_roomLeavePacket), *from = AP(RoomRecord, g_roomPacket);
+			RoomRecord *to = AGET(RoomRecord, g_roomLeavePacket), *from = AP(RoomRecord, g_roomPacket);
 			lstrcpyA(to->hostName, from->hostName);
 			lstrcpyA(to->address, from->address);
 			net_send(0x16, 0x65);   /* net_send */

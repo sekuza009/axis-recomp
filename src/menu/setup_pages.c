@@ -133,7 +133,7 @@ void (setup_drawGraphicPage)(void)
 		text_draw8(X0 + 0x50, Y0 + 0x44 + k * 0x28, AP(const char, (MSG(182, "VIDEO MODE") + k * 0x80)));
 	/* the values: the screen size's name, then each choice's */
 	const char *value[7];
-	value[0] = GAME_VAR(const char *, OBJ(g_resolutionNames) + g_setupResolution * 4);
+	value[0] = AP(const char, GAME_VAR(APTR(const char), OBJ(g_resolutionNames) + g_setupResolution * 4));
 	for (int k = 1; k < 7; k++)
 		value[k] = AP(const char, (RELOC(names[k - 1]) + (int)g_graphicEdited[k] * 0x32));
 	set_colour_bits(g_textColour, 0x3f800000, 0x3f800000, 0x3f800000, 0x3f800000);

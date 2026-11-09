@@ -344,9 +344,9 @@ void (net_resetConnection)(int kind)
 		{ ADDR(g_netRankingBuffer), 8 }, { ADDR(g_roomPacket), 0x79 }, { ADDR(g_roomInfoPacket), 0x79 }, { ADDR(g_roomLeavePacket), 0x79 }, { ADDR(g_roomListRequest), 4 }, { ADDR(g_netKindBuffer), 4 },
 		{ ADDR(g_gameServerKeepAlive), 0x10 }, { ADDR(g_netSelectionPacket), 0xb9 }, { ADDR(g_netAccountBuffer), 0x5c }, { ADDR(g_netPlayerRecordPacket), 0x36 }, { ADDR(g_netByteBuffer), 1 }, { ADDR(g_netAccountRequest), 0x1e } };
 	for (unsigned k = 0; k < sizeof buffers / sizeof *buffers; k++)
-		GAME_VAR(void *, buffers[k].at) = alloc_clear(buffers[k].size);
+		GAME_VAR(APTR(void), buffers[k].at) = AREF(alloc_clear(buffers[k].size));
 	memset(AP(void, ADDR(g_rankReplyCode)), 0, 0x22);
-	(*(void **)&g_netLeaveBuffer) = alloc_clear(0x1e);
+	ASET(g_netLeaveBuffer, alloc_clear(0x1e));
 	memset(AP(void, OBJ(g_lobbyReplyRecord)), 0, 0x5b);
 	memset(AP(void, OBJ(g_gameServerReply)), 0, 0x79);
 	g_unusedNetResetWord = 0;
@@ -437,12 +437,12 @@ int (dplay_enumSessions)(void)
 	memcpy(desc.instance, AP(const void, g_providerGuid), 16);
 	memcpy(desc.application, AP(const void, OBJ(k_axisAppGuid)), 16);
 	if (!g_connectionKind) {
-		if (NET_ENUM_SESSIONS(play, &desc, (void *)FN(dplay_enumSessionsCallback)) < 0)
+		if (NET_ENUM_SESSIONS(play, &desc, FNP(void *, FN(dplay_enumSessionsCallback))) < 0)
 			return 0;
 		play = AP(void, g_dplay);
 	}
 	if (g_connectionKind == 1 &&
-	    NET_ENUM_SESSIONS(play, &desc, (void *)FN(dplay_enumSessionsCallback)) < 0)
+	    NET_ENUM_SESSIONS(play, &desc, FNP(void *, FN(dplay_enumSessionsCallback))) < 0)
 		return 0;
 	return 1;
 }
@@ -487,7 +487,7 @@ int (net_formatChatLine)(u32 from, const char *text, APTR(char) *out)
 	u8 *name = NULL;
 	int r = dplay_getPlayerName(from, &name);
 	if (r >= 0) {
-		const char *shortName = *(const char **)(RELOC(name) + 8);
+		const char *shortName = AP(const char, *(const u32 *)(RELOC(name) + 8));
 		if (!shortName)
 			shortName = AP(const char, STR(0x4b3e38, "unknown"));
 		int length = lstrlenA(shortName) + lstrlenA(text) + lstrlenA(AP(const char, STR(0x4b3e30, "%s > %s"))) + 1;
@@ -533,7 +533,7 @@ int (net_startPingThread)(void)
 		return 0;
 	if (!(g_pingStopEvent = AREF(CreateEventA(NULL, 0, 0, NULL))))
 		return 0;
-	g_pingThread = AREF(CreateThread(NULL, 0, (void *)FN(net_pingThreadProc), NULL, 0, AP(u32, ADDR(g_pingThreadId))));   /* CreateThread */
+	g_pingThread = AREF(CreateThread(NULL, 0, FNP(void *, FN(net_pingThreadProc)), NULL, 0, AP(u32, ADDR(g_pingThreadId))));   /* CreateThread */
 	if (!g_pingThread)
 		return 0;
 	SetEvent(AP(void, g_pingStartEvent));
@@ -879,7 +879,7 @@ static void dplay_lobbyConnect(void)
 	lobby = AP(void, g_dplayLobby);
 	if (NET_LOBBY_GET_CONNECTION(lobby, conn, &size) < 0)
 		return;
-	u32 *session = *(u32 **)((*(u8 **)&g_lobbyConnectionBlock) + 8);
+	u32 *session = AP(u32, *(u32 *)(AGET(u8, g_lobbyConnectionBlock) + 8));
 	session[1] = 0x44;    /* dwFlags */
 	session[10] = 16;     /* dwMaxPlayers */
 	lobby = AP(void, g_dplayLobby);
@@ -890,9 +890,9 @@ static void dplay_lobbyConnect(void)
 		return;   /* ConnectEx */
 	u32 id;
 	void *play = AP(void, g_dplay);   /* CreatePlayer with the lobby's DPNAME (lpPlayerName) */
-	if (NET_CREATE_PLAYER(play, &id, *(void **)((*(u8 **)&g_lobbyConnectionBlock) + 0xc)) < 0)
+	if (NET_CREATE_PLAYER(play, &id, AP(void, *(u32 *)(AGET(u8, g_lobbyConnectionBlock) + 0xc))) < 0)
 		return;
-	u32 flags = *(u32 *)((*(u8 **)&g_lobbyConnectionBlock) + 4);
+	u32 flags = *(u32 *)(AGET(u8, g_lobbyConnectionBlock) + 4);
 	if (flags & 2)
 		g_isHost = 1;
 	else if (flags & 1)
@@ -910,7 +910,7 @@ int (dplay_create)(void)
 	if (r < 0)
 		return r;
 	void *play = AP(void, g_dplay);
-	r = NET_ENUM_CONNECTIONS(play, (void *)FN(dplay_enumConnections));
+	r = NET_ENUM_CONNECTIONS(play, FNP(void *, FN(dplay_enumConnections)));
 	if (r >= 0)
 		r = 0;
 	if (g_lobbyConnectionBlock)
@@ -1035,18 +1035,18 @@ static u32 socket_close(u32 socket)
    copied in order, then three names; sent as message `type` (net_send), then a second's wait */
 static int send_leave(u32 from, u32 to, const u8 *bytes, int nbytes, int flagged, const u8 *names, int type, int code)
 {
-	u8 *dst = GAME_VAR(u8 *, to);
+	u8 *dst = AP(u8, GAME_VAR(APTR(u8), to));
 	if (!dst)
 		return 0;
 	dst[0] = 1;
 	for (int i = 0; i < nbytes; i++) {
 		if (bytes[i] == flagged)
-			GAME_VAR(u8 *, to)[flagged] = 1;
+			AP(u8, GAME_VAR(APTR(u8), to))[flagged] = 1;
 		else
-			GAME_VAR(u8 *, to)[bytes[i]] = GAME_VAR(u8 *, from)[bytes[i]];
+			AP(u8, GAME_VAR(APTR(u8), to))[bytes[i]] = AP(u8, GAME_VAR(APTR(u8), from))[bytes[i]];
 	}
 	for (int i = 0; i < 3; i++)
-		lstrcpyA(GAME_VAR(char *, to) + names[i], GAME_VAR(char *, from) + names[i]);
+		lstrcpyA(AP(char, GAME_VAR(APTR(char), to)) + names[i], AP(char, GAME_VAR(APTR(char), from)) + names[i]);
 	net_send(type, code);   /* net_send */
 	TIME_SLEEP(1000);                 /* Sleep */
 	return 1;
@@ -1241,7 +1241,7 @@ int (jmp_net_getLocalAddress)(void) { return net_getLocalAddress(); }
    there */
 static void send_buffer(u32 socket, u32 buffer, int size)
 {
-	void *data = GAME_VAR(void *, buffer);
+	void *data = AP(void, GAME_VAR(APTR(void), buffer));
 	if (data && GAME_VAR(u32, socket))
 		ws_send(GAME_VAR(u32, socket), data, size, 0);   /* send */
 }
@@ -1262,7 +1262,7 @@ void (net_send)(int kind, int to)
 		*word = (u32)kind;
 		u32 socket = to == 100 ? ADDR(g_lobbySocket) : ADDR(g_gameServerSocket);
 		if (GAME_VAR(u32, socket))
-			ws_send(GAME_VAR(u32, socket), (*(void **)&g_netKindBuffer), 4, 0);
+			ws_send(GAME_VAR(u32, socket), AGET(void, g_netKindBuffer), 4, 0);
 	}
 	static const struct { u32 buffer; int size, lobby; } plain[30] = {
 		[10] = { ADDR(g_arenaPacket), 0x5b, 1 }, [11] = { ADDR(g_lobbyLeavePacket), 0x5b, 1 }, [12] = { ADDR(g_arenaInfoPacket), 0x5b, 1 },
@@ -1539,7 +1539,7 @@ u32 STDCALL (dplay_enumConnections)(const u32 *guid, const void *connection, u32
 		if (text_findSubstring(own, AP(const char, kinds[k].words[0]), 1) ||
 		    (kinds[k].words[1] && text_findSubstring(own, AP(const char, kinds[k].words[1]), 1))) {
 			memcpy(AP(void, RELOC(kinds[k].guid)), id, 0x10);
-			GAME_VAR(void *, kinds[k].data) = AP(void, g_connectionCopy);
+			GAME_VAR(APTR(void), kinds[k].data) = AREF(AP(void, g_connectionCopy));
 			break;
 		}
 	operator_delete(id);
@@ -1706,15 +1706,15 @@ static void THISCALL __attribute__((used)) net_sendPlayerState_body(u8 *g, int p
 		if (shot->hitActor >= 0) {
 			o->flags |= 4;
 			w = (u16)shot->hitActor;
-		} else if ((*(void * *)&shot->hit))
-			w = (u16)(array_indexOf((*(void * *)&shot->hit), (int)SCENE_STAGE(g)->space.planes.records, 0xac) + 1);
+		} else if (AGET(void, shot->hit))
+			w = (u16)(array_indexOf(AGET(void, shot->hit), (int)SCENE_STAGE(g)->space.planes.records, 0xac) + 1);
 		else
 			w = 0;
 		memcpy(&o->target, &w, 2);
 		int ended = shot->age > shot->life;
 		if (ended)
 			o->flags |= 8;
-		u8 *at = (u8 *)(ended && (*(void * *)&shot->hit) ? shot->impact : shot->pos);
+		u8 *at = (u8 *)(ended && AGET(void, shot->hit) ? shot->impact : shot->pos);
 		for (int c = 0; c < 3; c++) {
 			w = (u16)scaled(at + c * 4, ADDR(k_0_1f));
 			memcpy(&o->pos[c], &w, 2);

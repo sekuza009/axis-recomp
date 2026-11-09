@@ -1074,8 +1074,8 @@ typedef struct { float r, g, b, a; } Colour;   /* an RGBA colour, four floats (C
 #define ptx_initFdctDivisors(q) CALL_FN(ptx_initFdctDivisors, void, int)(q)
 #define ptx_initColourTables() CALL_FN(ptx_initColourTables, void, void)()
 #define ptx_initDequantTables(q) CALL_FN(ptx_initDequantTables, void, int)(q)
-#define ptx_error(...) ((int (CDECL *)(int, const char *, ...))FN(ptx_error))(__VA_ARGS__)   /* app/ptx_decode.c */
-#define ptx_crtlError(...) ((int (CDECL *)(int, const char *, ...))FN(ptx_crtlError))(__VA_ARGS__)
+#define ptx_error(...) (FNP(int (CDECL *)(int, const char *, ...), FN(ptx_error)))(__VA_ARGS__)   /* app/ptx_decode.c */
+#define ptx_crtlError(...) (FNP(int (CDECL *)(int, const char *, ...), FN(ptx_crtlError)))(__VA_ARGS__)
 #define ptx_startBitReader(data) CALL_FN(ptx_startBitReader, void, const u8 *)(data)   /* the bit reader started at data */
 #define ptx_readBlock(block) CALL_FN(ptx_readBlock, int, int *)(block)   /* one block's coefficients; the bit position */
 #define ptx_inverseDct(in, out) CALL_FN(ptx_inverseDct, void, const int *, u8 *)(in, out)

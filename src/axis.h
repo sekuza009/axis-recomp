@@ -58,6 +58,15 @@ static inline u32 arena_ref(const void *p) { return p ? (u32)((const unsigned ch
 #define AP(T, v) ((T *)(v))
 #define AV(p) ((u32)(p))
 #endif
+/* a 32-bit place of the game's (a global or field of any declared type) read as a T pointer / a pointer stored in it:
+   AGET(T, place), ASET(place, p) - the retyped accesses (*(T **)&place) of the 32-bit builds */
+#ifdef AXIS_64
+#define AGET(T, place) AP(T, *(u32 *)&(place))
+#define ASET(place, p) (*(u32 *)&(place) = AV(p))
+#else
+#define AGET(T, place) (*(T **)&(place))
+#define ASET(place, p) (*(void **)&(place) = (p))
+#endif
 /* a function's table that holds pointers into the game's memory: static in the 32-bit builds; made each time the function
    runs in the 64-bit one, where g_arena is known only at run time */
 #ifdef AXIS_64
@@ -195,7 +204,11 @@ u32 fn_ref(void *fn);
    tools/hooktable.py) */
 #include "fn_addrs.h"   /* FNADDR_<name>: each rebuilt function's original address */
 #ifdef AXIS_DIRECT
+#ifdef AXIS_64
+#include "fn_syms64.h"   /* (build/: tools/mkfn64.py) */
+#else
 #include "fn_syms.h"
+#endif
 #define FN_CHECK(name, addr) (void)sizeof(char[(addr) == FNADDR_##name ? 1 : -1])
 #define GAME_FN(name, addr, ret, ...) (FN_CHECK(name, addr), (ret (CDECL *)(__VA_ARGS__))(void *)FN_##name)
 #define GAME_THISFN(name, addr, ret, ...) (FN_CHECK(name, addr), (ret (THISCALL *)(__VA_ARGS__))(void *)FN_##name)

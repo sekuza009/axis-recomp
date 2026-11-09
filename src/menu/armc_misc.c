@@ -650,7 +650,7 @@ void (armc_loadSnapshotTexture)(int i)
 	strcat(path, AP(const char, STR(0x4ad564, "/")));
 	strcat(path, AP(const char, STR(0x4b0360, "snapshot")));
 	strcpy(copy, path);
-	g_slotTextures[i] = tex_getIdByName((*(void **)&g_textures), copy, 0, 0, 0, 0, 0, 0, 0);
+	g_slotTextures[i] = tex_getIdByName(AGET(void, g_textures), copy, 0, 0, 0, 0, 0, 0, 0);
 	g_armcSlotChanged = 0;
 }
 

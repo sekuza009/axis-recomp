@@ -36,7 +36,7 @@ static float *next_record(u8 *vv, int countAt, int full, int size)
 		FIELD(int, vv, full) = 1;
 		return NULL;
 	}
-	float *r = (float *)(FIELD(u8 *, vv, countAt - 4) + n * size);
+	float *r = (float *)(AP(u8, FIELD(APTR(u8), vv, countAt - 4)) + n * size);
 	FIELD(int, vv, countAt) = n + 1;
 	return r;
 }
@@ -742,9 +742,9 @@ void THISCALL (ViewVolume_draw)(u8 *vv, int mode, float b)
 		int list = ((ViewQuad *)r)->kind == 2 ? offsetof(ViewVolume, quadOrderA) : ((ViewQuad *)r)->kind == 3 ? offsetof(ViewVolume, quadOrderB) : 0;
 		if (!list)
 			continue;
-		FIELD(u8 **, vv, list)[FIELD(int, vv, list + 4) * 2] = r;
+		AP(APTR(u8), FIELD(APTR(APTR(u8)), vv, list))[FIELD(int, vv, list + 4) * 2] = AREF(r);
 		X z = FADD(((ViewQuad *)r)->points[1][2], ((ViewQuad *)r)->points[0][2]);
-		FIELD(float *, vv, list)[FIELD(int, vv, list + 4) * 2 + 1] = (float)fmul_m(z, &k_half);
+		AP(float, FIELD(APTR(float), vv, list))[FIELD(int, vv, list + 4) * 2 + 1] = (float)fmul_m(z, &k_half);
 		FIELD(int, vv, list + 4)++;
 	}
 
@@ -769,7 +769,7 @@ void THISCALL (ViewVolume_draw)(u8 *vv, int mode, float b)
 				glBegin(4);
 				drawingTriangles = 1;
 			}
-			const u32 *r = *(const u32 *const *)a;
+			const u32 *r = AP(const u32, *(const u32 *)a);
 			if ((int)r[0] != cur) {
 				glEnd();
 				cur = (int)r[0];
@@ -787,7 +787,7 @@ void THISCALL (ViewVolume_draw)(u8 *vv, int mode, float b)
 				glBegin(GL_QUADS);
 				drawingTriangles = 0;
 			}
-			const u32 *r = *(const u32 *const *)q;
+			const u32 *r = AP(const u32, *(const u32 *)q);
 			if ((int)r[0] != cur) {
 				glEnd();
 				cur = (int)r[0];

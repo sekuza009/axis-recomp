@@ -8,12 +8,12 @@
 /* node's links (prev, next) at link, the list's head and count at head */
 static void push_front(void *self, u8 *node, int link, int head)
 {
-	u8 *first = FIELD(u8 *, self, head);
-	FIELD(u8 *, node, link) = NULL;
-	FIELD(u8 *, node, link + 4) = first;
+	u8 *first = AP(u8, FIELD(APTR(u8), self, head));
+	FIELD(APTR(u8), node, link) = AREF(NULL);
+	FIELD(APTR(u8), node, link + 4) = AREF(first);
 	if (first)
-		FIELD(u8 *, first, link) = node;
-	FIELD(u8 *, self, head) = node;
+		FIELD(APTR(u8), first, link) = AREF(node);
+	FIELD(APTR(u8), self, head) = AREF(node);
 	FIELD(int, self, head + 4)--;
 }
 

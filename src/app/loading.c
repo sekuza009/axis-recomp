@@ -108,22 +108,22 @@ void (loading_draw)(u32 scroll)
 	text_setColor(1.0f, 1.0f, 0.0f, 1.0f);
 	char line[0x100];
 	int row = 2;
-	int mode = *(int *)((*(u8 * *)&g_loadGame) + 8);
+	int mode = *(int *)(AGET(u8, g_loadGame) + 8);
 	if (mode == 1 || mode == 3) {
 		sprintf(line, AP(const char, STR(0x4c5330, "TITLE: %s")), g_gameTitle);
 		info_line(row, line);
 		row = 4;
 	}
-	if (((Scene *)(*(u8 * *)&g_loadGame))->awaitingHostRound == 1)
+	if (((Scene *)AGET(u8, g_loadGame))->awaitingHostRound == 1)
 		sprintf(line, AP(const char, STR(0x4c531c, "ZONE: ON RECEIVING")));
 	else
 		sprintf(line, AP(const char, STR(0x4c5310, "ZONE: %s")), AP(const char, (OBJ(g_mapNames) + g_mapIndex * 32)));
 	info_line(row, line);
 	row += 2;
-	if (((Scene *)(*(u8 * *)&g_loadGame))->awaitingHostRound == 1)
+	if (((Scene *)AGET(u8, g_loadGame))->awaitingHostRound == 1)
 		sprintf(line, AP(const char, STR(0x4c52f8, "PLAY TYPE: ON RECEIVING")));
 	else
-		sprintf(line, AP(const char, STR(0x4c52e8, "PLAY TYPE: %s")), AP(const char, (STR(0x4c7030, "DEATH MATCH") + ((Scene *)(*(u8 * *)&g_loadGame))->gameMode * 64)));
+		sprintf(line, AP(const char, STR(0x4c52e8, "PLAY TYPE: %s")), AP(const char, (STR(0x4c7030, "DEATH MATCH") + ((Scene *)AGET(u8, g_loadGame))->gameMode * 64)));
 	info_line(row, line);
 	row += 2;
 	sprintf(line, AP(const char, STR(0x4c52d8, "FRAG LIMIT: %d")), g_fragLimit);
@@ -282,7 +282,7 @@ int (app_startupLoad)(void *instance)
 	shapeDat_initBy();
 	skelDat_initBy();
 	void *scene = operator_new(0x2343acb);
-	(*(void **)&g_scene) = scene ? Console_ctor(scene) : NULL;
+	ASET(g_scene, scene ? Console_ctor(scene) : NULL);
 	sound_initSoundTable(AP(const char, STR(0x4b2504, "Data/Sound.dat")), 0x64);
 	char logo[64];
 	strcpy(logo, AP(const char, STR(0x4b24f0, "iftex/axis_title")));
@@ -364,7 +364,7 @@ u32 THISCALL (game_processLoadingMode)(u8 *g)
 {
 	char name[0x100], path[0x100];
 	if (GS->stateFrames == 0) {
-		(*(u8 * *)&g_loadGame) = g;
+		ASET(g_loadGame, g);
 		g_loadStatusText[0] = 0;
 		GS->loadLineCount = 1;
 		strcpy(GS->loadLines[0], AP(const char, STR(0x4c52b0, "START LOADING PROCESS")));
@@ -499,7 +499,7 @@ u32 THISCALL (game_processLoadingMode)(u8 *g)
 		log_message((int)AV(STAGE(g)), 1, 0, AP(const char, STR(0x4c5104, ".analyze battle field")));
 		keep_alive(g);
 		sprintf(name, AP(const char, STR(0x4c50e4, "Texture/Crosshair/Crosshair%d")), g_crosshairSetting);
-		GS->crosshairTexture = tex_getIdByName((*(void **)&g_textures), name, 0, 0, 0, 0, 0, 0, 0);
+		GS->crosshairTexture = tex_getIdByName(AGET(void, g_textures), name, 0, 0, 0, 0, 0, 0, 0);
 		map_loadPlayInfoFrom(STAGE(g), bfd_name(g, path));
 		mode = GS->sessionMode;
 		if (mode >= 0 && mode <= 3)

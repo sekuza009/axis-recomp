@@ -82,7 +82,7 @@ int (pen_init)(const char *name)
 		sys_errorMessageNoName(AP(const char, STR(0x4c56fc, "pen duplicate initialization - penInit()")));
 		return 0;
 	}
-	g_penFontTexture = tex_getIdByName((*(void **)&g_textures), name, 0, 0, 0, 0, 0, 0, 0);
+	g_penFontTexture = tex_getIdByName(AGET(void, g_textures), name, 0, 0, 0, 0, 0, 0, 0);
 	for (int i = 0; i < 0x69; i++)
 		g_penFixedWidths[i] = 8;
 	int g = 1;

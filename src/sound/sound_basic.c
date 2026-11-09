@@ -195,7 +195,7 @@ u32 (sound_playVolume)(int index, int volume)
 	u32 on = (*(u32 *)&g_soundOn);
 	if (!on)
 		return 0;
-	void *sound = GAME_VAR(void *, OBJ(g_soundTable) + index * 4);
+	void *sound = AP(void, GAME_VAR(APTR(void), OBJ(g_soundTable) + index * 4));
 	if (!sound)
 		return on;
 	int level;
@@ -206,7 +206,7 @@ u32 (sound_playVolume)(int index, int volume)
 	else
 		level = ftol(fmul_m((long double)volume, k_0_01f_4a9504) * (long double)(g_soundBaseVolume + 10000)) - 10000;
 	CALL_FN(sound_setNextVolume, void, void *, int)(sound, level);   /* sound_setNextVolume */
-	return CALL_FN(sound_playNext, u32, void *)(GAME_VAR(void *, OBJ(g_soundTable) + index * 4));   /* sound_playNext */
+	return CALL_FN(sound_playNext, u32, void *)(AP(void, GAME_VAR(APTR(void), OBJ(g_soundTable) + index * 4)));   /* sound_playNext */
 }
 
 /* 0x456ed0: sound index played at pos as heard from listener (side: the listener's right, the listener's up at
@@ -215,7 +215,7 @@ u32 (sound_playVolume)(int index, int volume)
    Nothing out of range or with sound off. The callers ignore the eax it leaves */
 void (sound_play3D)(int index, const float *pos, const float *listener, const float *side, float range)
 {
-	if (!g_soundOn || !GAME_VAR(void *, OBJ(g_soundTable) + index * 4))
+	if (!g_soundOn || !AP(void, GAME_VAR(APTR(void), OBJ(g_soundTable) + index * 4)))
 		return;
 	const float *up = g_vecUnitY;
 	float d[3], v[3], c[3];
@@ -239,8 +239,8 @@ void (sound_play3D)(int index, const float *pos, const float *listener, const fl
 	long double across = FMUL(c[1], side[1]) + FMUL(c[2], side[2]);
 	across = across + FMUL(c[0], side[0]);
 	int pan = ftol(fmul_m(across, AP(const float, (g_stereoReverse ? ADDR(k_m1500f) : ADDR(k_1500f_4a9700)))));
-	CALL_FN(sound_setNextVolume, void, void *, int)(GAME_VAR(void *, OBJ(g_soundTable) + index * 4), volume);   /* sound_setNextVolume */
-	sound_playPanned(GAME_VAR(void *, OBJ(g_soundTable) + index * 4) /* g_soundTable[index] */, (pan > 0) + 1, pan);
+	CALL_FN(sound_setNextVolume, void, void *, int)(AP(void, GAME_VAR(APTR(void), OBJ(g_soundTable) + index * 4)), volume);   /* sound_setNextVolume */
+	sound_playPanned(AP(void, GAME_VAR(APTR(void), OBJ(g_soundTable) + index * 4)) /* g_soundTable[index] */, (pan > 0) + 1, pan);
 }
 
 #undef CreateFileA

@@ -405,7 +405,7 @@ void THISCALL (object_initObjectBy)(Stage *s, int i, const ObjectInfo *info)
 	BITS(mo->glow) = 0;
 	BITS(mo->waitTime) = 0;
 	if (ST->shadingCached == 0)
-		shape_shadingColours((*(u32 * *)&mo->colourRuns[0]), 1, AP(Shape, mo->model), (const LightFactors *)&s->mapLights,
+		shape_shadingColours(AGET(u32, mo->colourRuns[0]), 1, AP(Shape, mo->model), (const LightFactors *)&s->mapLights,
 		                 mo->matrixInverse);
 }
 
@@ -683,7 +683,7 @@ static void particle_spin(u8 *p)
 {
 	glPushMatrix();
 	glLoadIdentity();
-	glLoadMatrixf((*(const float * *)&PR->matrixFrom));
+	glLoadMatrixf(AGET(const float, PR->matrixFrom));
 	glRotatef((float)table_rand_below(360), 0.0f, 0.0f, 1.0f);
 	glGetFloatv(0xba6, PR->matrix);
 	glPopMatrix();
@@ -821,7 +821,7 @@ void THISCALL (particle_init)(u8 *s, int slot, const u8 *desc)
 	memcpy(PR->target, pd->target, 12);
 	PR->matrixFrom = pd->matrixFrom;
 	if (PR->matrixFrom)
-		Mat4_copy(PR->matrix, (*(const void * *)&PR->matrixFrom));
+		Mat4_copy(PR->matrix, AGET(const void, PR->matrixFrom));
 	PR->drawAge = 0.0f;
 	PR->life = 1.0f;
 	PR->age = 0.0f;

@@ -83,7 +83,7 @@ void *THISCALL (space_getNextFreeBlockPtrBy)(u8 *space, const u32 *mn, const u32
 {
 	Space *sp = (Space *)space;
 #define SP sp   /* the same by its fields (src/scene.fields) */
-	u32 *block = (*(u32 * *)&SP->blocks.freeHead);
+	u32 *block = AGET(u32, SP->blocks.freeHead);
 	if (!block) {
 		sys_fatalErrorN(AP(char, OBJ(g_logCollisionVolume)), AP(const char, STR(0x4c7924, "not enoush free block-getNextFreeBloc...")),
 			SP->planes.used, SP->planes.count, SP->nodes.used, SP->nodes.count, SP->units.used, SP->units.count, SP->blocks.used, SP->blocks.count);
@@ -91,10 +91,10 @@ void *THISCALL (space_getNextFreeBlockPtrBy)(u8 *space, const u32 *mn, const u32
 	}
 	u32 *next = AP(u32, RELOC(block[0x4c / 4]));
 	if (next) {
-		(*(u32 * *)&SP->blocks.freeHead) = next;
+		ASET(SP->blocks.freeHead, next);
 		next[0x48 / 4] = 0;
 	} else
-		(*(u32 * *)&SP->blocks.freeHead) = 0;
+		ASET(SP->blocks.freeHead, 0);
 	SP->blocks.used++;
 	spaceBlock_clear(block);
 	for (int i = 0; i < 3; i++)

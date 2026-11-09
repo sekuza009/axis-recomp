@@ -35,34 +35,34 @@ void (static_initTex256x128)(void) { g_texture256x128Vtable = VT(Texture); ((Tex
 void (static_initTex256x256)(void) { g_texture256x256Vtable = VT(Texture); ((TextureBank *)g_texture256x256)->ready = 0; }   /* 0x42b2e0 */
 
 /* ---- a global object's destructor registered with atexit (the result of atexit) ---- */
-int (static_registerTex64x64Dtor)(void) { return atexit((void (*)(void))FN(static_destroyTex64x64)); }
-int (static_registerTex128x64Dtor)(void) { return atexit((void (*)(void))FN(static_destroyTex128x64)); }
-int (static_registerTex256x64Dtor)(void) { return atexit((void (*)(void))FN(static_destroyTex256x64)); }
-int (static_registerTex128x128Dtor)(void) { return atexit((void (*)(void))FN(static_destroyTex128x128)); }
-int (static_registerTex256x128Dtor)(void) { return atexit((void (*)(void))FN(static_destroyTex256x128)); }
-int (static_registerTex256x256Dtor)(void) { return atexit((void (*)(void))FN(static_destroyTex256x256)); }
-int (static_registerTextureManagerDtor)(void) { return atexit((void (*)(void))FN(static_endTextureManager)); }
-int (static_registerTextureLogDtor)(void) { return atexit((void (*)(void))FN(static_endTextureLog)); }
-int (static_registerTextureManagerLogDtor)(void) { return atexit((void (*)(void))FN(static_endTextureManagerLog)); }
-int (static_registerSoundLogDtor)(void) { return atexit((void (*)(void))FN(static_endSoundLog)); }
-int (static_registerConsoleLogDtor)(void) { return atexit((void (*)(void))FN(static_endConsoleLog)); }
-int (static_registerShapeLogDtor)(void) { return atexit((void (*)(void))FN(static_endShapeLog)); }
-int (static_registerShapeManagerLogDtor)(void) { return atexit((void (*)(void))FN(static_endShapeManagerLog)); }
-int (static_registerTimeSyncDtor)(void) { return atexit((void (*)(void))FN(static_endTimeSync)); }
-int (static_registerSkeletonLogDtor)(void) { return atexit((void (*)(void))FN(static_endSkeletonLog)); }
-int (static_registerSkeletonManagerLogDtor)(void) { return atexit((void (*)(void))FN(static_endSkeletonManagerLog)); }
-int (static_registerBMPRGBFileLogDtor)(void) { return atexit((void (*)(void))FN(static_endBMPRGBFileLog)); }
-int (static_registerRealColorLogDtor)(void) { return atexit((void (*)(void))FN(static_endRealColorLog)); }
-int (static_registerPackedColorLogDtor)(void) { return atexit((void (*)(void))FN(static_endPackedColorLog)); }
-int (static_registerUnitPartInfoLogDtor)(void) { return atexit((void (*)(void))FN(static_endUnitPartInfoLog)); }
-int (static_registerUnitPoseInfoLogDtor)(void) { return atexit((void (*)(void))FN(static_endUnitPoseInfoLog)); }
-int (static_registerUnitLogDtor)(void) { return atexit((void (*)(void))FN(static_endUnitLog)); }
-int (static_registerStageLogDtor)(void) { return atexit((void (*)(void))FN(static_endStageLog)); }
-int (static_registerCollisionVolumeLogDtor)(void) { return atexit((void (*)(void))FN(static_endCollisionVolumeLog)); }
-int (static_registerLightLogDtor)(void) { return atexit((void (*)(void))FN(static_endLightLog)); }
-int (static_registerViewVolumeLogDtor)(void) { return atexit((void (*)(void))FN(static_endViewVolumeLog)); }
-int (static_registerTimeSyncLogDtor)(void) { return atexit((void (*)(void))FN(static_endTimeSyncLog)); }
-int (static_registerSceneLogDtor)(void) { return atexit((void (*)(void))FN(static_endSceneLog)); }
+int (static_registerTex64x64Dtor)(void) { return atexit(FNP(void (*)(void), FN(static_destroyTex64x64))); }
+int (static_registerTex128x64Dtor)(void) { return atexit(FNP(void (*)(void), FN(static_destroyTex128x64))); }
+int (static_registerTex256x64Dtor)(void) { return atexit(FNP(void (*)(void), FN(static_destroyTex256x64))); }
+int (static_registerTex128x128Dtor)(void) { return atexit(FNP(void (*)(void), FN(static_destroyTex128x128))); }
+int (static_registerTex256x128Dtor)(void) { return atexit(FNP(void (*)(void), FN(static_destroyTex256x128))); }
+int (static_registerTex256x256Dtor)(void) { return atexit(FNP(void (*)(void), FN(static_destroyTex256x256))); }
+int (static_registerTextureManagerDtor)(void) { return atexit(FNP(void (*)(void), FN(static_endTextureManager))); }
+int (static_registerTextureLogDtor)(void) { return atexit(FNP(void (*)(void), FN(static_endTextureLog))); }
+int (static_registerTextureManagerLogDtor)(void) { return atexit(FNP(void (*)(void), FN(static_endTextureManagerLog))); }
+int (static_registerSoundLogDtor)(void) { return atexit(FNP(void (*)(void), FN(static_endSoundLog))); }
+int (static_registerConsoleLogDtor)(void) { return atexit(FNP(void (*)(void), FN(static_endConsoleLog))); }
+int (static_registerShapeLogDtor)(void) { return atexit(FNP(void (*)(void), FN(static_endShapeLog))); }
+int (static_registerShapeManagerLogDtor)(void) { return atexit(FNP(void (*)(void), FN(static_endShapeManagerLog))); }
+int (static_registerTimeSyncDtor)(void) { return atexit(FNP(void (*)(void), FN(static_endTimeSync))); }
+int (static_registerSkeletonLogDtor)(void) { return atexit(FNP(void (*)(void), FN(static_endSkeletonLog))); }
+int (static_registerSkeletonManagerLogDtor)(void) { return atexit(FNP(void (*)(void), FN(static_endSkeletonManagerLog))); }
+int (static_registerBMPRGBFileLogDtor)(void) { return atexit(FNP(void (*)(void), FN(static_endBMPRGBFileLog))); }
+int (static_registerRealColorLogDtor)(void) { return atexit(FNP(void (*)(void), FN(static_endRealColorLog))); }
+int (static_registerPackedColorLogDtor)(void) { return atexit(FNP(void (*)(void), FN(static_endPackedColorLog))); }
+int (static_registerUnitPartInfoLogDtor)(void) { return atexit(FNP(void (*)(void), FN(static_endUnitPartInfoLog))); }
+int (static_registerUnitPoseInfoLogDtor)(void) { return atexit(FNP(void (*)(void), FN(static_endUnitPoseInfoLog))); }
+int (static_registerUnitLogDtor)(void) { return atexit(FNP(void (*)(void), FN(static_endUnitLog))); }
+int (static_registerStageLogDtor)(void) { return atexit(FNP(void (*)(void), FN(static_endStageLog))); }
+int (static_registerCollisionVolumeLogDtor)(void) { return atexit(FNP(void (*)(void), FN(static_endCollisionVolumeLog))); }
+int (static_registerLightLogDtor)(void) { return atexit(FNP(void (*)(void), FN(static_endLightLog))); }
+int (static_registerViewVolumeLogDtor)(void) { return atexit(FNP(void (*)(void), FN(static_endViewVolumeLog))); }
+int (static_registerTimeSyncLogDtor)(void) { return atexit(FNP(void (*)(void), FN(static_endTimeSyncLog))); }
+int (static_registerSceneLogDtor)(void) { return atexit(FNP(void (*)(void), FN(static_endSceneLog))); }
 
 /* ---- empty functions ---- */
 /* ten empty start-up initialisers (each a bare "ret", run once from crt_start's initialiser table): the eight at

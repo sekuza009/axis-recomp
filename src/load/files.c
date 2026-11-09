@@ -107,8 +107,8 @@ static void *dat_entry(int index, const char *name, u32 table, u32 file, u32 log
 		sys_fatalErrorN(AP(void, RELOC(log)), AP(const char, STR(0x4b3f80, "can't find item(%s) - getItemFileBy()")), name);   /* sys_fatalError */
 		return 0;
 	}
-	crt_fseek(GAME_VAR(void *, file), (AP(const ArchiveEntry, GAME_VAR(u8 *, table)))[index].offset, 0);   /* fseek */
-	return GAME_VAR(void *, file);
+	crt_fseek(AP(void, GAME_VAR(APTR(void), file)), (AP(const ArchiveEntry, AP(u8, GAME_VAR(APTR(u8), table))))[index].offset, 0);   /* fseek */
+	return AP(void, GAME_VAR(APTR(void), file));
 }
 /* 0x466d60: in Shape.dat */
 void *(shapeDat_getItemFileBy)(const char *name)
@@ -277,19 +277,19 @@ static u32 dat_open(u32 archive, const char *format, void *log)
 	u32 table = archive + 4, file = archive + 8;
 	if (GAME_VAR(int, archive) > 0)
 		return GAME_VAR(u32, archive);
-	if (GAME_VAR(void *, file))
+	if (AP(void, GAME_VAR(APTR(void), file)))
 		return GAME_VAR(u32, file);
 	char path[0x100];
 	crt_sprintf(path, format);   /* sprintf */
-	GAME_VAR(void *, file) = crt_fopen(path, AP(const char, STR(0x4ad170, "rb")));
-	if (!GAME_VAR(void *, file))
+	GAME_VAR(APTR(void), file) = AREF(crt_fopen(path, AP(const char, STR(0x4ad170, "rb"))));
+	if (!AP(void, GAME_VAR(APTR(void), file)))
 		sys_fatalErrorN(log, AP(const char, STR(0x4b3ee4, "can't open file(%s) - initBy()")), path);
-	crt_fread(AP(void, RELOC(archive)), 4, 1, GAME_VAR(void *, file));   /* fread */
-	GAME_VAR(void *, table) = crt_malloc(GAME_VAR(int, archive) * 0x44);
-	if (!GAME_VAR(void *, table))
+	crt_fread(AP(void, RELOC(archive)), 4, 1, AP(void, GAME_VAR(APTR(void), file)));   /* fread */
+	GAME_VAR(APTR(void), table) = AREF(crt_malloc(GAME_VAR(int, archive) * 0x44));
+	if (!AP(void, GAME_VAR(APTR(void), table)))
 		sys_fatalErrorN(log, AP(const char, STR(0x4b3eb4, "insufficient memory for itemBuffer(%d...")), GAME_VAR(int, archive));
-	return crt_fread(GAME_VAR(void *, table), 0x44, GAME_VAR(int, archive),
-	                                                          GAME_VAR(void *, file));
+	return crt_fread(AP(void, GAME_VAR(APTR(void), table)), 0x44, GAME_VAR(int, archive),
+	                                                          AP(void, GAME_VAR(APTR(void), file)));
 }
 /* 0x466c00: Shape.dat; skelDat_initBy: the skeleton archive */
 u32 (shapeDat_initBy)(void) { return dat_open(OBJ(g_shapeDat), AP(const char, STR(0x4c4d20, "Data\\Shape.dat")), AP(void, OBJ(g_logShapeManager))); }
@@ -492,10 +492,10 @@ u32 (mission_loadBriefing)(int k)
 	for (int i = 0; i < k; i++)
 		offset += mission[i].blockSize;
 	crt_fseek(f, offset + g_missionCount * 0xf8 + 0x1a, 0);
-	if ((*(void **)&g_briefingSource))
-		crt_free((*(void **)&g_briefingSource));
+	if (AGET(void, g_briefingSource))
+		crt_free(AGET(void, g_briefingSource));
 	void *block = crt_malloc(mission[k].blockSize);
-	(*(void **)&g_briefingSource) = block;
+	ASET(g_briefingSource, block);
 	crt_fread(block, mission[k].blockSize, 1, f);
 	fclose(f);
 	memset(AP(void, OBJ(g_briefingPageStarts)), 0, 0xc8);

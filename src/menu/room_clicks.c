@@ -264,7 +264,7 @@ static void load_map_preview(u32 selected)
 	strcat(path, AP(const char, STR(0x4ad564, "/")));
 	strcat(path, name);
 	strcpy(copy, path);
-	g_mapPreviewTexture = tex_getIdByName((*(void **)&g_textures), copy, 0, 0, 0, 0, 0, 0, 0);
+	g_mapPreviewTexture = tex_getIdByName(AGET(void, g_textures), copy, 0, 0, 0, 0, 0, 0, 0);
 	g_mapPreviewChanged = 0;
 }
 /* 0x43bcb0: the game room's (selection g_roomMap); arena_loadMapPreview: the arena screen's (g_newArenaMap) */
