@@ -80,7 +80,7 @@ static void sound_ok(void)
 	cfg_writeAxisCfg();
 	g_setupCameraMode = 0;
 	music_stop();
-	music_play((const char *)STR(0x4b01cc, "music/Netsphere.mp3"));
+	music_play(AP(const char, STR(0x4b01cc, "music/Netsphere.mp3")));
 }
 
 /* 0x422c60: the sound tab: OK (sound_ok); back or cancel closes the page */
@@ -140,9 +140,9 @@ static void page_graphic(void) { setup_drawGraphicPage(); }
 static void page_controls(void) { setup_drawControlsPage(); }
 
 /* 0x427830, 0x427880, 0x4278d0: the screen with the sound page, the graphics page, the controls page */
-void (setup_frameSoundPage)(void) { with_page(page_sound, (const int *)ADDR(g_setupSoundLeft)); }
+void (setup_frameSoundPage)(void) { with_page(page_sound, AP(const int, ADDR(g_setupSoundLeft))); }
 void (setup_frameGraphicPage)(void) { with_page(page_graphic, g_setupGraphicRect); }
-void (setup_frameControlsPage)(void) { with_page(page_controls, (const int *)ADDR(g_setupControlLeft)); }
+void (setup_frameControlsPage)(void) { with_page(page_controls, AP(const int, ADDR(g_setupControlLeft))); }
 
 /* a tab opened: the page state, the setup camera's distance (-1650) and its fade (0.7), no item picked */
 static void tab_opened(void)
@@ -173,7 +173,7 @@ void (setup_selectGraphicTab)(void)
 
 void (setup_selectControlTab)(void)
 {
-	memcpy((void *)OBJ(g_controlsEdit), (void *)OBJ(g_controls), 0x44 * 4);   /* the key bindings */
+	memcpy(AP(void, OBJ(g_controlsEdit)), AP(void, OBJ(g_controls)), 0x44 * 4);   /* the key bindings */
 	g_setupTab = TAB_CONTROL;
 	g_bindPage = 0;
 	g_bindRow = -1;
@@ -183,10 +183,10 @@ void (setup_selectControlTab)(void)
 }
 
 /* ---- the control bindings: 32 pairs (primary, secondary), "none" being the value at g_dikNone ---- */
-static const u32 bindings[32] = { OBJ(g_controlsEdit), (u32)&g_controlsEdit[2], (u32)&g_controlsEdit[4], (u32)&g_controlsEdit[6], (u32)&g_controlsEdit[8], (u32)&g_controlsEdit[10], (u32)&g_controlsEdit[12], (u32)&g_controlsEdit[14],
-                                  (u32)&g_controlsEdit[16], (u32)&g_controlsEdit[18], (u32)&g_controlsEdit[20], (u32)&g_controlsEdit[22], (u32)&g_controlsEdit[24], (u32)&g_controlsEdit[30], (u32)&g_controlsEdit[32], (u32)&g_controlsEdit[34],
-                                  (u32)&g_controlsEdit[36], (u32)&g_controlsEdit[26], (u32)&g_controlsEdit[28], (u32)&g_controlsEdit[38], (u32)&g_controlsEdit[40], (u32)&g_controlsEdit[42], (u32)&g_controlsEdit[44], (u32)&g_controlsEdit[46],
-                                  (u32)&g_controlsEdit[48], (u32)&g_controlsEdit[50], (u32)&g_controlsEdit[52], (u32)&g_controlsEdit[54], (u32)&g_controlsEdit[56], (u32)&g_controlsEdit[58], (u32)&g_controlsEdit[60], (u32)&g_controlsEdit[62] };
+static const u32 bindings[32] = { OBJ(g_controlsEdit), ADDR_AT(g_controlsEdit, 2), ADDR_AT(g_controlsEdit, 4), ADDR_AT(g_controlsEdit, 6), ADDR_AT(g_controlsEdit, 8), ADDR_AT(g_controlsEdit, 10), ADDR_AT(g_controlsEdit, 12), ADDR_AT(g_controlsEdit, 14),
+                                  ADDR_AT(g_controlsEdit, 16), ADDR_AT(g_controlsEdit, 18), ADDR_AT(g_controlsEdit, 20), ADDR_AT(g_controlsEdit, 22), ADDR_AT(g_controlsEdit, 24), ADDR_AT(g_controlsEdit, 30), ADDR_AT(g_controlsEdit, 32), ADDR_AT(g_controlsEdit, 34),
+                                  ADDR_AT(g_controlsEdit, 36), ADDR_AT(g_controlsEdit, 26), ADDR_AT(g_controlsEdit, 28), ADDR_AT(g_controlsEdit, 38), ADDR_AT(g_controlsEdit, 40), ADDR_AT(g_controlsEdit, 42), ADDR_AT(g_controlsEdit, 44), ADDR_AT(g_controlsEdit, 46),
+                                  ADDR_AT(g_controlsEdit, 48), ADDR_AT(g_controlsEdit, 50), ADDR_AT(g_controlsEdit, 52), ADDR_AT(g_controlsEdit, 54), ADDR_AT(g_controlsEdit, 56), ADDR_AT(g_controlsEdit, 58), ADDR_AT(g_controlsEdit, 60), ADDR_AT(g_controlsEdit, 62) };
 #define KEY_NONE g_dikNone
 
 /* 0x421350: a pair with no primary key gets its secondary as the primary */
@@ -194,7 +194,7 @@ void (controls_fillPrimaryKeys)(void)
 {
 	int none = KEY_NONE;
 	for (int k = 0; k < 32; k++) {
-		int *pair = (int *)RELOC(bindings[k]);
+		int *pair = AP(int, RELOC(bindings[k]));
 		if (pair[0] == none) {
 			pair[0] = pair[1];
 			pair[1] = none;
@@ -208,7 +208,7 @@ void (setup_unbindKey)(int k)
 {
 	int none = KEY_NONE;
 	for (int i = 0; i < 32; i++) {
-		int *pair = (int *)RELOC(bindings[i]);
+		int *pair = AP(int, RELOC(bindings[i]));
 		if (pair[1] == k) {
 			pair[1] = pair[0];
 			pair[0] = none;
@@ -225,7 +225,7 @@ void (setup_unbindKey)(int k)
 u32 (setup_topPageClicks)(void)
 {
 	if (g_mouseClick) {
-		const Outline *buttons = (const Outline *)OBJ(g_setupTopOutlines);
+		const Outline *buttons = AP(const Outline, OBJ(g_setupTopOutlines));
 		for (int i = 0; i < 4; i++) {
 			if (point_in_outline(g_mouseX, g_mouseY, buttons[i]) != 1)
 				continue;
@@ -432,7 +432,7 @@ void (setup_controlTabKeys)(void)
 		}
 	if (input_justPressed(g_dikA) == 1) {
 		sound_playMenu(0);
-		memcpy((void *)OBJ(g_controls), (const void *)OBJ(g_controlsEdit), 0x44 * 4);
+		memcpy(AP(void, OBJ(g_controls)), AP(const void, OBJ(g_controlsEdit)), 0x44 * 4);
 		cfg_writeAxisCfg();
 		g_setupCameraMode = 0;
 		return;
@@ -491,7 +491,7 @@ void (setup_controlTabClicks)(void)
 			g_bindPage = on;
 		} else if (on == 4) {
 			sound_playMenu(0);
-			memcpy((void *)OBJ(g_controls), (const void *)OBJ(g_controlsEdit), 0x110);
+			memcpy(AP(void, OBJ(g_controls)), AP(const void, OBJ(g_controlsEdit)), 0x110);
 			cfg_writeAxisCfg();
 			g_setupCameraMode = 0;
 		} else if (on == 5) {
@@ -542,7 +542,7 @@ void (setup_bindKey)(int key)
 	int page = g_bindPage, row = g_bindRow;
 	int binding = page >= 0 && page <= 2 && (u32)row < 11 ? page_bindings[page][row] : -1;
 	if (binding >= 0) {
-		int *pair = (int *)(OBJ(g_controlsEdit) + binding * 8), none = g_dikNone;
+		int *pair = AP(int, (OBJ(g_controlsEdit) + binding * 8)), none = g_dikNone;
 		if (pair[1] != none) {
 			pair[0] = key;
 			pair[1] = none;

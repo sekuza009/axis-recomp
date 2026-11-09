@@ -15,19 +15,19 @@ static void relight(ListedObject *e, const LightFactors *factors, const void *ti
 	if (tint == NULL) {
 		if (factors != NULL) {
 			Mat4_invert(inverse, e->matrix);
-			shape_shadingColours(e->colours, 1, e->shape, factors, inverse);
+			shape_shadingColours(AP(u32, e->colours), 1, AP(Shape, e->shape), factors, inverse);
 		} else {
 			for (u32 k = 0; k < (u32)e->shape->colourCount; k++)
 				e->colours[k] = 0;
 		}
 	} else if (factors != NULL) {
 		Mat4_invert(inverse, e->matrix);
-		shape_shadingColours(e->colours, 1, e->shape, factors, inverse);
+		shape_shadingColours(AP(u32, e->colours), 1, AP(Shape, e->shape), factors, inverse);
 		Mat4_invert(inverse, e->matrix);
-		shape_addColour(e->colours, 0, e->shape, tint);
+		shape_addColour(AP(u32, e->colours), 0, AP(Shape, e->shape), tint);
 	} else {
 		Mat4_invert(inverse, e->matrix);
-		shape_addColour(e->colours, 1, e->shape, tint);
+		shape_addColour(AP(u32, e->colours), 1, AP(Shape, e->shape), tint);
 	}
 }
 
@@ -60,9 +60,9 @@ int THISCALL (ObjectList_queue)(ObjectList *list, void *view, const LightFactors
 		if (list->preLit == 1) {
 			if (tint != NULL || factors == NULL || factors->enabled == 1)
 				relight(e, factors, tint);
-			ViewVolume_queueModel(view, e->shape, (u32)e->colours, e->matrix, 0, NULL, cull, material, extraMatrix);
+			ViewVolume_queueModel(view, AP(void, e->shape), (u32)e->colours, e->matrix, 0, NULL, cull, material, extraMatrix);
 		} else {
-			ViewVolume_queueModel(view, e->shape, 0, e->matrix, (int)factors, tint, cull, material, extraMatrix);
+			ViewVolume_queueModel(view, AP(void, e->shape), 0, e->matrix, (int)AV(factors), tint, cull, material, extraMatrix);
 		}
 	}
 	return 1;
@@ -86,7 +86,7 @@ void THISCALL (ground_buildLayerModels)(u8 *stage)
 	static const int sides[4][5] = { { 4, 5, 0, 3, 0xb }, { 6, 7, 1, 0, 5 }, { 8, 9, 2, 1, 7 }, { 0xa, 0xb, 3, 2, 9 } };
 	for (int i = 0; i < st->groundLayerCount; i++) {
 		GroundLayer *gl = &st->groundLayers[i];
-		ShapePart *A = (ShapePart *)st->waterModel.parts + i, *B = (ShapePart *)st->layerModel.parts + i;
+		ShapePart *A = AP(ShapePart, st->waterModel.parts) + i, *B = AP(ShapePart, st->layerModel.parts) + i;
 		switch (gl->kind) {
 		case 0:
 			B->flags = 0;
@@ -105,22 +105,22 @@ void THISCALL (ground_buildLayerModels)(u8 *stage)
 		A->texture = gl->texture;
 		B->colourBase = st->layerModel.colourCount;
 		B->vertexCount = (int)((u32)(gl->rows + 1) * (u32)(gl->cols + 1));
-		B->vertices = (u8 *)gl->points;
-		B->colours = (u8 *)gl->colours;
+		B->vertices = AREF(AP(u8, gl->points));
+		B->colours = AREF(AP(u8, gl->colours));
 		B->texCoords = gl->uv;
 		B->primCount = 0;
 		B->prims = gl->strips;
 		A->colourBase = st->waterModel.colourCount;
-		A->vertices = (u8 *)gl->waterPoints;
-		A->colours = (u8 *)gl->waterColours;
+		A->vertices = AREF((u8 *)gl->waterPoints);
+		A->colours = AREF((u8 *)gl->waterColours);
 		A->vertexCount = 0xc;
-		A->texCoords = &gl->waterUv[0][0];
+		A->texCoords = AREF(&gl->waterUv[0][0]);
 		A->primCount = gl->water == 1 ? 4 : 0;
-		A->prims = (u8 *)gl->waterPrims;
+		A->prims = AREF((u8 *)gl->waterPrims);
 		for (int f = 0; f < 4; f++) {
 			gl->waterPrims[f].kind = 6;   /* (a fan) */
 			gl->waterPrims[f].indexCount = 5;
-			gl->waterPrims[f].indices = (u8 *)gl->waterIndices[f];
+			gl->waterPrims[f].indices = AREF((u8 *)gl->waterIndices[f]);
 			memcpy(gl->waterIndices[f], sides[f], sizeof sides[f]);
 		}
 		st->layerModel.colourCount += B->vertexCount;
@@ -146,7 +146,7 @@ void THISCALL (shape_bindPartTextures)(u8 *shape)
 	Shape *md = (Shape *)shape;
 	glEnable(GL_TEXTURE_2D);
 	for (int i = 0; i < md->partCount; i++) {
-		int id = ((ShapePart *)(md)->parts + i)->texture;
+		int id = (AP(ShapePart, (md)->parts) + i)->texture;
 		if (id >= 0)
 			tex_bind(g_textures->banks[id / 512], id % 512);
 	}

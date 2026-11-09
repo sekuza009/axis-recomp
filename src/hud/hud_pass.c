@@ -14,7 +14,7 @@ void THISCALL (match_drawFrame)(Scene *scene)
 	char text[256];
 	if (!scene->matchDrawing)
 		return;
-	tex_clearSetCounters(g_textures);
+	tex_clearSetCounters(AP(void, g_textures));
 	ViewVolume_clearDrawCounts(&scene->view);
 	if (scene->clearOn == 1) {
 		glClearColor_stored(scene->clearColour);

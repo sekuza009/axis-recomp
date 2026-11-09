@@ -72,7 +72,7 @@ void (armc_drawTextRight)(int x, int y, const char *text)
 		text_draw8(x - n * 8, y, text);
 }
 
-#define g_originBits ((const u32 *)ADDR(g_vecOrigin))   /* the origin (0, 0, 0; only vec_initOrigin writes it) as bits */
+#define g_originBits (AP(const u32, ADDR(g_vecOrigin)))   /* the origin (0, 0, 0; only vec_initOrigin writes it) as bits */
 
 /* 0x45ddc0 (thiscall on the stage): the player's actor made again in its own slot, at the origin */
 void THISCALL (stage_remakePlayerActor)(Stage *stage)
@@ -127,7 +127,7 @@ void (armc_exit)(int confirmed)
 	g_flareStepB = 0.2f;
 	g_flareStepA = -0.2f;
 	sound_playMenu(4);
-	music_play((const char *)STR(0x4b01cc, "music/Netsphere.mp3"));                  /* "music/Netsphere.mp3", the game's own string */
+	music_play(AP(const char, STR(0x4b01cc, "music/Netsphere.mp3")));                  /* "music/Netsphere.mp3", the game's own string */
 	if (g_launchedForNetGame == 1 && g_launchStartStep == 0x66)
 		g_launchStartStep = 0x67;
 }
@@ -152,7 +152,7 @@ void THISCALL (armc_drawPreview3D)(Scene *scene, const u32 *eye, const u32 *forw
 	u32 light[0xb010 / 4];   /* a Light: vtable, 0x400 entries of 0x2c bytes, two counts, the changed flag (+0xb00c:
 	                            factor_addFactorBy sets it); the original's frame holds it whole at +0x18 */
 	for (int i = 0; i < 0x400; i++)
-		class_emptyCtor((u8 *)RELOC(light) + 4 + i * 0x2c);
+		class_emptyCtor(AP(u8, RELOC(light)) + 4 + i * 0x2c);
 	light[0] = VT(Light);
 	Light_clearCounts(light);
 	u8 white[4] = { 0xff, 0xff, 0xff, 0xff }, dim[4] = { 0xf0, 0xc0, 0xc0, 0x60 };
@@ -184,13 +184,13 @@ void THISCALL (armc_drawPreview3D)(Scene *scene, const u32 *eye, const u32 *forw
 	u8 *actor = (u8 *)&scene->players[a];
 	Actor *pl = (Actor *)actor;
 	pl->nextPitch = (float)fmul_m(fld_m(&scene->mouseDy) / (long double)(H / 2),
-	                                               (const float *)ADDR(k_890f));   /* 890: tenths of a degree */
+	                                               AP(const float, ADDR(k_890f)));   /* 890: tenths of a degree */
 	BITS(pl->nextYaw) = BITS(scene->previewTurn);
 	actor_processFrame(stage, scene->localPlayer, scene->timer.frameTime);
 	Light_clearCounts(light);
 	u32 dir[3] = { forward[0], forward[1], forward[2] };
-	Vec3_normalize((float *)RELOC(dir));
-	factors_addDirectional(light, (const void *)OBJ(g_packedWhite), dir);
+	Vec3_normalize(AP(float, RELOC(dir)));
+	factors_addDirectional(light, AP(const void, OBJ(g_packedWhite)), dir);
 	for (int k = 0; k < 8; k++) {
 		u8 *list = (u8 *)&scene->players[scene->localPlayer] + lists[k];
 		if (part < 0)
@@ -209,12 +209,12 @@ static void preview(int posed, int part)   /* posed: the mech posed for part */
 	gluPerspective(g_viewAngle, g_viewAspect, 100.0, 20000.0);
 	glEnable(GL_DEPTH_TEST);
 	glMatrixMode(GL_MODELVIEW);
-	float turn = f32(fmul_m(fld_m(&g_armcAngle), (const float *)ADDR(k_0_1f)));
+	float turn = f32(fmul_m(fld_m(&g_armcAngle), AP(const float, ADDR(k_0_1f))));
 	gl_rotateXYZ(0, BITS(turn), 0);
 	u32 eye[3] = { g_originBits[0], g_originBits[1], g_originBits[2] };   /* the eye at the origin */
 	u32 forward[3] = { 0, 0, 0xbf800000 }, up[3] = { 0, 0x3f800000, 0 };   /* (0, 0, -1), (0, 1, 0), on the stack as the original's */
 	if (posed)
-		armc_drawPreview3D(g_scene, eye, forward, up, part, ftol(g_armcAngle), g_screenW, g_screenH);
+		armc_drawPreview3D(AP(Scene, g_scene), eye, forward, up, part, ftol(g_armcAngle), g_screenW, g_screenH);
 	if (g_armcSpin) {
 		long double angle = fadd_m(fmul_m(fld_m(&g_frameTime), k_8f), &g_armcAngle);
 		g_armcAngle = angle;
@@ -238,14 +238,14 @@ void (armc_updatePartsPreview)(void)
 	if (g_mechChanged == 1) {
 		const int *parts = g_armcParts;    /* the mech's head, chest, arm, leg, booster */
 		switch (g_armcPartSlot) {
-		case 0: mech_setHeadIndex(g_scene, parts[0]); break;
-		case 1: mech_setChestIndex(g_scene, parts[1]); break;
-		case 2: mech_setArmIndex(g_scene, parts[2]); break;
-		case 3: mech_setLegIndex(g_scene, parts[3]); break;
-		case 4: mech_setBoosterIndex(g_scene, parts[4]); break;
+		case 0: mech_setHeadIndex(AP(Scene, g_scene), parts[0]); break;
+		case 1: mech_setChestIndex(AP(Scene, g_scene), parts[1]); break;
+		case 2: mech_setArmIndex(AP(Scene, g_scene), parts[2]); break;
+		case 3: mech_setLegIndex(AP(Scene, g_scene), parts[3]); break;
+		case 4: mech_setBoosterIndex(AP(Scene, g_scene), parts[4]); break;
 		}
 		armc_readPartPanels();
-		armc_giveShownActorWeapon(g_scene, g_armcSlot);
+		armc_giveShownActorWeapon(AP(Scene, g_scene), g_armcSlot);
 		armc_readMechStats();
 		g_mechChanged = 0;
 		armc_retintParts();
@@ -337,11 +337,11 @@ void (menuState700_armCenter)(void)
 		set_colour_bits(g_rectColour, 0x3e4ccccd, 0x3e4ccccd, 0x3f333333, 0x3f333333);
 		menu_drawRect(100, 200, 540, 280, 1);
 		set_colour_bits(g_textColour, 0x3f800000, 0x3f800000, 0, 0x3f800000);   /* yellow */
-		text_drawCentredLines16(105, 220, 535, (const char *)MSG(297, "LOADING MECHANIC DATA.."));
-		text_drawCentredLines16(105, 244, 535, (const char *)MSG(298, "PLEASE WAIT"));
+		text_drawCentredLines16(105, 220, 535, AP(const char, MSG(297, "LOADING MECHANIC DATA..")));
+		text_drawCentredLines16(105, 244, 535, AP(const char, MSG(298, "PLEASE WAIT")));
 		g_armcSessionDue = 1;
 	}
-	long double countdown = fsubr_m(fmul_m(fld_m(&g_frameTime), (const float *)ADDR(k_0_1f)), &g_unusedArmcViewCountdown);
+	long double countdown = fsubr_m(fmul_m(fld_m(&g_frameTime), AP(const float, ADDR(k_0_1f))), &g_unusedArmcViewCountdown);
 	g_unusedArmcViewCountdown = countdown;
 	if (!(countdown >= k_m2f))
 		g_unusedArmcViewCountdown = -2.0f;
@@ -359,7 +359,7 @@ u32 (armc_open)(void)
 	g_armcHideInterface = 0;
 	g_armcSlot = 0;
 	armc_initCameraPoints();
-	music_play((const char *)STR(0x4b01b0, "music/Heart of Giants.mp3"));
+	music_play(AP(const char, STR(0x4b01b0, "music/Heart of Giants.mp3")));
 	g_armcPartSlot = 5;
 	g_unusedArmcWord3 = 5;
 	g_armcColourSlot = 5;
@@ -383,7 +383,7 @@ u32 (armc_open)(void)
 		((u32 *)g_armcDim)[i] = dim[i];
 	}
 	g_progressWentUp = 0;
-	u32 *point = (u32 *)ADDR(g_camPoint0X), *pointAt = (u32 *)ADDR(g_camAim0X);   /* the ARM CENTER's camera point */
+	u32 *point = AP(u32, ADDR(g_camPoint0X)), *pointAt = AP(u32, ADDR(g_camAim0X));   /* the ARM CENTER's camera point */
 	point[0] = 0;
 	point[1] = 0;
 	pointAt[0] = 0;
@@ -399,7 +399,7 @@ u32 (armc_open)(void)
 		if (g_progress > g_bestProgressSolo)
 			g_progressWentUp = 1;
 	}
-	u32 *home = (u32 *)ADDR(g_menuEyeHomeX), *homeAt = (u32 *)ADDR(g_menuLookHomeX);
+	u32 *home = AP(u32, ADDR(g_menuEyeHomeX)), *homeAt = AP(u32, ADDR(g_menuLookHomeX));
 	home[2] = distance;
 	home[0] = 0;
 	home[1] = 0;
@@ -458,7 +458,7 @@ typedef struct {
 #define g_panelSize3 g_flareSizeB   /* which turns to shrinking (-2 a frame) at 600 and back (2) at 200 */
 #define g_panelRate2 g_flareStepA
 #define g_panelRate3 g_flareStepB
-#define F(addr) ((const float *)RELOC(addr))
+#define F(addr) (AP(const float, RELOC(addr)))
 
 /* a square of half width size: corners (-s, s), (s, s), (s, -s), (-s, -s) in x, z */
 static void panel_resize(Panel *p, float *size)
@@ -638,17 +638,17 @@ u32 (armc_mouse)(void)
    g_partRecords) loaded into g_slotTextures[i]; nothing for a name shorter than 2 letters. g_armcSlotChanged cleared either way */
 void (armc_loadSnapshotTexture)(int i)
 {
-	const char *name = (const char *)(OBJ(g_partRecords) + i * 0x80);
+	const char *name = AP(const char, (OBJ(g_partRecords) + i * 0x80));
 	if (strlen(name) <= 1) {
 		g_armcSlotChanged = 0;
 		return;
 	}
 	char path[0x80], copy[0x40];
 	memset(path, 0, sizeof path);
-	strcpy(path, (const char *)STR(0x4b036c, "Actor/item/"));
+	strcpy(path, AP(const char, STR(0x4b036c, "Actor/item/")));
 	strcat(path, name);
-	strcat(path, (const char *)STR(0x4ad564, "/"));
-	strcat(path, (const char *)STR(0x4b0360, "snapshot"));
+	strcat(path, AP(const char, STR(0x4ad564, "/")));
+	strcat(path, AP(const char, STR(0x4b0360, "snapshot")));
 	strcpy(copy, path);
 	g_slotTextures[i] = tex_getIdByName((*(void **)&g_textures), copy, 0, 0, 0, 0, 0, 0, 0);
 	g_armcSlotChanged = 0;
@@ -664,18 +664,18 @@ void (armc_drawWeightLine)(void)
 	int y = g_armcPageTop;
 	struct { char total[20]; char most[20]; } s;   /* (in this order on the original's stack) */
 	set_colour_bits(g_textColour, 0x3f800000, 0x3f800000, 0x3f800000, 0x3f800000);
-	int length = (int)strlen((const char *)MSG(299, "WEIGHT"));
-	text_draw16(0x27c - length * (g_language == 1 ? 8 : 14), y, (const char *)MSG(299, "WEIGHT"));
-	long double sum = fld_m((const float *)RELOC(weights[0]));
+	int length = (int)strlen(AP(const char, MSG(299, "WEIGHT")));
+	text_draw16(0x27c - length * (g_language == 1 ? 8 : 14), y, AP(const char, MSG(299, "WEIGHT")));
+	long double sum = fld_m(AP(const float, RELOC(weights[0])));
 	for (int k = 1; k < 10; k++)
-		sum = fadd_m(sum, (const float *)RELOC(weights[k]));
+		sum = fadd_m(sum, AP(const float, RELOC(weights[k])));
 	g_totalWeight = f32(sum);
 	memset(s.most, 0, sizeof s.most);
-	strcpy(s.most, (const char *)STR(0x4ad564, "/"));
-	sprintf(s.total, (const char *)STR(0x4b0354, "%.0f"), (double)g_loadLimit);
+	strcpy(s.most, AP(const char, STR(0x4ad564, "/")));
+	sprintf(s.total, AP(const char, STR(0x4b0354, "%.0f")), (double)g_loadLimit);
 	strcat(s.most, s.total);
 	memset(s.total, 0, sizeof s.total);
-	sprintf(s.total, (const char *)STR(0x4b0354, "%.0f"), (double)g_totalWeight);
+	sprintf(s.total, AP(const char, STR(0x4b0354, "%.0f")), (double)g_totalWeight);
 	if (g_totalWeight > g_loadLimit)
 		set_colour_bits(g_textColour, 0x3f800000, 0, 0, 0x3f800000);
 	else
@@ -703,10 +703,10 @@ int (armc_drawModeTabs)(void)
 	}
 	glDisable(GL_TEXTURE_2D);
 	for (int i = 0; i < 3; i++) {
-		const u32 *c = (const u32 *)(g_armcMode == i + 1 ? OBJ(g_armcBright) : OBJ(g_armcDim));
+		const u32 *c = AP(const u32, (g_armcMode == i + 1 ? OBJ(g_armcBright) : OBJ(g_armcDim)));
 		set_colour_bits(g_textColour, c[0], c[1], c[2], c[3]);
 		int x = g_armcPageLeft;
-		text_drawCentredLines16(x + i * 100 + 0x10, g_armcPageTop, x + i * 100 + 0x70, (const char *)(MSG(271, "$[0] PARTS") + i * 0x80));
+		text_drawCentredLines16(x + i * 100 + 0x10, g_armcPageTop, x + i * 100 + 0x70, AP(const char, (MSG(271, "$[0] PARTS") + i * 0x80)));
 	}
 	return 3;
 }
@@ -719,9 +719,9 @@ int (armc_drawModeTabs)(void)
 u32 (armc_saveSelection)(void)
 {
 	armc_resetSeraphimParts();
-	memcpy((void *)OBJ(g_savedColourChoices), (const void *)OBJ(g_armcColours), 0x90);
-	memcpy((void *)ADDR(g_savedMechHead), (const void *)OBJ(g_armcParts), 5 * 4);
-	memcpy((void *)ADDR(g_savedMechItemSlot4), (const void *)ADDR(g_itemSlot4), 6 * 4);
+	memcpy(AP(void, OBJ(g_savedColourChoices)), AP(const void, OBJ(g_armcColours)), 0x90);
+	memcpy(AP(void, ADDR(g_savedMechHead)), AP(const void, OBJ(g_armcParts)), 5 * 4);
+	memcpy(AP(void, ADDR(g_savedMechItemSlot4)), AP(const void, ADDR(g_itemSlot4)), 6 * 4);
 	armc_resetSeraphimParts();
 	return profile_save();   /* profile_save */
 }
@@ -737,25 +737,25 @@ void (armc_sendSelectionToNet)(void)
 {
 	for (int i = 0; i < 0x24; i++) {
 		float v = f32(fld_m(g_armcColours + i));
-		((float *)OBJ(g_savedColourChoices))[i] = v;
+		(AP(float, OBJ(g_savedColourChoices)))[i] = v;
 		(g_roomColours)[i] = v;
 	}
 	if (g_pilotLevel != 0x14)
 		armc_resetSeraphimParts();
-	memcpy((void *)ADDR(g_savedMechHead), (const void *)OBJ(g_armcParts), 5 * 4);
-	memcpy((void *)ADDR(g_savedMechItemSlot4), (const void *)ADDR(g_itemSlot4), 6 * 4);
+	memcpy(AP(void, ADDR(g_savedMechHead)), AP(const void, OBJ(g_armcParts)), 5 * 4);
+	memcpy(AP(void, ADDR(g_savedMechItemSlot4)), AP(const void, ADDR(g_itemSlot4)), 6 * 4);
 	u8 *room = g_roomMech;
-	const int *parts = (const int *)ADDR(g_savedMechHead), *itemSlots = (const int *)ADDR(g_savedMechItemSlot4);
+	const int *parts = AP(const int, ADDR(g_savedMechHead)), *itemSlots = AP(const int, ADDR(g_savedMechItemSlot4));
 	for (int i = 0; i < 4; i++)
 		room[7 + i] = (u8)itemSlots[2 + i];
 	room[5] = (u8)g_itemSlot4;
 	room[6] = (u8)g_itemSlot5;
 	for (int i = 0; i < 5; i++)
 		room[i] = (u8)parts[i];
-	SelectionPacket *packet = (SelectionPacket *)g_netSelectionPacket;
+	SelectionPacket *packet = AP(SelectionPacket, g_netSelectionPacket);
 	strcpy(packet->ladderId, g_ladderId);
 	memcpy(packet->mech, room, 11);
-	memcpy(packet->colours, (const void *)OBJ(g_roomColours), 0x90);
+	memcpy(packet->colours, AP(const void, OBJ(g_roomColours)), 0x90);
 	net_send(0x1b, 0x65);
 }
 

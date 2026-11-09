@@ -8,15 +8,15 @@
 /* a name field cleared, then the name copied in (the lobby and room code always do both) */
 static void copy_name(u32 dst, int clear_bytes, const char *src)
 {
-	memset((void *)RELOC(dst), 0, clear_bytes);
-	strcpy((char *)RELOC(dst), src);
+	memset(AP(void, RELOC(dst)), 0, clear_bytes);
+	strcpy(AP(char, RELOC(dst)), src);
 }
 
 /* ---- the lobby player record (g_arenaPlayerName, its corporation and customize setting) ---- */
 /* 0x4050f0: the name "PLAYER", corporation and customize setting (g_arenaCustomize) 0 */
 void (arena_defaultPlayer)(void)
 {
-	copy_name(OBJ(g_arenaPlayerName), 32, (const char *)STR(0x4ad4b0, "PLAYER"));
+	copy_name(OBJ(g_arenaPlayerName), 32, AP(const char, STR(0x4ad4b0, "PLAYER")));
 	g_arenaCorporation = 0;
 	g_arenaCustomize = 0;
 }
@@ -33,9 +33,9 @@ void (arena_loadPlayerSettings)(void)
 /* 0x43f5a0: "initdata/" (0x4b29bc) into both data path buffers, the stage path (0x4b0498) into the third */
 void (app_setDataPaths)(void)
 {
-	copy_name(OBJ(g_dataDir), 0x105, (const char *)STR(0x4b29bc, "initdata/"));
-	copy_name(OBJ(g_mapInfoDir), 0x105, (const char *)STR(0x4b29bc, "initdata/"));
-	copy_name(OBJ(g_stageDir), 0x105, (const char *)STR(0x4b0498, "stage/"));
+	copy_name(OBJ(g_dataDir), 0x105, AP(const char, STR(0x4b29bc, "initdata/")));
+	copy_name(OBJ(g_mapInfoDir), 0x105, AP(const char, STR(0x4b29bc, "initdata/")));
+	copy_name(OBJ(g_stageDir), 0x105, AP(const char, STR(0x4b0498, "stage/")));
 }
 
 /* ---- the input line every text field types into (0x400 bytes at g_inputLine) and its three-line history ---- */
@@ -44,7 +44,7 @@ void (app_setDataPaths)(void)
    newIdForm_openField, profile_typeNewName, match_openTextField, freeCam_keys) */
 void (menu_clearInputBuffer)(int max)
 {
-	memset((void *)OBJ(g_inputLine), 0, 0x400);
+	memset(AP(void, OBJ(g_inputLine)), 0, 0x400);
 	g_inputLineLength = 0;
 	g_lineMaxLength = max;
 }
@@ -53,17 +53,17 @@ void (menu_clearInputBuffer)(int max)
 void (menu_pushInputHistory)(void)
 {
 	memcpy((void *)(OBJ(g_inputHistory) + 0x800), (void *)(OBJ(g_inputHistory) + 0x400), 0x400);
-	memcpy((void *)(OBJ(g_inputHistory) + 0x400), (void *)OBJ(g_inputHistory), 0x400);
-	memcpy((void *)OBJ(g_inputHistory), (void *)OBJ(g_inputLine), 0x400);
+	memcpy((void *)(OBJ(g_inputHistory) + 0x400), AP(void, OBJ(g_inputHistory)), 0x400);
+	memcpy(AP(void, OBJ(g_inputHistory)), AP(void, OBJ(g_inputLine)), 0x400);
 }
 
 /* 0x41ee40: message i of the 0x80-byte table at g_messages shown in the message box */
 void (menu_showMessage)(int i)
 {
 	g_dialogPending = 1;
-	memset((void *)OBJ(g_messageBoxLine), 0, 0x50);
+	memset(AP(void, OBJ(g_messageBoxLine)), 0, 0x50);
 	g_launchStartStep = 0;
-	strcpy(g_messageBoxLine, (const char *)(MSG(0, "PRESS ENTER OR CLICK MOUSE") + i * 0x80));
+	strcpy(g_messageBoxLine, AP(const char, (MSG(0, "PRESS ENTER OR CLICK MOUSE") + i * 0x80)));
 }
 
 /* ---- session list entries (SessionEntry) ---- */
@@ -104,14 +104,14 @@ void (mech_setDefault)(void)
 		g_savedMechLeg = g_savedMechBooster = 0;
 	g_savedMechWeaponSlot0 = 0;
 	for (u32 p = OBJ(g_savedColourChoices); p < (OBJ(g_savedColourChoices) + 0x78); p += 24)
-		memcpy((void *)RELOC(p), colour, 24);
+		memcpy(AP(void, RELOC(p)), colour, 24);
 }
 
 /* 0x40ddb0: the Ladder account's mech (g_roomMech: signed bytes, five parts, then the six item slots; from the login
    reply or the new ID's defaults) and its colours (g_roomColours) unpacked into the saved mech */
 void (mech_unpackFromRecord)(void)
 {
-	const signed char *rec = (const signed char *)OBJ(g_roomMech);
+	const signed char *rec = AP(const signed char, OBJ(g_roomMech));
 	g_savedMechHead = rec[0];
 	g_savedMechChest = rec[1];
 	g_savedMechArm = rec[2];
@@ -121,7 +121,7 @@ void (mech_unpackFromRecord)(void)
 		g_savedMechSlotItems[2 + (u32)i] = rec[7 + i];   /* (items 2 .. 5) */
 	g_savedMechItemSlot5 = rec[6];
 	g_savedMechItemSlot4 = rec[5];
-	memcpy((void *)OBJ(g_savedColourChoices), (void *)OBJ(g_roomColours), 0x90);
+	memcpy(AP(void, OBJ(g_savedColourChoices)), AP(void, OBJ(g_roomColours)), 0x90);
 }
 
 /* 0x4463a0: the mech loaded from the profile record (0x9f19f8 ..): the parts, the weapons, the six colour pairs (a
@@ -140,12 +140,12 @@ void (mech_loadFromProfile)(void)
 	g_savedMechItemSlot4 = g_profileMechItemSlot4;
 	g_savedMechItemSlot5 = g_profileMechItemSlot5;
 	for (int o = 0; o < 0x90; o += 0x18) {
-		ColourChoice *c = (ColourChoice *)(OBJ(g_pilotSaveColours) + o);
+		ColourChoice *c = AP(ColourChoice, (OBJ(g_pilotSaveColours) + o));
 		if (!(c->first[1] >= 0.0f))   /* the first tint's saturation and value: not below 0 */
 			BITS(c->first[1]) = 0;
 		if (!(c->first[2] >= 0.0f))
 			BITS(c->first[2]) = 0;
-		memcpy((void *)(OBJ(g_savedColourChoices) + o), (void *)(OBJ(g_pilotSaveColours) + o), 0x18);
+		memcpy(AP(void, (OBJ(g_savedColourChoices) + o)), AP(void, (OBJ(g_pilotSaveColours) + o)), 0x18);
 	}
 }
 
@@ -163,7 +163,7 @@ void (mech_storeToProfile)(void)
 	g_profileMechItemSlot5 = g_savedMechItemSlot5;
 	g_profileMechWeaponSlot3 = g_savedMechWeaponSlot3;
 	g_profileMechItemSlot4 = g_savedMechItemSlot4;
-	memcpy((void *)OBJ(g_pilotSaveColours), (void *)OBJ(g_savedColourChoices), 0x90);
+	memcpy(AP(void, OBJ(g_pilotSaveColours)), AP(void, OBJ(g_savedColourChoices)), 0x90);
 }
 
 /* 0x447910: the menu camera snapped to the screen's first menu point: eye from g_camPoints[0] (g_camPoint0X ..),
@@ -264,7 +264,7 @@ void (ranking_fillPage)(void)
 		BITS(row->rate) = 0;
 		row->level = 1;
 	}
-	long double value = fld_m((const float *)ADDR(k_1000000f));
+	long double value = fld_m(AP(const float, ADDR(k_1000000f)));
 	float before = 1000000.0f;
 	int i;
 	for (i = 0; i < 10; i++) {
@@ -352,7 +352,7 @@ void (briefing_nextPage)(void)
 		g_briefingStart = g_briefingPageStarts[d] - 1 + g_briefingShown;
 		g_briefingShown = 0;
 		g_briefingPageStarts[d + 1] = g_briefingStart;
-		memset((void *)OBJ(g_briefingText), 0, 1600);
+		memset(AP(void, OBJ(g_briefingText)), 0, 1600);
 		g_textHitBottom = 0;
 	}
 }
@@ -363,7 +363,7 @@ void (briefing_prevPage)(void)
 	if (g_briefingPage > 0) {
 		g_briefingPage--;
 		g_briefingStart = g_briefingPageStarts[g_briefingPage];
-		memset((void *)OBJ(g_briefingText), 0, 1600);
+		memset(AP(void, OBJ(g_briefingText)), 0, 1600);
 		g_briefingShown = 0;
 		g_textHitBottom = 0;
 		g_briefingDone = 0;
@@ -482,8 +482,8 @@ u32 (skirmish_startRound)(void)
 	int sel = g_skirmishRoundShown;
 	u32 t = (u32)sel * 0x5c;
 	g_mapIndex = sel;
-	memcpy((void *)OBJ(g_gameTitle), (const void *)(OBJ(g_mapNames) + sel * 32), 32);
-	const SkirmishInfo *rec = (const SkirmishInfo *)(OBJ(g_skirmishInfo) + t);
+	memcpy(AP(void, OBJ(g_gameTitle)), AP(const void, (OBJ(g_mapNames) + sel * 32)), 32);
+	const SkirmishInfo *rec = AP(const SkirmishInfo, (OBJ(g_skirmishInfo) + t));
 	int a = rec->gameMode, b = rec->fragLimit, c = rec->timeLimit;
 	g_mapRotation = 0;
 	g_chosenGameMode = a;
@@ -538,13 +538,13 @@ u32 (menu_closeInputLine)(int ok)
 	g_textFieldOpen = 0;
 	if (ok) {
 		input_resetKeys();
-		input_initKeyboard(g_mainWindow);
+		input_initKeyboard(AP(void, g_mainWindow));
 		r = menu_pushInputHistory();   /* menu_pushInputHistory: into the history */
 	} else {
 		if (g_lineMaxLength > 0)
-			memset((void *)OBJ(g_inputLine), 0, g_lineMaxLength);
+			memset(AP(void, OBJ(g_inputLine)), 0, g_lineMaxLength);
 		input_resetKeys();
-		r = (u32)input_initKeyboard(g_mainWindow);
+		r = (u32)input_initKeyboard(AP(void, g_mainWindow));
 	}
 	g_lineMaxLength = 0;
 	g_inputLineLength = 0;
@@ -636,7 +636,7 @@ static int menu_choice(int i, u32 *r)
 		return 0;
 	case 2:
 		result = net_connect(0x65);
-		if (result == 2 || result == 0 || net_asyncSelect(g_mainWindow, 0x65) == 0) {
+		if (result == 2 || result == 0 || net_asyncSelect(AP(void, g_mainWindow), 0x65) == 0) {
 			sound_playMenu(6);
 			*r = menu_showMessage(result == 2 ? 0x2a : 0x29);
 			return 1;
@@ -670,7 +670,7 @@ u32 (mainmenu_clicks)(void)
 		return replaySelect_mouse();   /* replaySelect_mouse: the replay selection dialog */
 	if (g_mouseClick) {
 		g_menuRepeatClock = 0.0f;
-		const Outline *buttons = (const Outline *)OBJ(g_mainMenuOutlines);
+		const Outline *buttons = AP(const Outline, OBJ(g_mainMenuOutlines));
 		int i = 0;
 		while (i < 6 && point_in_outline(g_mouseX, g_mouseY, buttons[i]) != 1)
 			i++;

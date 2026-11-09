@@ -20,7 +20,7 @@
 #define glColor4f(r, g, b, a) IMPORT_FN(glColor4f, void, float, float, float, float)(r, g, b, a)
 /* a colour kept in memory, passed on bit for bit (the original copies the four values without the FPU, which
    would turn a signalling NaN into a quiet one) */
-#define glColor4f_stored(c) IMPORT_FN(glColor4f, void, u32, u32, u32, u32)(((const u32 *)RELOC(c))[0], ((const u32 *)RELOC(c))[1], \
+#define glColor4f_stored(c) IMPORT_FN(glColor4f, void, u32, u32, u32, u32)((AP(const u32, RELOC(c)))[0], (AP(const u32, RELOC(c)))[1], \
 	((const u32 *)(c))[2], ((const u32 *)(c))[3])
 #define glEnable(cap) IMPORT_FN(glEnable, void, u32)(cap)
 #define GL_FOG 0x0b60
@@ -84,7 +84,7 @@ void fix_hudVertex(int x, int y);
 #define glVertex4fv(v) IMPORT_FN(glVertex4fv, void, const void *)(v)
 #define glTexCoord2f_bits(s, t) IMPORT_FN(glTexCoord2f, void, u32, u32)(s, t)
 /* a point kept in memory (three floats), passed on bit for bit */
-#define glVertex3f_stored(v) IMPORT_FN(glVertex3f, void, u32, u32, u32)(((const u32 *)RELOC(v))[0], ((const u32 *)RELOC(v))[1], ((const u32 *)RELOC(v))[2])
+#define glVertex3f_stored(v) IMPORT_FN(glVertex3f, void, u32, u32, u32)((AP(const u32, RELOC(v)))[0], (AP(const u32, RELOC(v)))[1], (AP(const u32, RELOC(v)))[2])
 /* colours and translations given as float bits (see BITS) */
 #define glColor4f_bits(r, g, b, a) IMPORT_FN(glColor4f, void, u32, u32, u32, u32)(r, g, b, a)
 #define glTranslatef_bits(x, y, z) IMPORT_FN(glTranslatef, void, u32, u32, u32)(x, y, z)
@@ -94,7 +94,7 @@ void fix_hudVertex(int x, int y);
 	double, double, double)(ex, ey, ez, cx, cy, cz, ux, uy, uz)
 #define glPopMatrix() IMPORT_FN(glPopMatrix, void, void)()
 /* a point kept in memory (three floats), passed on bit for bit */
-#define glTranslatef_stored(v) IMPORT_FN(glTranslatef, void, u32, u32, u32)(((const u32 *)RELOC(v))[0], ((const u32 *)RELOC(v))[1], ((const u32 *)RELOC(v))[2])
+#define glTranslatef_stored(v) IMPORT_FN(glTranslatef, void, u32, u32, u32)((AP(const u32, RELOC(v)))[0], (AP(const u32, RELOC(v)))[1], (AP(const u32, RELOC(v)))[2])
 #define glRotatef(angle, x, y, z) IMPORT_FN(glRotatef, void, float, float, float, float)(angle, x, y, z)
 
 /* ---- C runtime of the game ---- */
@@ -547,7 +547,7 @@ typedef struct { u32 vtable; void *banks[6]; i32 count; } TextureManager;   /* t
 #define sky_draw(stage, scale) CALL_THISFN(sky_draw, void, Stage *, float)(stage, scale)   /* the sky (render/sky.c) */
 #define ground_buildDrawLists(stage, view, scale) CALL_THISFN(ground_buildDrawLists, void, void *, void *, float)(stage, view, scale)
 /* the stage, the scene's own object (scene.fields: Stage) */
-#define STAGE(scene) ((Stage *)((u8 *)RELOC(scene) + 0x1f36c8))
+#define STAGE(scene) ((Stage *)(AP(u8, RELOC(scene)) + 0x1f36c8))
 #define SCENE_STAGE_AT 0x1f36c8   /* where a scene's stage (its Stage object) starts */
 #define SCENE_STAGE(scene) ((Stage *)((u8 *)(scene) + SCENE_STAGE_AT))   /* the same for a runtime scene pointer (no RELOC) */
 #define stage_drawObjects(stage, view) CALL_THISFN(stage_drawObjects, void, Stage *, void *)(stage, view)
@@ -637,11 +637,11 @@ typedef struct { float r, g, b, a; } Colour;   /* an RGBA colour, four floats (C
 /* two-button dialogs: the highlighted choice and its marker */
 /* the profile screen's pages */
 /* the skirmish screen (screen 500) */
-#define g_skirmishBox ((const int *)ADDR(g_skirmishRectLeft))         /* the dialog frame: x0, y0, x1, y1 */
+#define g_skirmishBox (AP(const int, ADDR(g_skirmishRectLeft)))         /* the dialog frame: x0, y0, x1, y1 */
 /* exe strings passed to the text passes (the address itself is what the callee gets) */
-#define STR_COPYRIGHT ((const char *)STR(0x4b0474, "AXIS by Jamie System Development"))
-#define STR_2D ((const char *)STR(0x4d03e0, "%2d"))
-#define STR_VERSION ((const char *)STR(0x4b0384, "Axis v1.03"))
+#define STR_COPYRIGHT (AP(const char, STR(0x4b0474, "AXIS by Jamie System Development")))
+#define STR_2D (AP(const char, STR(0x4d03e0, "%2d")))
+#define STR_VERSION (AP(const char, STR(0x4b0384, "Axis v1.03")))
 
 /* ---- DirectPlay (net/dplay_slots.c) ---- */
 #define dplay_init() CALL_FN(dplay_init, int, void)()                     /* 0 when COM is up */
@@ -1121,8 +1121,8 @@ void fix_glViewport(int x, int y, int w, int h);
 #define glViewport(x, y, w, h) fix_glViewport(x, y, w, h)
 #endif
 #define glMatrixMode(mode) IMPORT_FN(glMatrixMode, void, u32)(mode)
-#define gluPerspective(angle, aspect, zNear, zFar) ((void (STDCALL *)(double, double, double, double))*(const u32 *)STR(0x4a9048, "j\300\n"))(angle, aspect, zNear, zFar)
-#define gluOrtho2D(left, right, bottom, top) ((void (STDCALL *)(double, double, double, double))*(const u32 *)STR(0x4a9050, "|\300\n"))(left, right, bottom, top)
+#define gluPerspective(angle, aspect, zNear, zFar) ((void (STDCALL *)(double, double, double, double))*AP(const u32, STR(0x4a9048, "j\300\n")))(angle, aspect, zNear, zFar)
+#define gluOrtho2D(left, right, bottom, top) ((void (STDCALL *)(double, double, double, double))*AP(const u32, STR(0x4a9050, "|\300\n")))(left, right, bottom, top)
 
 /* ---- small methods and resets (app/small.c, app/classes.c, match/actor_slots.c, collision/collision_space.c, render/rotations.c) ---- */
 #define path_normalize(path) CALL_FN(path_normalize, char *, char *)(path)   /* upper-cased in place, '/' -> '\' */

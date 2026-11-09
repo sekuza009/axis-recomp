@@ -44,7 +44,7 @@ void (ptx_readDcDiff)(int *out)
 {
 	int v, len = 0, k;
 	ptx_readBits(&v, 16);
-	const int *code = (const int *)(OBJ(g_ptxDcCodes) + g_table * 96);
+	const int *code = AP(const int, (OBJ(g_ptxDcCodes) + g_table * 96));
 	for (k = 0; k < 16; k++, code += 2) {
 		len = code[0];
 		if (v >> ((16 - len) & 31) == code[1])
@@ -59,7 +59,7 @@ void (ptx_readAcSymbol)(int *out, int *run)
 {
 	int v, len = 0, k;
 	ptx_readBits(&v, 16);
-	const int *code = (const int *)(OBJ(g_ptxAcCodes) + (g_table << 11));
+	const int *code = AP(const int, (OBJ(g_ptxAcCodes) + (g_table << 11)));
 	for (k = 0; k < 256; k++, code += 2) {
 		len = code[0];
 		if (len && v >> ((16 - len) & 31) == code[1])
@@ -149,7 +149,7 @@ static int idct_mul(int x, int c) { return (int)((u32)x * (u32)c) >> 8; }
 void (ptx_inverseDct)(const int *in, u8 *out)
 {
 	const int *quant = g_ptxDequant;
-	const u8 *limit = g_ptxClamp + 0x80;
+	const u8 *limit = AP(const u8, g_ptxClamp + 0x80);
 	int ws[64];
 	for (int c = 0; c < 8; c++) {   /* pass 1: the columns, dequantised */
 		const int *i = in + c, *q = quant + c;
@@ -208,11 +208,11 @@ void (ptx_inverseDct)(const int *in, u8 *out)
    (when there is one), to stderr; a non-zero code exits with it. Returns the code */
 int (ptx_crtlError)(int code, const char *format, ...)
 {
-	void *err = (void *)OBJ(g_crtStderr);   /* stderr */
-	crt_fprintf(err, (const char *)STR(0x4b182c, "\n"));
-	crt_fprintf(err, (const char *)STR(0x4c6fc0, "CRTL ERROR: %s\n"), g_crtSysErrList[(u32)g_crtErrno]);
+	void *err = AP(void, OBJ(g_crtStderr));   /* stderr */
+	crt_fprintf(err, AP(const char, STR(0x4b182c, "\n")));
+	crt_fprintf(err, AP(const char, STR(0x4c6fc0, "CRTL ERROR: %s\n")), g_crtSysErrList[(u32)g_crtErrno]);
 	if (format && strlen(format)) {
-		crt_fprintf(err, (const char *)STR(0x4c6fb0, "CRTL ERROR: "));
+		crt_fprintf(err, AP(const char, STR(0x4c6fb0, "CRTL ERROR: ")));
 		va_list args;
 		va_start(args, format);
 		crt_vfprintf(err, format, args);   /* vfprintf */
@@ -226,9 +226,9 @@ int (ptx_crtlError)(int code, const char *format, ...)
 /* 0x46e260: a decoder error: "<header>" and the message to stderr; a non-zero code exits with it. Returns the code */
 int (ptx_error)(int code, const char *format, ...)
 {
-	void *err = (void *)OBJ(g_crtStderr);   /* stderr */
-	crt_fprintf(err, (const char *)STR(0x4b182c, "\n"));
-	crt_fprintf(err, (const char *)STR(0x4c6fd0, "ERROR: "));
+	void *err = AP(void, OBJ(g_crtStderr));   /* stderr */
+	crt_fprintf(err, AP(const char, STR(0x4b182c, "\n")));
+	crt_fprintf(err, AP(const char, STR(0x4c6fd0, "ERROR: ")));
 	va_list args;
 	va_start(args, format);
 	crt_vfprintf(err, format, args);   /* vfprintf */
@@ -249,16 +249,16 @@ static int ptx_read(void *f, u8 *out, int *fmt, int *width, int *height, int clo
 	struct { char magic[4]; u16 version; short w, h, type, quality; u8 pad[6]; } head;
 	ptx_fread(&head, 1, 0x10, f);
 	if (head.magic[0] != 'P' || head.magic[1] != 'T' || head.magic[2] != 'X' || head.magic[3] != 0)
-		ptx_error(-1, (const char *)STR(0x4c6fec, "Not PTX file\n"));
+		ptx_error(-1, AP(const char, STR(0x4c6fec, "Not PTX file\n")));
 	if (head.version != 0x100)
-		ptx_error(-1, (const char *)STR(0x4c6fec, "Not PTX file\n"));
+		ptx_error(-1, AP(const char, STR(0x4c6fec, "Not PTX file\n")));
 	int w = head.w * 8, h = head.h * 8, planes;
 	if (head.type == 0x81)
 		planes = 3;
 	else if (head.type == 0x82)
 		planes = 4;
 	else {
-		ptx_error(-1, (const char *)STR(0x4c6fd8, "not implemented\n"));
+		ptx_error(-1, AP(const char, STR(0x4c6fd8, "not implemented\n")));
 		planes = -1;
 	}
 	ptx_initDequantTables(head.quality);
@@ -303,9 +303,9 @@ static int ptx_read(void *f, u8 *out, int *fmt, int *width, int *height, int clo
    the conversion. Returns 0, or the type less 0x82 for an unknown type */
 int (ptx_decodeFile)(const char *path, u8 *out, int *fmt, int *width, int *height)
 {
-	void *f = crt_fopen(path, (const char *)STR(0x4ad170, "rb"));
+	void *f = crt_fopen(path, AP(const char, STR(0x4ad170, "rb")));
 	if (!f)
-		ptx_crtlError(-1, (const char *)STR(0x4b3fd8, "%s"), path);
+		ptx_crtlError(-1, AP(const char, STR(0x4b3fd8, "%s")), path);
 	return ptx_read(f, out, fmt, width, height, 1);
 }
 

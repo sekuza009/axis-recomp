@@ -57,7 +57,7 @@ void THISCALL (factor_addFactorBy)(LightFactors *pool, const u32 *record)
 #define NEXT (pool->nextFree)
 #define SLOT(k) ((u32 *)&pool->records[k])
 	if (NEXT >= 0x400)
-		sys_fatalError((char *)OBJ(g_logLight), (const char *)STR(0x4c7ae0, "factorPool overflow(%d) - addFactorBy()"), NEXT);
+		sys_fatalError(AP(char, OBJ(g_logLight)), AP(const char, STR(0x4c7ae0, "factorPool overflow(%d) - addFactorBy()")), NEXT);
 	if (NEXT == COUNT) {
 		COUNT++;
 		SLOT(COUNT)[1] = 0;
@@ -98,29 +98,29 @@ void THISCALL (ViewVolume_initBy)(u8 *view, int entries, int matrices, int colou
 	VV->segmentLimit = segments;
 	int need = VV->blockSize = entries * 0x1c + matrices * 0x40 + colours * 4 + triangles * 0x68 + quads * 0x64 + segments * 0x24;
 	if (!mem) {
-		VV->block = operator_new(need);
+		VV->block = AREF(operator_new(need));
 		if (!VV->block)
-			sys_fatalError((char *)OBJ(g_logViewVolume), (const char *)STR(0x4c4cec, "insufficient memory for dataMemory(%d..."), VV->blockSize);
+			sys_fatalError(AP(char, OBJ(g_logViewVolume)), AP(const char, STR(0x4c4cec, "insufficient memory for dataMemory(%d...")), VV->blockSize);
 		VV->ownsBlock = 1;
 	} else {
 		if (size < need)
-			sys_fatalErrorN((char *)OBJ(g_logViewVolume), (const char *)STR(0x4c4cbc, "reserved dataMemory overflow(%d/%d) -..."), need, size);
-		VV->block = mem;
+			sys_fatalErrorN(AP(char, OBJ(g_logViewVolume)), AP(const char, STR(0x4c4cbc, "reserved dataMemory overflow(%d/%d) -...")), need, size);
+		VV->block = AREF(mem);
 	}
-	u8 *block = VV->block;
-	VV->entries = block;
+	u8 *block = AP(u8, VV->block);
+	VV->entries = AREF(block);
 	int at = VV->entryLimit * 0x1c;
-	VV->matrices = block + at;
+	VV->matrices = AREF(block + at);
 	at += VV->matrixLimit * 0x40;
-	VV->colours = block + at;
+	VV->colours = AREF(block + at);
 	at += VV->colourLimit * 4;
-	VV->triangles = block + at;
-	VV->triangleOrder = block + at + VV->triangleLimit * 0x60;
+	VV->triangles = AREF(block + at);
+	VV->triangleOrder = AREF(block + at + VV->triangleLimit * 0x60);
 	at += VV->triangleLimit * 0x68;
-	VV->quads = block + at;
+	VV->quads = AREF(block + at);
 	int count = VV->quadLimit;
-	VV->quadOrderA = block + at + count * 0x5c;
-	VV->quadOrderB = block + at + count * 0x64;
-	VV->segments = block + at + count * 0x6c;
+	VV->quadOrderA = AREF(block + at + count * 0x5c);
+	VV->quadOrderB = AREF(block + at + count * 0x64);
+	VV->segments = AREF(block + at + count * 0x6c);
 	ViewVolume_clearDrawCounts(view);
 }

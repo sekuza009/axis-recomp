@@ -2,7 +2,7 @@
    drawn size square at (x, y) on the bound texture */
 static void portrait(int face, int x, int y, int size)
 {
-	const float *cell = k_86f, *texel = (const float *)ADDR(k_0_00390625f), *last = k_85f;
+	const float *cell = k_86f, *texel = AP(const float, ADDR(k_0_00390625f)), *last = k_85f;
 	int col = face % 3, row = face / 3;
 	glBegin(GL_QUADS);
 	long double rt = fmul_m((long double)row, cell), ct = fmul_m((long double)col, cell);

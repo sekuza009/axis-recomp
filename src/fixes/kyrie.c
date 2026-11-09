@@ -98,7 +98,7 @@ void fix_shapeRead(void *shape, void *file, void *at, int room)
 	g_markedPending = 0;
 	Shape *model = (Shape *)shape;
 	for (int i = 0; i < model->partCount; i++) {
-		char *tex = ((ShapePart *)model->parts)[i].texName;
+		char *tex = (AP(ShapePart, model->parts))[i].texName;
 		size_t len = strlen(tex);
 		if (!same_prefix(tex, "SHAPE\\GEOLITE\\") || same_prefix(tex + 14, "MARK") || len + 5 >= 0x40)
 			continue;

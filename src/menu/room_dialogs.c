@@ -7,7 +7,7 @@
 
 static void set_box(u32 box, int left, int top, int right, int bottom)
 {
-	int *b = (int *)RELOC(box);
+	int *b = AP(int, RELOC(box));
 	b[0] = left;
 	b[1] = top;
 	b[2] = right;
@@ -43,7 +43,7 @@ void (room_openNewIdForm)(void)
 	g_newIdFormRight = 0x262;
 	g_newIdFormBottom = 0x1ae;
 	newIdForm_layout();
-	memset((void *)OBJ(g_accountName), 0, 0x54);
+	memset(AP(void, OBJ(g_accountName)), 0, 0x54);
 	dialog_opened(0x4d);
 	g_newIdFormOpenName = 1;
 	g_roomUpdateNotice = 0;
@@ -55,7 +55,7 @@ void (room_openLogin)(void)
 	static const u32 cleared[] = { ADDR(g_typingAccountName), ADDR(g_unusedLoginWord), ADDR(g_typingAccountPassword), ADDR(g_typingAccountRepeat), ADDR(g_typingAccountEmail), ADDR(g_inputLineHidden), ADDR(g_textFieldOpen) };
 	for (unsigned k = 0; k < sizeof cleared / sizeof cleared[0]; k++)
 		GAME_VAR(int, cleared[k]) = 0;
-	memset((void *)OBJ(g_accountName), 0, 7 * 4 + 2 + 12);
+	memset(AP(void, OBJ(g_accountName)), 0, 7 * 4 + 2 + 12);
 	g_roomState = 0x42;
 	g_retypePassword = 1;
 	strcpy(g_accountName, g_ladderId);
@@ -166,7 +166,7 @@ u32 (room_joinListed)(int i)
 	g_joinConnecting = 1;
 	g_joinTimedOut = 0;
 	g_sessionFound = 0;
-	u32 timer = SetTimer(g_mainWindow, 0x378, 2000, NULL);   /* SetTimer */
+	u32 timer = SetTimer(AP(void, g_mainWindow), 0x378, 2000, NULL);   /* SetTimer */
 	g_joinTimer = timer;
 	return timer;
 }
@@ -206,7 +206,7 @@ u32 (arena_joinListed)(int i)
 	g_lanJoinRequest = 0;
 	if (g_lanSearchStarted)
 		dplay_leaveSession();
-	void *address = i == 99999 ? (void *)ADDR(g_typedArenaAddress) : (void *)g_sessionList[i].address;
+	void *address = i == 99999 ? AP(void, ADDR(g_typedArenaAddress)) : (void *)g_sessionList[i].address;
 	if (!dplay_openConnection(0, address)) {
 		menu_showMessage(0x3f);
 		return dplay_leaveSession();
@@ -217,7 +217,7 @@ u32 (arena_joinListed)(int i)
 	g_joinConnecting = 1;
 	g_joinTimedOut = 0;
 	g_sessionFound = 0;
-	u32 timer = SetTimer(g_mainWindow, 0x378, 2000, NULL);   /* SetTimer */
+	u32 timer = SetTimer(AP(void, g_mainWindow), 0x378, 2000, NULL);   /* SetTimer */
 	g_joinTimer = timer;
 	return timer;
 }
@@ -323,17 +323,17 @@ u32 (roomSettings_page)(void)
    what the original leaves in eax */
 u32 (roomLogin_endTyping)(void)
 {
-	DestroyWindow(g_hEditField);   /* DestroyWindow */
-	SetFocus(g_mainWindow);               /* SetFocus */
+	DestroyWindow(AP(void, g_hEditField));   /* DestroyWindow */
+	SetFocus(AP(void, g_mainWindow));               /* SetFocus */
 	menu_closeInputLine(1);                           /* menu_closeInputLine: the line sent */
 	if (g_lineToLoginId == 1) {
-		memset((void *)OBJ(g_accountName), 0, 30);
+		memset(AP(void, OBJ(g_accountName)), 0, 30);
 		g_lineToLoginId = 0;
 		strcpy(g_accountName, g_inputLine);
 		return 0;
 	}
 	if (g_lineToLoginPassword == 1) {
-		memset((void *)OBJ(g_accountPassword), 0, 12);
+		memset(AP(void, OBJ(g_accountPassword)), 0, 12);
 		g_inputLineHidden = 0;
 		strcpy(g_accountPassword, g_inputLine);
 		g_lineToLoginPassword = 0;
@@ -377,7 +377,7 @@ void (roomLogin_update)(void)
 		if (g_textFieldOpen)
 			return;
 		g_typingLoginId = 0;
-		memset((void *)OBJ(g_accountName), 0, 30);
+		memset(AP(void, OBJ(g_accountName)), 0, 30);
 		strcpy(g_accountName, g_inputLine);
 		if (g_fieldStep == 10) {
 			highlight_choice(3, g_roomLoginLeft + 0x1a2, g_roomLoginBottom - 0x30);
@@ -395,7 +395,7 @@ void (roomLogin_update)(void)
 	if (g_typingLoginPassword) {
 		if (g_textFieldOpen)
 			return;
-		memset((void *)OBJ(g_accountPassword), 0, 12);
+		memset(AP(void, OBJ(g_accountPassword)), 0, 12);
 		g_typingLoginPassword = 0;
 		strcpy(g_accountPassword, g_inputLine);
 		g_inputLineHidden = 0;
@@ -457,8 +457,8 @@ void (newIdForm_update)(void)
 		while (k < 4 && EDITING(k) != 1)
 			k++;
 		if (k < 4) {
-			memset((void *)RELOC(field[k].text), 0, field[k].size);
-			strcpy((char *)RELOC(field[k].text), g_inputLine);
+			memset(AP(void, RELOC(field[k].text)), 0, field[k].size);
+			strcpy(AP(char, RELOC(field[k].text)), g_inputLine);
 			if (step == 10 && k == 0)
 				highlight_choice(2, g_newIdFormLeft + 0x172, g_newIdFormBottom - 0x2c);
 			else {
@@ -584,7 +584,7 @@ u32 (room_enterAccountPage)(void)
 	static const u32 cleared2[] = { ADDR(g_editingOldPassword), ADDR(g_editingAccountPassword), ADDR(g_editingPasswordRepeat), ADDR(g_editingEmail), ADDR(g_unusedAccountWord), (OBJ(g_accountPassword) + 0x8), (OBJ(g_accountOldPassword) + 0x8) };
 	for (unsigned k = 0; k < sizeof cleared2 / sizeof cleared2[0]; k++)
 		GAME_VAR(int, cleared2[k]) = 0;
-	char *message = g_netAccountRequest;
+	char *message = AP(char, g_netAccountRequest);
 	memset(message, 0, 30);
 	strcpy(message, g_ladderId);
 	u32 r = net_send(0x1d, 0x65);
@@ -622,10 +622,10 @@ u32 (newIdForm_draw)(void)
 	glColor4f(1.0f, 1.0f, 1.0f, 1.0f);
 	menu_drawTexture(X0, Y0, X1, Y1, g_dialogFrameTexture);
 	set_colour_bits(g_textColour, bright[0], bright[1], bright[2], bright[3]);
-	text_draw16(X0 + 0x40, Y0 + 0x10, (const char *)MSG(341, "CREATE NEW ID"));
+	text_draw16(X0 + 0x40, Y0 + 0x10, AP(const char, MSG(341, "CREATE NEW ID")));
 	set_colour_bits(g_rectColour, bright[0], bright[1], bright[2], bright[3]);
 	for (int k = 0; k < 4; k++) {
-		text_draw8(X0 + 0x30, Y0 + k * 0x30 + 0x3c, (const char *)(MSG(342, "INPUT ID") + k * 0x80));
+		text_draw8(X0 + 0x30, Y0 + k * 0x30 + 0x3c, AP(const char, (MSG(342, "INPUT ID") + k * 0x80)));
 		menu_drawLine(X0 + 0x84, Y0 + k * 0x30 + 0x50, X0 + 0x200, Y0 + k * 0x30 + 0x50);
 	}
 	char hidden[64];   /* (the original's buffer is 30 bytes; here 64, all cleared by stars) */
@@ -650,7 +650,7 @@ u32 (newIdForm_draw)(void)
 		glColor4f(1.0f, 1.0f, 1.0f, hovered == k + 4 ? 1.0f : 0.4f);
 		menu_drawLargeButton(X0 + x + 0x5a, Y1 - 0x40, X0 + x + 0xfa, Y1 - 0x20, 1);
 		set_colour_bits(g_textColour, colour[0], colour[1], colour[2], colour[3]);
-		text_drawCentredLines16(X0 + x + 0x5a, Y1 - 0x38, X0 + x + 0xfa, (const char *)(MSG(115, "$[0] O K") + k * 0x80));
+		text_drawCentredLines16(X0 + x + 0x5a, Y1 - 0x38, X0 + x + 0xfa, AP(const char, (MSG(115, "$[0] O K") + k * 0x80)));
 	}
 	glColor4f(1.0f, 1.0f, 1.0f, 1.0f);
 	return menu_drawCornerOrnaments(X0, Y0, X1, Y1);   /* the border */
@@ -672,8 +672,8 @@ static void update_notice(void)
 	set_colour_bits(g_rectColour, 0, 0x3f800000, 0x3f800000, 0x3f800000);
 	menu_drawRect(0x68, 0xb8, 0x218, 0x13c, 0);
 	set_colour_bits(g_textColour, 0x3f800000, 0x3f800000, 0x3f800000, 0x3f800000);
-	text_drawCentredLines16(0x64, 0xc8, 0x21c, (const char *)MSG(3, "THIS PROGRAM HAS BEEN UPDATED"));
-	text_drawCentredLines16(0x64, 0xdc, 0x21c, (const char *)MSG(4, "DO DOWNLOAD A NEW VERSION"));
+	text_drawCentredLines16(0x64, 0xc8, 0x21c, AP(const char, MSG(3, "THIS PROGRAM HAS BEEN UPDATED")));
+	text_drawCentredLines16(0x64, 0xdc, 0x21c, AP(const char, MSG(4, "DO DOWNLOAD A NEW VERSION")));
 	for (int k = 0; k < 2; k++) {
 		glEnable(GL_TEXTURE_2D);
 		int texture = g_buttonTexture;
@@ -685,7 +685,7 @@ static void update_notice(void)
 			set_colour_bits(g_textColour, 0, 0x3f800000, 0x3f800000, 0x3f800000);
 		else
 			set_colour_bits(g_textColour, 0x3e99999a, 0x3f333333, 0x3f333333, 0x3f800000);   /* 0.3, 0.7, 0.7, 1 */
-		text_drawCentredLines16(x, 0x10c, x + 0x78, (const char *)(MSG(115, "$[0] O K") + k * 0x80));
+		text_drawCentredLines16(x, 0x10c, x + 0x78, AP(const char, (MSG(115, "$[0] O K") + k * 0x80)));
 	}
 }
 
@@ -708,7 +708,7 @@ u32 (newIdConfirm_draw)(void)
 	glColor4f(1.0f, 1.0f, 1.0f, 1.0f);
 	menu_drawTextureFlipped(X0, Y0, X1, Y1, g_dialogFrameTexture);
 	set_colour_bits(g_textColour, bright[0], bright[1], bright[2], bright[3]);
-	text_draw16(X0 + 0x20, Y0 + 0x10, (const char *)MSG(351, "CREATE NEW ID"));
+	text_draw16(X0 + 0x20, Y0 + 0x10, AP(const char, MSG(351, "CREATE NEW ID")));
 	set_colour_bits(g_rectColour, bright[0], bright[1], bright[2], bright[3]);
 	set_colour_bits(g_rectColour, 0, 0x3f800000, 0x3f800000, 0x3f800000);
 	menu_drawLine(X0 + 0x20, Y0 + 0x20, X1 - 0x20, Y0 + 0x20);
@@ -719,7 +719,7 @@ u32 (newIdConfirm_draw)(void)
 	set_colour_bits(g_textColour, 0x3f800000, 0x3f800000, 0, 0x3f800000);
 	text_drawCentredLines16(X0 + 0x30, Y0 + 0x48, X1 - 0x30, g_accountName);
 	set_colour_bits(g_textColour, bright[0], bright[1], bright[2], bright[3]);
-	text_drawCentredLines16(X0, Y0 + 0x8c, X1, (const char *)MSG(352, "NEW ID ON REGISTRATION"));
+	text_drawCentredLines16(X0, Y0 + 0x8c, X1, AP(const char, MSG(352, "NEW ID ON REGISTRATION")));
 	for (int k = 0; k < 2; k++) {
 		glEnable(GL_TEXTURE_2D);
 		int texture = g_buttonTexture;
@@ -729,7 +729,7 @@ u32 (newIdConfirm_draw)(void)
 		menu_drawWideButton(x + 0x64, Y1 - 0x40, x + 0xdc, Y1 - 0x20, 1);
 		const u32 *colour = hovered == k ? bright : dim;
 		set_colour_bits(g_textColour, colour[0], colour[1], colour[2], colour[3]);
-		text_drawCentredLines16(x + 0x64, Y1 - 0x38, x + 0xdc, (const char *)(MSG(354, "$[0] O K") + k * 0x80));
+		text_drawCentredLines16(x + 0x64, Y1 - 0x38, x + 0xdc, AP(const char, (MSG(354, "$[0] O K") + k * 0x80)));
 	}
 	if (g_roomUpdateNotice)
 		update_notice();
@@ -762,12 +762,12 @@ u32 (roomLogin_draw)(void)
 	glColor4f(1.0f, 1.0f, 1.0f, 1.0f);
 	menu_drawTexture(X0, Y0, X1, Y1, g_dialogFrameTexture);
 	set_colour_bits(g_textColour, bright[0], bright[1], bright[2], bright[3]);
-	text_draw16(X0 + 0x40, Y0 + 0x10, (const char *)MSG(331, "LADDER GAME ID MANAGER"));
+	text_draw16(X0 + 0x40, Y0 + 0x10, AP(const char, MSG(331, "LADDER GAME ID MANAGER")));
 	set_colour_bits(g_rectColour, bright[0], bright[1], bright[2], bright[3]);
 	menu_drawLine(X0 + 0x40, Y0 + 0x24, X1 - 0x40, Y0 + 0x24);
 	for (int k = 0; k < 2; k++) {
 		int y = Y0 + k * 0x30;
-		text_draw16(X0 + 0x40, y + 0x58, (const char *)(MSG(332, "YOUR ID") + k * 0x80));
+		text_draw16(X0 + 0x40, y + 0x58, AP(const char, (MSG(332, "YOUR ID") + k * 0x80)));
 		set_colour_bits(g_rectColour, 0, 0, 0, 0x3f000000);
 		menu_drawRect(X0 + 0xb8, y + 0x50, X0 + 0x1a8, y + 0x70, 1);
 		set_colour_bits(g_rectColour, bright[0], bright[1], bright[2], bright[3]);
@@ -791,14 +791,14 @@ u32 (roomLogin_draw)(void)
 		menu_drawWideButton(x + 0x30, Y1 - 0x40, x + 0xa8, Y1 - 0x20, 1);
 		const u32 *colour = lit ? bright : dim;
 		set_colour_bits(g_textColour, colour[0], colour[1], colour[2], colour[3]);
-		text_drawCentredLines16(x + 0x30, Y1 - 0x38, x + 0xa8, (const char *)(MSG(334, "LOG$[0] IN") + k * 0x80));
+		text_drawCentredLines16(x + 0x30, Y1 - 0x38, x + 0xa8, AP(const char, (MSG(334, "LOG$[0] IN") + k * 0x80)));
 	}
 	if (g_roomRequestOut) {
 		set_colour_bits(g_rectColour, 0x3e4ccccd, 0x3e4ccccd, 0x3f333333, 0x3f333333);   /* 0.2, 0.2, 0.7, 0.7 */
 		menu_drawRect(0x64, 0xc8, 0x21c, 0x140, 1);
 		set_colour_bits(g_textColour, 0x3f800000, 0x3f800000, 0, 0x3f800000);
-		text_drawCentredLines16(0x69, 0xdc, 0x217, (const char *)MSG(49, "CHECKING YOUR ID. PLEASE WAIT."));
-		text_drawCentredLines16(0x69, 0xf4, 0x217, (const char *)MSG(50, "PRESS ESC-KEY TO CANCEL"));
+		text_drawCentredLines16(0x69, 0xdc, 0x217, AP(const char, MSG(49, "CHECKING YOUR ID. PLEASE WAIT.")));
+		text_drawCentredLines16(0x69, 0xf4, 0x217, AP(const char, MSG(50, "PRESS ESC-KEY TO CANCEL")));
 	}
 	if (g_roomUpdateNotice)
 		update_notice();
@@ -846,7 +846,7 @@ void (account_drawPanel)(void)
 #define Y0 g_accountPanelTop
 #define X1 g_accountPanelRight
 #define Y1 g_accountPanelBottom
-#define K(addr) ((const float *)RELOC(addr))
+#define K(addr) (AP(const float, RELOC(addr)))
 	const u32 *bright = ((u32 *)g_roomBright), *dim = ((u32 *)g_roomDim);
 	int hovered = ((int)account_hitTest(g_mouseX, g_mouseY));   /* account_hitTest */
 	gfx_setProjection2D3D(2);
@@ -855,8 +855,8 @@ void (account_drawPanel)(void)
 		set_colour_bits(g_rectColour, 0x3e4ccccd, 0x3e4ccccd, 0x3f333333, 0x3f333333);   /* 0.2, 0.2, 0.7, 0.7 */
 		menu_drawRect(0x50, 0xc8, 0x230, 0x118, 1);
 		set_colour_bits(g_textColour, 0x3f800000, 0x3f800000, 0, 0x3f800000);
-		text_drawCentredLines16(0x50, 0xdc, 0x230, (const char *)MSG(423, "DOWNLOADING RANKING DATA"));
-		text_drawCentredLines16(0x50, 0xf0, 0x230, (const char *)MSG(50, "PRESS ESC-KEY TO CANCEL"));
+		text_drawCentredLines16(0x50, 0xdc, 0x230, AP(const char, MSG(423, "DOWNLOADING RANKING DATA")));
+		text_drawCentredLines16(0x50, 0xf0, 0x230, AP(const char, MSG(50, "PRESS ESC-KEY TO CANCEL")));
 		return;
 	}
 	glColor4f(1.0f, 1.0f, 1.0f, 1.0f);
@@ -864,11 +864,11 @@ void (account_drawPanel)(void)
 	set_colour_bits(g_rectColour, 0, 0x3f800000, 0x3f800000, 0x3f800000);
 	menu_drawLine(X0 + 0x10, Y0 + 0x28, X1 - 0x10, Y0 + 0x28);
 	set_colour_bits(g_textColour, bright[0], bright[1], bright[2], bright[3]);
-	text_draw16(X0 + 0x20, Y0 + 0x10, (const char *)MSG(361, "USER INFOMATION"));
+	text_draw16(X0 + 0x20, Y0 + 0x10, AP(const char, MSG(361, "USER INFOMATION")));
 	for (int k = 0; k < 5; k++)
-		text_draw8(X0 + 0x20, Y0 + k * 0x1c + 0x34, (const char *)(MSG(362, "USER ID") + k * 0x80));
+		text_draw8(X0 + 0x20, Y0 + k * 0x1c + 0x34, AP(const char, (MSG(362, "USER ID") + k * 0x80)));
 	for (int k = 0; k < 7; k++)
-		text_draw8(X0 + 0x20, Y0 + k * 0x18 + 0xbe, (const char *)(MSG(367, "LEVEL") + k * 0x80));
+		text_draw8(X0 + 0x20, Y0 + k * 0x18 + 0xbe, AP(const char, (MSG(367, "LEVEL") + k * 0x80)));
 	text_draw8(X0 + 0x98, Y0 + 0x38, g_accountName);
 	for (int k = 0; k < 4; k++) {
 		int y = Y0 + k * 0x1c;
@@ -883,7 +883,7 @@ void (account_drawPanel)(void)
 	};
 	for (int k = 0; k < 3; k++)
 		if (!GAME_VAR(int, hidden[k].typing)) {
-			stars(text, sizeof text, (const char *)hidden[k].password);
+			stars(text, sizeof text, AP(const char, hidden[k].password));
 			text_draw8(X0 + 0x98, Y0 + hidden[k].y, text);
 		}
 	if (!g_editingEmail)
@@ -901,14 +901,14 @@ void (account_drawPanel)(void)
 	menu_drawRect(X0 + 0xc1, Y0 + 0xbe, X0 + 0xd8, Y0 + 0xce, 0);
 	/* the record */
 	if (!g_pilotRankKept)
-		text_draw8(X0 + 0x98, Y0 + 0xd6, (const char *)MSG(374, "OUT OF RANK(1000)"));
+		text_draw8(X0 + 0x98, Y0 + 0xd6, AP(const char, MSG(374, "OUT OF RANK(1000)")));
 	else {
 		itoa(g_pilotRankKept, text, 10);
 		text_draw8(X0 + 0x98, Y0 + 0xd6, text);
 	}
-	sprintf(text, (const char *)STR(0x4b0268, "%.2f"), (double)g_pilotPower);
+	sprintf(text, AP(const char, STR(0x4b0268, "%.2f")), (double)g_pilotPower);
 	text_draw8(X0 + 0x98, Y0 + 0xee, text);
-	sprintf(text, (const char *)STR(0x4b0268, "%.2f"), (double)g_pilotKillRate);
+	sprintf(text, AP(const char, STR(0x4b0268, "%.2f")), (double)g_pilotKillRate);
 	text_draw8(X0 + 0x98, Y0 + 0x106, text);
 	static const u32 counts[3] = { ADDR(g_pilotKills), ADDR(g_pilotDeaths), ADDR(g_pilotExp) };
 	for (int k = 0; k < 3; k++) {
@@ -925,7 +925,7 @@ void (account_drawPanel)(void)
 		menu_drawWideButton(x + 0x7d, Y1 - 0x30, x + 0xf5, Y1 - 0x10, 1);
 		const u32 *colour = lit ? bright : dim;
 		set_colour_bits(g_textColour, colour[0], colour[1], colour[2], colour[3]);
-		text_drawCentredLines16(x + 0x7d, Y1 - 0x28, x + 0xf5, (const char *)(MSG(115, "$[0] O K") + k * 0x80));
+		text_drawCentredLines16(x + 0x7d, Y1 - 0x28, x + 0xf5, AP(const char, (MSG(115, "$[0] O K") + k * 0x80)));
 	}
 	set_colour_bits(g_rectColour, 0, 0x3f800000, 0x3f800000, 0x3f800000);
 	menu_drawLine(X0 + 0x10, Y1 - 0x40, X1 - 0x10, Y1 - 0x40);
@@ -962,7 +962,7 @@ u32 (ranking_drawTable)(void)
 	glColor4f(1.0f, 1.0f, 1.0f, 1.0f);
 	menu_drawTexture(X0, Y0, X1, Y1, g_dialogFrameTexture);
 	TEXT(bright);
-	text_draw16(X0 + 0x10, Y0 + 0x10, (const char *)MSG(411, "LADDER GAME RANKING"));
+	text_draw16(X0 + 0x10, Y0 + 0x10, AP(const char, MSG(411, "LADDER GAME RANKING")));
 	glEnable(GL_TEXTURE_2D);
 	int texture = g_buttonTexture;
 	tex_bind(g_textures->banks[texture / 512], texture % 512);
@@ -976,11 +976,11 @@ u32 (ranking_drawTable)(void)
 	g_rankingLast = (g_rankingPage * 5 + 5) * 2;
 	itoa(first, range, 10);
 	itoa(g_rankingLast, last, 10);
-	strcat(range, (const char *)STR(0x4b278c, " ~ "));
+	strcat(range, AP(const char, STR(0x4b278c, " ~ ")));
 	strcat(range, last);
 	menu_drawWideButton(X0 + 0xe6, Y0 + 0x24, X0 + 0x146, Y0 + 0x40, 1);
 	text_drawCentred8(X0 + 0xe6, Y0 + 0x2a, X0 + 0x146, range);
-	text_drawCentredLines16(X1 - 0x78, Y0 + 0x10, X1 - 0x14, (const char *)MSG(412, "OPTION"));
+	text_drawCentredLines16(X1 - 0x78, Y0 + 0x10, X1 - 0x14, AP(const char, MSG(412, "OPTION")));
 	glEnable(GL_TEXTURE_2D);
 	texture = g_buttonTexture;
 	tex_bind(g_textures->banks[texture / 512], texture % 512);
@@ -989,26 +989,26 @@ u32 (ranking_drawTable)(void)
 	TEXT(yellow);
 	static const u32 sorted_by[4] = { MSG(416, "POWER"), MSG(418, "KILL"), MSG(420, "EXP"), MSG(417, "RATE") };
 	if ((unsigned)g_rankingSort <= 3)
-		text_drawCentred8(X1 - 0x78, Y0 + 0x2a, X1 - 0x14, (const char *)RELOC(sorted_by[g_rankingSort]));
+		text_drawCentred8(X1 - 0x78, Y0 + 0x2a, X1 - 0x14, AP(const char, RELOC(sorted_by[g_rankingSort])));
 	set_colour_bits(g_rectColour, 0, 0x3f800000, 0x3f800000, 0x3f800000);
 	menu_drawLine(X0 + 0x10, Y0 + 0x4a, X1 - 0x10, Y0 + 0x4a);
 	menu_drawLine(X0 + 0x10, Y0 + 0x6e, X1 - 0x10, Y0 + 0x6e);
 	/* the column heads, the numbers' right-aligned (8 a character) */
 	TEXT(bright);
-	text_draw8(X0 + 0x18, Y0 + 0x52, (const char *)MSG(413, "RANK"));
-	text_draw8(X0 + 0x48, Y0 + 0x52, (const char *)MSG(414, "ID"));
-	text_draw8(X0 - (int)strlen((const char *)MSG(415, "GRADE")) * 8 + 0xec, Y0 + 0x52, (const char *)MSG(415, "GRADE"));
+	text_draw8(X0 + 0x18, Y0 + 0x52, AP(const char, MSG(413, "RANK")));
+	text_draw8(X0 + 0x48, Y0 + 0x52, AP(const char, MSG(414, "ID")));
+	text_draw8(X0 - (int)strlen(AP(const char, MSG(415, "GRADE"))) * 8 + 0xec, Y0 + 0x52, AP(const char, MSG(415, "GRADE")));
 	static const struct { u32 text; int right, sort; } heads[5] = {
 		{ MSG(416, "POWER"), 0x12c, 0 }, { MSG(417, "RATE"), 0x2d * 8, 3 }, { MSG(418, "KILL"), 0x35 * 8, 1 }, { MSG(419, "DEATH"), 0x3c * 8, -1 },
 		{ MSG(420, "EXP"), 0x226, 2 },
 	};
 	for (int c = 0; c < 5; c++) {
-		int x = heads[c].right - (int)strlen((const char *)heads[c].text) * 8;
+		int x = heads[c].right - (int)strlen(AP(const char, heads[c].text)) * 8;
 		if (heads[c].sort >= 0 && g_rankingSort == heads[c].sort)
 			TEXT(yellow);
 		else
 			TEXT(bright);
-		text_draw8(X0 + x + 0x18, Y0 + 0x52, (const char *)heads[c].text);
+		text_draw8(X0 + x + 0x18, Y0 + 0x52, AP(const char, heads[c].text));
 	}
 	TEXT(white);
 	if (g_rankingHaveList) {
@@ -1034,12 +1034,12 @@ u32 (ranking_drawTable)(void)
 			TEXT(white);
 			if (g_rankingSort == 0)
 				TEXT(yellow);
-			sprintf(text, (const char *)STR(0x4b2784, "%8.1f"), (double)row->power);
+			sprintf(text, AP(const char, STR(0x4b2784, "%8.1f")), (double)row->power);
 			text_draw8(X0 - (int)strlen(text) * 8 + 0x144, y, text);
 			TEXT(white);
 			if (g_rankingSort == 3)
 				TEXT(yellow);
-			sprintf(text, (const char *)STR(0x4b277c, "%3.2f"), (double)row->rate);
+			sprintf(text, AP(const char, STR(0x4b277c, "%3.2f")), (double)row->rate);
 			text_draw8(X0 + (0x30 - (int)strlen(text)) * 8, y, text);
 			TEXT(white);
 			if (g_rankingSort == 1)
@@ -1070,13 +1070,13 @@ u32 (ranking_drawTable)(void)
 			TEXT(bright);
 		else
 			TEXT(dim);
-		text_drawCentredLines16(x + 0x7d, Y1 - 0x28, x + 0x11d, (const char *)(MSG(421, "$[0] STOP") + k * 0x80));
+		text_drawCentredLines16(x + 0x7d, Y1 - 0x28, x + 0x11d, AP(const char, (MSG(421, "$[0] STOP") + k * 0x80)));
 	}
 	if (g_rankingWaiting) {   /* loading: blinking in ten steps */
-		int step = ftol(fmul_m(fld_m((const float *)ADDR(g_listBlinkClock)), k_0_333333f)) % 10;
-		float alpha = f32(fsubr_m(fmul_m((long double)step, (const float *)ADDR(k_0_1f)), (const float *)ADDR(k_1f)));
+		int step = ftol(fmul_m(fld_m(AP(const float, ADDR(g_listBlinkClock))), k_0_333333f)) % 10;
+		float alpha = f32(fsubr_m(fmul_m((long double)step, AP(const float, ADDR(k_0_1f))), AP(const float, ADDR(k_1f))));
 		set_colour_bits(g_textColour, 0, 0x3f800000, 0, BITS(alpha));
-		text_drawCentredLines16(X0, Y0 + 0xc8, X1, (const char *)MSG(423, "DOWNLOADING RANKING DATA"));
+		text_drawCentredLines16(X0, Y0 + 0xc8, X1, AP(const char, MSG(423, "DOWNLOADING RANKING DATA")));
 	}
 	glColor4f(1.0f, 1.0f, 1.0f, 1.0f);
 	return menu_drawCornerOrnaments(X0, Y0, X1, Y1);   /* the border */

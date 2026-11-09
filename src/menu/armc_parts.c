@@ -3,7 +3,7 @@
 #include "../game.h"
 #include <string.h>
 
-#define FIELD(type, obj, offset) GAME_VAR(type, (u8 *)RELOC(obj) + (offset))
+#define FIELD(type, obj, offset) GAME_VAR(type, AP(u8, RELOC(obj)) + (offset))
 
 /* ActorItem fields copied as they are (PartInfo field, ActorItem field) */
 static const short copied[6][2] = { { offsetof(PartInfo, slotType), offsetof(ActorItem, slotType) }, { offsetof(PartInfo, ammoType), offsetof(ActorItem, ammoType) }, { offsetof(PartInfo, ammoPerShot), offsetof(ActorItem, ammoPerShot) }, { offsetof(PartInfo, burst), offsetof(ActorItem, burst) }, { offsetof(PartInfo, damageType), offsetof(ActorItem, damageType) }, { offsetof(PartInfo, damage), offsetof(ActorItem, damage) } };
@@ -81,9 +81,9 @@ u8 *(armc_readMechStats)(void)
 	s = x87_fsqrt(s);
 	s = s * k_0_01;
 	g_mechDetectionRange = (float)s;
-	mulf(ADDR(g_mechDetectionAngle), &A->detectionAngle, (const float *)ADDR(k_0_1f));
+	mulf(ADDR(g_mechDetectionAngle), &A->detectionAngle, AP(const float, ADDR(k_0_1f)));
 	g_mechHackingLevel = A->hackingLevel;
-	mulf(ADDR(g_mechLockOnTime), &A->lockOnTime, (const float *)ADDR(k_100f));
+	mulf(ADDR(g_mechLockOnTime), &A->lockOnTime, AP(const float, ADDR(k_100f)));
 	mulf(ADDR(g_mechTargetKeepTime), &A->targetKeepTime, k_1000f);
 	for (int i = 0; i < 7; i++)
 		g_mechMaxima[i] = ((const int *)&A->armorMax)[i];   /* armorMax, shieldMax, +0x24, ammoMax[4] */
@@ -91,20 +91,20 @@ u8 *(armc_readMechStats)(void)
 	const PlayerRecord *record = &sc->playerRecords[A->player];
 	const LegType *leg = &st->legTypes[record->parts[3]];
 	copyf(ADDR(g_mechLegsInertia), &leg->inertia);
-	mulf(ADDR(g_mechLegsSpeedCorrection), &leg->speedCorrection, (const float *)ADDR(k_100f));
-	mulf(ADDR(g_mechLegsForwardBoost), &leg->forwardBoostCorrection, (const float *)ADDR(k_100f));
-	mulf(ADDR(g_mechLegsSideBoost), &leg->sideBoostCorrection, (const float *)ADDR(k_100f));
-	mulf(ADDR(g_mechLegsBackBoost), &leg->backBoostCorrection, (const float *)ADDR(k_100f));
+	mulf(ADDR(g_mechLegsSpeedCorrection), &leg->speedCorrection, AP(const float, ADDR(k_100f)));
+	mulf(ADDR(g_mechLegsForwardBoost), &leg->forwardBoostCorrection, AP(const float, ADDR(k_100f)));
+	mulf(ADDR(g_mechLegsSideBoost), &leg->sideBoostCorrection, AP(const float, ADDR(k_100f)));
+	mulf(ADDR(g_mechLegsBackBoost), &leg->backBoostCorrection, AP(const float, ADDR(k_100f)));
 	g_unusedMechStat = st->boosterTypes[record->parts[4]].thrustType;
 	mulf(ADDR(g_mechBoostTime), &A->boostTime, k_1000f);
 	mulf(ADDR(g_mechBoosterRecharge), &A->rechargeTime, k_1000f);
 	mulf(ADDR(g_mechBoosterRestTime), &A->restTime, k_1000f);
 	mulf(ADDR(g_mechNormalSpeed), &A->speed, k_0_036f);
-	mulf((u32)&g_mechSpeeds[1], (const float *)ADDR(g_mechNormalSpeed), &A->runTop[0]);
-	g_mechMaxSpeedBwd = (float)-fmul_m(fld_m((const float *)ADDR(g_mechNormalSpeed)), &A->runTop[1]);
-	mulf((u32)&g_mechSpeeds[3], (const float *)ADDR(g_mechNormalSpeed), &A->runTop[2]);
+	mulf(ADDR_AT(g_mechSpeeds, 1), AP(const float, ADDR(g_mechNormalSpeed)), &A->runTop[0]);
+	g_mechMaxSpeedBwd = (float)-fmul_m(fld_m(AP(const float, ADDR(g_mechNormalSpeed))), &A->runTop[1]);
+	mulf(ADDR_AT(g_mechSpeeds, 3), AP(const float, ADDR(g_mechNormalSpeed)), &A->runTop[2]);
 	copyf(ADDR(g_loadLimit), &A->loadMax);
-	copyf((u32)&g_mechSpeeds[4], &A->load);
+	copyf(ADDR_AT(g_mechSpeeds, 4), &A->load);
 	return g;
 }
 
@@ -122,9 +122,9 @@ static void panel_name(u32 dst, const char *name)
 		if (buf[i] == '/')
 			buf[i] = '-';
 	}
-	memset((void *)RELOC(dst), 0, 64);
+	memset(AP(void, RELOC(dst)), 0, 64);
 	if (len > 0)
-		memcpy((void *)RELOC(dst), buf, len);
+		memcpy(AP(void, RELOC(dst)), buf, len);
 }
 
 /* 0x41b750: the ARM CENTER's part panels' values for the local player's mech, nothing drawn: for its head, chest,
@@ -139,10 +139,10 @@ int (armc_readPartPanels)(void)
 	const PlayerRecord *record = &sc->playerRecords[sc->players[sc->localPlayer].player];
 	const HeadType *head = &st->headTypes[record->parts[0]];   /* head */
 	panel_name(OBJ(g_headPanelName), head->name);
-	mulf(ADDR(g_headDetectionRange), &head->detectionRange, (const float *)ADDR(k_0_01f));
-	mulf(ADDR(g_headDetectionAngle), &head->detectionAngle, (const float *)ADDR(k_0_1f));
+	mulf(ADDR(g_headDetectionRange), &head->detectionRange, AP(const float, ADDR(k_0_01f)));
+	mulf(ADDR(g_headDetectionAngle), &head->detectionAngle, AP(const float, ADDR(k_0_1f)));
 	g_headHackingLevel = head->hackingLevel;
-	mulf(ADDR(g_headLockOnTime), &head->lockOnTime, (const float *)ADDR(k_100f));
+	mulf(ADDR(g_headLockOnTime), &head->lockOnTime, AP(const float, ADDR(k_100f)));
 	mulf(ADDR(g_headTargetKeepTime), &head->targetKeepTime, k_1000f);
 	copyf(ADDR(g_headWeight), &head->weight);
 	const ChestType *chest = &st->chestTypes[record->parts[1]];   /* chest */
@@ -158,11 +158,11 @@ int (armc_readPartPanels)(void)
 	const LegType *leg = &st->legTypes[record->parts[3]];   /* leg */
 	panel_name(OBJ(g_legPanelName), leg->name);
 	copyf(OBJ(g_legsStats), &leg->agility);
-	copyf((u32)&g_legsStats[1], &leg->inertia);
-	mulf(ADDR(g_legsSpeedCorrection), &leg->speedCorrection, (const float *)ADDR(k_100f));
-	mulf((u32)&g_legsStats[3], &leg->forwardBoostCorrection, (const float *)ADDR(k_100f));
-	mulf((u32)&g_legsStats[4], &leg->sideBoostCorrection, (const float *)ADDR(k_100f));
-	mulf((u32)&g_legsStats[5], &leg->backBoostCorrection, (const float *)ADDR(k_100f));
+	copyf(ADDR_AT(g_legsStats, 1), &leg->inertia);
+	mulf(ADDR(g_legsSpeedCorrection), &leg->speedCorrection, AP(const float, ADDR(k_100f)));
+	mulf(ADDR_AT(g_legsStats, 3), &leg->forwardBoostCorrection, AP(const float, ADDR(k_100f)));
+	mulf(ADDR_AT(g_legsStats, 4), &leg->sideBoostCorrection, AP(const float, ADDR(k_100f)));
+	mulf(ADDR_AT(g_legsStats, 5), &leg->backBoostCorrection, AP(const float, ADDR(k_100f)));
 	copyf(ADDR(g_legsWeight), &leg->weight);
 	int boosterIndex = record->parts[4];
 	const BoosterType *booster = &st->boosterTypes[boosterIndex];
@@ -189,13 +189,13 @@ u32 (armc_stepPart)(u32 part, int dir)
 	g_mechChanged = 1;
 	if (part > 4)
 		return part;
-	int *cursor = (int *)RELOC(parts[part].cursor), count = GAME_VAR(int, parts[part].count);
+	int *cursor = AP(int, RELOC(parts[part].cursor)), count = GAME_VAR(int, parts[part].count);
 	if (dir == 1) {
 		if (--*cursor < 0)
 			*cursor = count - 1;
 	} else if (++*cursor >= count)
 		*cursor = 0;
-	u32 chosen = ((const u32 *)RELOC(parts[part].list))[*cursor];
+	u32 chosen = (AP(const u32, RELOC(parts[part].list)))[*cursor];
 	(*(u32 *)&g_armcParts[part]) = chosen;
 	return (part & 1) == (dir == 1 ? 0u : 1u) ? chosen : (u32)*cursor;
 }
@@ -212,7 +212,7 @@ static int append_parts(const Unlock *entry, u32 list, int len)
 	if ((int)((u32)n + 1) <= 1)   /* none (the original's test: n + 1 > 1, wrapping) */
 		return len;
 	for (int i = 0; i < n; i++)
-		((int *)RELOC(list))[len + i] = entry->parts[i];
+		(AP(int, RELOC(list)))[len + i] = entry->parts[i];
 	return len + n;
 }
 
@@ -249,7 +249,7 @@ void (armc_buildPartLists)(void)
 	for (int k = 0; k < 5; k++)
 		GAME_VAR(int, lengths[k]) = 0;
 	u32 tables = fromRoom ? OBJ(g_unlockTablesLadder) : OBJ(g_unlockTablesByProgress);
-#define TABLE(k, lv) ((const Unlock *)RELOC(tables) + (k) * 20 + (lv))   /* (20 levels a part kind) */
+#define TABLE(k, lv) (AP(const Unlock, RELOC(tables)) + (k) * 20 + (lv))   /* (20 levels a part kind) */
 	if (level >= 0) {
 		int last = 0;   /* the fifth list's length: the original keeps it in a register until the end */
 		for (int lv = 0; lv <= level; lv++) {

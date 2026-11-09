@@ -4,7 +4,7 @@
 #include "../game.h"
 #include <string.h>
 
-#define FIELD(type, obj, offset) GAME_VAR(type, (u8 *)RELOC(obj) + (offset))
+#define FIELD(type, obj, offset) GAME_VAR(type, AP(u8, RELOC(obj)) + (offset))
 
 typedef int (THISCALL *Clear)(void *record);
 
@@ -14,16 +14,16 @@ typedef int (THISCALL *Clear)(void *record);
 static int reset_pool(SpacePool *pool, int stride, Clear clear, int link)
 {
 	for (int i = 0; i < pool->count; i++)
-		clear(pool->records + i * stride);
+		clear(AP(void, pool->records + i * stride));
 	for (int i = 1; i < pool->count; i++) {
-		u8 *e = pool->records + i * stride;
+		u8 *e = AP(u8, pool->records + i * stride);
 		FIELD(u8 *, e, link) = e - stride;
 	}
 	int r = pool->count;
 	if (pool->count - 1 > 0) {
 		int i;
 		for (i = 0; i < pool->count - 1; i++) {
-			u8 *a = pool->records;
+			u8 *a = AP(u8, pool->records);
 			FIELD(u8 *, a + i * stride, link + 4) = a + (i + 1) * stride;
 		}
 		r = i * stride;
@@ -32,7 +32,7 @@ static int reset_pool(SpacePool *pool, int stride, Clear clear, int link)
 	pool->freeHead = pool->records;
 	return r;
 }
-#define POOL(space, name) (&((Space *)RELOC(space))->name)
+#define POOL(space, name) (&(AP(Space, RELOC(space)))->name)
 
 static int THISCALL clear_plane(void *r) { return collisionPlane_clear(r); }
 static int THISCALL clear_node(void *r) { return spaceNode_clear(r); }
@@ -51,17 +51,17 @@ int THISCALL (space_resetBlocks)(void *space) { return reset_pool(POOL(space, bl
 static void *take_free(u8 *space, SpacePool *pool, int next, int prev, Clear clear, u32 format)
 {
 	Space *sp = (Space *)space;
-	u8 *r = pool->freeHead;
+	u8 *r = AP(u8, pool->freeHead);
 	if (!r) {
 		sys_fatalErrorN(   /* sys_fatalError */
-			(void *)OBJ(g_logCollisionVolume), (const char *)RELOC(format), sp->planes.used, sp->planes.count, sp->nodes.used,
+			AP(void, OBJ(g_logCollisionVolume)), AP(const char, RELOC(format)), sp->planes.used, sp->planes.count, sp->nodes.used,
 			sp->nodes.count, sp->units.used, sp->units.count, sp->blocks.used,
 			sp->blocks.count);
 		return 0;
 	}
 	u8 *after = FIELD(u8 *, r, next);
 	if (after) {
-		pool->freeHead = after;
+		pool->freeHead = AREF(after);
 		FIELD(u8 *, after, prev) = 0;
 	} else
 		pool->freeHead = 0;
@@ -85,11 +85,11 @@ void *THISCALL (space_getNextFreeBlockPtrBy)(u8 *space, const u32 *mn, const u32
 #define SP sp   /* the same by its fields (src/scene.fields) */
 	u32 *block = (*(u32 * *)&SP->blocks.freeHead);
 	if (!block) {
-		sys_fatalErrorN((char *)OBJ(g_logCollisionVolume), (const char *)STR(0x4c7924, "not enoush free block-getNextFreeBloc..."),
+		sys_fatalErrorN(AP(char, OBJ(g_logCollisionVolume)), AP(const char, STR(0x4c7924, "not enoush free block-getNextFreeBloc...")),
 			SP->planes.used, SP->planes.count, SP->nodes.used, SP->nodes.count, SP->units.used, SP->units.count, SP->blocks.used, SP->blocks.count);
 		return 0;
 	}
-	u32 *next = (u32 *)RELOC(block[0x4c / 4]);
+	u32 *next = AP(u32, RELOC(block[0x4c / 4]));
 	if (next) {
 		(*(u32 * *)&SP->blocks.freeHead) = next;
 		next[0x48 / 4] = 0;
@@ -116,22 +116,22 @@ void THISCALL (space_addUnitTriangle)(void *space, u32 flags, u8 *owner, u32 par
 	u8 *plane = space_insertTriangle(space, flags, v0, v1, v2, owner, part, i0, i1, i2);
 	if (!plane)
 		return;
-	u8 *last = un->lastPlane;
+	u8 *last = AP(u8, un->lastPlane);
 	if (last) {
-		PL(last)->listNext = plane;
+		PL(last)->listNext = AREF(plane);
 		PL(plane)->listPrev = un->lastPlane;
 	}
-	un->lastPlane = plane;
+	un->lastPlane = AREF(plane);
 	SpaceNode *node = space_getNextFreeNodePtr(space);
-	node->item = plane;
-	SpaceNode *last_node = un->lastNode;
+	node->item = AREF(plane);
+	SpaceNode *last_node = AP(SpaceNode, un->lastNode);
 	if (last_node) {
-		PL(last_node->item)->listNext = plane;
+		PL(last_node->item)->listNext = AREF(plane);
 		PL(node->item)->listPrev = un->lastNode->item;
 		RELOC(un->lastNode)->newer = node;
 		RELOC(node)->next = un->lastNode;
 	}
-	un->lastNode = node;
+	un->lastNode = AREF(node);
 #undef PL
 }
 
@@ -160,9 +160,9 @@ void THISCALL (space_setBy)(u8 *space, const u32 *mn, const u32 *mx, int cz, int
 	SP->cellsY = cy;
 	int cells = SP->cellCount = cz * cx * cy;
 	if (cells <= 0)
-		sys_fatalErrorN((char *)OBJ(g_logCollisionVolume), (const char *)STR(0x4c79f4, "non-zero size required(%dx%dx%d)-setBy()"), cz, cx, cy);
+		sys_fatalErrorN(AP(char, OBJ(g_logCollisionVolume)), AP(const char, STR(0x4c79f4, "non-zero size required(%dx%dx%d)-setBy()")), cz, cx, cy);
 	else if (cells > SP->cellCapacity)
-		sys_fatalErrorN((char *)OBJ(g_logCollisionVolume), (const char *)STR(0x4c79bc, "blockIndexTable overflow((%dx%dx%d=%d..."), cz, cx, cy, cells, SP->cellCapacity);
+		sys_fatalErrorN(AP(char, OBJ(g_logCollisionVolume)), AP(const char, STR(0x4c79bc, "blockIndexTable overflow((%dx%dx%d=%d...")), cz, cx, cy, cells, SP->cellCapacity);
 	SP->splitCount = splitCount;
 	BITS(SP->margin) = margin;
 	SP->depth = depth;
@@ -170,8 +170,8 @@ void THISCALL (space_setBy)(u8 *space, const u32 *mn, const u32 *mx, int cz, int
 	SP->cellSize[1] = (float)(((long double)SP->max[0] - SP->min[0]) / SP->cellsX);
 	SP->cellSize[2] = (float)(((long double)SP->max[1] - SP->min[1]) / SP->cellsY);
 	if (depth > 8)
-		sys_fatalErrorN((char *)OBJ(g_logCollisionVolume), (const char *)STR(0x4c7980, "blockRecursionLimit overflow(%d/%d)-s..."), depth, 8);
-	memset(SP->cells, 0xff, ((u32)SP->cellCapacity) * 2);
+		sys_fatalErrorN(AP(char, OBJ(g_logCollisionVolume)), AP(const char, STR(0x4c7980, "blockRecursionLimit overflow(%d/%d)-s...")), depth, 8);
+	memset(AP(void, SP->cells), 0xff, ((u32)SP->cellCapacity) * 2);
 #undef FIELD
 #undef SP
 }
@@ -193,27 +193,27 @@ void THISCALL (space_initBy)(u8 *space, int planes, int nodes, int units, int bl
 	SP->cellCapacity = cells;
 	int need = SP->blockSize = planes * 0xac + nodes * 0x10 + units * 0x14 + blocks * 0x50 + cells * 2;
 	if (!mem) {
-		SP->block = operator_new(need);
+		SP->block = AREF(operator_new(need));
 		if (!SP->block)
-			sys_fatalError((char *)OBJ(g_logCollisionVolume), (const char *)STR(0x4c4cec, "insufficient memory for dataMemory(%d..."), SP->blockSize);
+			sys_fatalError(AP(char, OBJ(g_logCollisionVolume)), AP(const char, STR(0x4c4cec, "insufficient memory for dataMemory(%d...")), SP->blockSize);
 		SP->ownsBlock = 1;
 	} else {
 		if (size < need)
-			sys_fatalErrorN((char *)OBJ(g_logCollisionVolume), (const char *)STR(0x4c4cbc, "reserved dataMemory overflow(%d/%d) -..."), need, size);
-		SP->block = mem;
+			sys_fatalErrorN(AP(char, OBJ(g_logCollisionVolume)), AP(const char, STR(0x4c4cbc, "reserved dataMemory overflow(%d/%d) -...")), need, size);
+		SP->block = AREF(mem);
 	}
-	u8 *block = SP->block;
-	SP->planes.records = SP->planes.freeHead = block;
+	u8 *block = AP(u8, SP->block);
+	SP->planes.records = SP->planes.freeHead = AREF(block);
 	int at = SP->planes.count * 0xac;
-	SP->nodes.records = block + at;
+	SP->nodes.records = AREF(block + at);
 	at += SP->nodes.count * 0x10;
 	SP->nodes.freeHead = SP->nodes.records;
-	SP->units.records = block + at;
+	SP->units.records = AREF(block + at);
 	at += SP->units.count * 0x14;
 	SP->units.freeHead = SP->units.records;
-	SP->blocks.records = SP->blocks.freeHead = block + at;
-	SP->cells = (u16 *)(block + SP->blocks.count * 0x50 + at);
-	memset(SP->cells, 0xff, ((u32)SP->cellCapacity) * 2);
+	SP->blocks.records = SP->blocks.freeHead = AREF(block + at);
+	SP->cells = AREF((u16 *)(block + SP->blocks.count * 0x50 + at));
+	memset(AP(void, SP->cells), 0xff, ((u32)SP->cellCapacity) * 2);
 	space_resetPlanes(space);
 	space_resetNodes(space);
 	space_resetUnits(space);
@@ -294,7 +294,7 @@ int THISCALL (space_collideAt)(u8 *space, u32 r, const float *pos, const float *
 	u16 root = sp->cells[(nz * cy + cz) * nx + cx];
 	if (root == 0xffff)
 		return 0;
-	SpaceBlock *node = (SpaceBlock *)((u8 *)array_recordAt(root, (*(int *)&sp->blocks.records), 0x50));
+	SpaceBlock *node = (SpaceBlock *)(AP(u8, array_recordAt(root, (*(int *)&sp->blocks.records), 0x50)));
 	float box[6];   /* low x, y, z, then high */
 	float by = f32(fmul_m((long double)cy, size_y)), bz = f32(fmul_m((long double)cz, size_z));
 	box[0] = f32(fadd_m(fmul_m((long double)cx, size_x), &low[0]));
@@ -303,7 +303,7 @@ int THISCALL (space_collideAt)(u8 *space, u32 r, const float *pos, const float *
 	box[3] = f32(fadd_m(fld_m(&box[0]), size_x));
 	box[4] = f32(fadd_m(fld_m(&box[1]), size_y));
 	box[5] = f32(fadd_m(fld_m(&box[2]), size_z));
-	const float *half = (const float *)ADDR(k_0_5f);
+	const float *half = AP(const float, ADDR(k_0_5f));
 	while (node) {
 		if (!node->split)
 			return sp->lastHit = space_collideBlock((u8 *)node, r, pos, vel, k, outPos, outVel, outDist, outPlane, axis, subs, nsubs);
@@ -311,7 +311,7 @@ int THISCALL (space_collideAt)(u8 *space, u32 r, const float *pos, const float *
 		float my = f32(fmul_m(FADD(box[4], box[1]), half));
 		float mz = f32(fmul_m(FADD(box[5], box[2]), half));
 		int xu = !(mx > outPos[0]), yu = outPos[1] >= my, zu = outPos[2] >= mz;
-		node = (SpaceBlock *)(node->children[xu + zu * 2 + yu * 4]);
+		node = AP(SpaceBlock, (node->children[xu + zu * 2 + yu * 4]));
 		box[xu ? 0 : 3] = f32(mx);
 		box[yu ? 1 : 4] = my;
 		box[zu ? 2 : 5] = mz;
@@ -323,7 +323,7 @@ int THISCALL (space_collideAt)(u8 *space, u32 r, const float *pos, const float *
    it out (the x half kept at full precision) */
 static u8 *make_octant(u8 *space, const float *low, const float *high, int i)
 {
-	const float *half = (const float *)ADDR(k_0_5f);
+	const float *half = AP(const float, ADDR(k_0_5f));
 	int bx = i % 2, by = i / 4, bz = i / 2 % 2;
 	float box[6];
 	box[0] = f32(fadd_m(fmul_m(FSUB(high[0], low[0]) * bx, half), &low[0]));
@@ -341,7 +341,7 @@ static u8 *make_octant(u8 *space, const float *low, const float *high, int i)
 /* a child block that ended up with no items and no children given back (space_freeBlock) and forgotten */
 static void drop_if_empty(u8 *space, u8 **child)
 {
-	if (((SpaceBlock *)RELOC(*child))->itemCount <= 0 && ((SpaceBlock *)RELOC(*child))->split == 0) {
+	if ((AP(SpaceBlock, RELOC(*child)))->itemCount <= 0 && (AP(SpaceBlock, RELOC(*child)))->split == 0) {
 		space_freeBlock(space, *child);
 		*child = NULL;
 	}
@@ -360,7 +360,7 @@ int THISCALL (space_insertItem)(u8 *space, u8 *block, u8 *item, int depth)
 	const float *low = (const float *)block, *high = bk->high;
 	if (!collisionTri_meetsBox(item, low, high, BITS(sp->margin)))
 		return 0;
-	SpaceNode *first = bk->items;
+	SpaceNode *first = AP(SpaceNode, bk->items);
 	if (first && first->item == item)
 		return 0;
 	u8 **child = bk->children;
@@ -374,26 +374,26 @@ int THISCALL (space_insertItem)(u8 *space, u8 *block, u8 *item, int depth)
 		return 1;
 	}
 	SpaceNode *node = space_getNextFreeNodePtr(space);
-	node->item = item;
-	node->block = block;
+	node->item = AREF(item);
+	node->block = AREF(block);
 	node->next = bk->items;
 	if (bk->items)
 		bk->items->newer = node;
-	bk->items = node;
+	bk->items = AREF(node);
 	if (++bk->itemCount <= sp->splitCount || depth <= 0)
 		return 1;
 	for (int i = 0; i < 8; i++) {
 		child[i] = make_octant(space, low, high, i);
 		bk->split = 1;
 	}
-	for (SpaceNode *n = bk->items; n;) {
+	for (SpaceNode *n = AP(SpaceNode, bk->items); n;) {
 		for (int j = 0; j < 8; j++)
-			space_insertItem(space, child[j], RELOC(n->item), depth - 1);
-		SpaceNode *next = RELOC(n->next);
+			space_insertItem(space, child[j], AP(void, RELOC(n->item)), depth - 1);
+		SpaceNode *next = AP(SpaceNode, RELOC(n->next));
 		space_freeNode(space, n);
 		n = next;
 	}
-	bk->items = NULL;
+	bk->items = AREF(NULL);
 	bk->itemCount = 0;
 	for (int j = 0; j < 8; j++)
 		drop_if_empty(space, &child[j]);
@@ -524,14 +524,14 @@ u32 *THISCALL (space_buildUnit)(u8 *space, u32 id, u8 *shape, const float *matri
 	u32 *unit = space_getNextFreeUnitPtr(space);
 	unit[0] = id;
 	for (int i = 0; i < md->partCount; i++) {
-		u8 *part = md->parts + i * 0x80;
+		u8 *part = AP(u8, md->parts + i * 0x80);
 		ShapePart *sp = (ShapePart *)part;
 		if (part[0] & 0x20)
 			continue;
 		u32 planeFlags = part[0] & 1 ? 0x10 : 0;
-		const float *verts = (const float *)(sp)->vertices;
+		const float *verts = AP(const float, (sp)->vertices);
 		for (int j = 0; j < sp->primCount; j++) {
-			ShapePrim *prim = (ShapePrim *)(sp->prims + j * 0xc);
+			ShapePrim *prim = AP(ShapePrim, (sp->prims + j * 0xc));
 			int n = prim->indexCount;
 #define IDX(k) ((const u32 *)prim->indices)[k]
 #define VERT(k) ((const float *)(sp)->vertices + IDX(k) * 3)
@@ -667,7 +667,7 @@ int THISCALL (space_traceCells)(u8 *space, const float *p0, const float *p1, u32
 				}
 				u16 root = sp->cells[(cy * sp->cellsZ + cz) * sp->cellsX + cx];
 				if (root != 0xffff) {
-					int r = space_traceBlock(sp->blocks.records + root * 0x50, a3, e3, hit, &dist, subs, nsubs);
+					int r = space_traceBlock(AP(void, sp->blocks.records + root * 0x50), a3, e3, hit, &dist, subs, nsubs);
 					if (r)
 						return r;
 				}
@@ -722,7 +722,7 @@ static void through_m(float *out, const float *m, const float *p, int yx)
    matrix in; the segment taken in, a hit taken back out). Returns the hit record or 0 */
 u32 THISCALL (space_traceBlock)(SpaceBlock *block, const float *from, const float *to, float *hit, float *dist, const u32 *subs, int nsubs)
 {
-	const float *low = (const float *)RELOC(block), *k = (const float *)ADDR(k_0_5f);
+	const float *low = AP(const float, RELOC(block)), *k = AP(const float, ADDR(k_0_5f));
 	if (block->split == 1) {
 		float half[3], d[3];
 		for (int a = 0; a < 3; a++) {
@@ -768,9 +768,9 @@ u32 THISCALL (space_traceBlock)(SpaceBlock *block, const float *from, const floa
 						memcpy(r1, q1, 12);
 					else
 						cut_at(r1, q0, dq, sx > 0 ? x + 1 : x, &half[2], &low[0], 0, 1);
-					u8 *child = block->children[x + 2 * z + 4 * y];
+					u8 *child = AP(u8, block->children[x + 2 * z + 4 * y]);
 					if (child) {
-						u32 r = space_traceBlock(child, r0, r1, (u32)hit, dist, (u32)subs, (u32)nsubs);
+						u32 r = space_traceBlock(child, r0, r1, AV(hit), dist, AV(subs), (u32)nsubs);
 						if (r)
 							return r;
 					}
@@ -784,7 +784,7 @@ u32 THISCALL (space_traceBlock)(SpaceBlock *block, const float *from, const floa
 				return 0;
 		}
 	}
-	SpaceNode *node = block->items;
+	SpaceNode *node = AP(SpaceNode, block->items);
 	if (!node)
 		return 0;
 	GAME_VAR(u32, dist) = 0xff7fffff;
@@ -794,14 +794,14 @@ u32 THISCALL (space_traceBlock)(SpaceBlock *block, const float *from, const floa
 	u32 found = 0;
 	const u32 *sub = NULL;
 	for (int s = -1;;) {
-		u8 *rec = RELOC(node->item);
+		u8 *rec = AP(u8, RELOC(node->item));
 		if (s >= 0 || !(rec[0] & 1)) {
 			float at[3], tt;
 			if (collisionTri_traceSegment(rec, f, t, at, &tt) == 1 && tt > *dist) {
 				if (s < 0)
 					memcpy(hit, at, 12);
 				else {
-					const float *m = (const float *)RELOC(sub[1]);
+					const float *m = AP(const float, RELOC(sub[1]));
 					for (int r = 0; r < 3; r++)
 						hit[r] = f32(fadd_m(FMUL(at[2], m[8 + r]) + FMUL(at[1], m[4 + r]) +
 						                    FMUL(at[0], m[r]), &m[12 + r]));
@@ -810,14 +810,14 @@ u32 THISCALL (space_traceBlock)(SpaceBlock *block, const float *from, const floa
 				found = (u32)node->item;
 			}
 		}
-		node = RELOC(node->next);
+		node = AP(SpaceNode, RELOC(node->next));
 		if (!node) {
 			if (++s >= nsubs)
 				return found;
 			sub = subs + s * 3;
-			node = (SpaceNode *)RELOC(sub[0]);
-			through_m(f, (const float *)RELOC(sub[2]), from, 0);
-			through_m(t, (const float *)RELOC(sub[2]), to, 1);
+			node = AP(SpaceNode, RELOC(sub[0]));
+			through_m(f, AP(const float, RELOC(sub[2])), from, 0);
+			through_m(t, AP(const float, RELOC(sub[2])), to, 1);
 		}
 	}
 }
@@ -885,7 +885,7 @@ u32 THISCALL (collision_rayTrace)(u8 *s, const float *p0, const float *p1, void 
 	int n = 0;
 	for (int i = 0; i < st->objectCount; i++) {
 		MapObject *o = &st->objects[i];
-		if (o->active != 1 || o->animated != 1 || !((SpaceUnit *)o->unit)->lastNode)
+		if (o->active != 1 || o->animated != 1 || !(AP(SpaceUnit, o->unit))->lastNode)
 			continue;
 		const float *m = o->matrixInverse;
 		const float *lo = o->model->low, *hi = o->model->high;
@@ -930,9 +930,9 @@ u32 THISCALL (collision_rayTrace)(u8 *s, const float *p0, const float *p1, void 
 		if (side(a[2], lo[2], hi[2], 0x10000) & side(b[2], lo[2], hi[2], 0x10000))
 			continue;
 		u32 *sub = st->nearObjects[n];
-		sub[0] = (u32)((SpaceUnit *)o->unit)->lastNode;
-		sub[1] = (u32)o->relMatrix;
-		sub[2] = (u32)o->relInverse;
+		sub[0] = (u32)(AP(SpaceUnit, o->unit))->lastNode;
+		sub[1] = AV(o->relMatrix);
+		sub[2] = AV(o->relInverse);
 		n++;
 	}
 	return space_traceCells((u8 *)&st->space, p0, p1, hit, st->nearObjects, n);

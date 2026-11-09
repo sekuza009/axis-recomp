@@ -7,7 +7,7 @@
 
 
 /* the player records (stride 0x47fd2 from 0x1755230) keep a name at +4 */
-#define RECORD_NAME(scene, k) (((Scene *)RELOC(scene))->playerRecords[k].name)
+#define RECORD_NAME(scene, k) ((AP(Scene, RELOC(scene)))->playerRecords[k].name)
 
 /* 0x4616e0: the 16 players' names saved into the name table */
 void THISCALL (scene_saveNames)(Scene *scene)

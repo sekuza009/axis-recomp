@@ -8,13 +8,13 @@
 /* the item in slot (0 .. 3 at g_mechWeaponSlot0, 4 .. 5 at g_itemSlot4) */
 static int *slot_item(int slot)
 {
-	return slot < 4 ? (int *)ADDR(g_mechWeaponSlot0) + slot : (int *)ADDR(g_itemSlot4) + (slot - 4);
+	return slot < 4 ? AP(int, ADDR(g_mechWeaponSlot0)) + slot : AP(int, ADDR(g_itemSlot4)) + (slot - 4);
 }
 
 /* the whole mech handed to the scene, with name */
 static void set_mech(const char *name)
 {
-	mech_setAll(g_scene, name, g_selectedCharacter, 0, g_armcParts[0], g_armcParts[1], g_armcParts[2], g_armcParts[3],
+	mech_setAll(AP(Scene, g_scene), name, g_selectedCharacter, 0, g_armcParts[0], g_armcParts[1], g_armcParts[2], g_armcParts[3],
 	            g_armcParts[4], *slot_item(0), *slot_item(1), *slot_item(2), *slot_item(3), *slot_item(4),
 	            *slot_item(5));
 }
@@ -69,7 +69,7 @@ void (armc_showCursorItem)(void)
 	}
 	armc_viewedPartRecord(item);
 	armc_loadSnapshotTexture(6);
-	armc_giveShownActorWeapon(g_scene, g_armcSlot);
+	armc_giveShownActorWeapon(AP(Scene, g_scene), g_armcSlot);
 	armc_readMechStats();
 }
 
@@ -98,7 +98,7 @@ void (armc_takeCursorItem)(void)
    g_armcSessionMade set, a full re-tint asked (g_retintAllParts) */
 void (armc_makeSession)(void)
 {
-	scene_startSession(g_scene, 0, 2);
+	scene_startSession(AP(Scene, g_scene), 0, 2);
 	set_mech(g_cfgPlayerName);
 	stage_remakePlayerActor(STAGE(g_scene));
 	g_armcPreview = 1;

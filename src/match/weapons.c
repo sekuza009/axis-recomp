@@ -97,7 +97,7 @@ void THISCALL (actor_takeDamage)(u8 *scene, int attacker, int target, int mode, 
 	int character = atk->active == 1 ? atk->character : -1;
 	if ((unsigned)shotMode <= 9) {
 		int percent = ((CharacterProfile *)g_characterProfiles)[character].stats[group[shotMode]] + 100;
-		damage = ftol(fadd_m(fmul_m((long double)percent * damage, (const float *)ADDR(k_0_01f)), (const float *)ADDR(k_0_5f)));
+		damage = ftol(fadd_m(fmul_m((long double)percent * damage, AP(const float, ADDR(k_0_01f))), AP(const float, ADDR(k_0_5f))));
 	}
 	if (((u32)atk->stateFlags) & 0x100)
 		damage *= 2;
@@ -113,9 +113,9 @@ void THISCALL (actor_takeDamage)(u8 *scene, int attacker, int target, int mode, 
 			int shield = ac->shield;
 			if (shield >= damage) {
 				ac->shield = shield - damage;
-				ac->armor -= ftol(fadd_m(fmul_m((long double)damage, (const float *)STR(0x4a9758, "333?\300\373\273\366")), (const float *)ADDR(k_0_5f)));
+				ac->armor -= ftol(fadd_m(fmul_m((long double)damage, AP(const float, STR(0x4a9758, "333?\300\373\273\366"))), AP(const float, ADDR(k_0_5f))));
 			} else {
-				int lost = ftol(fadd_m(fmul_m((long double)shield, (const float *)STR(0x4a9758, "333?\300\373\273\366")), (const float *)ADDR(k_0_5f)));
+				int lost = ftol(fadd_m(fmul_m((long double)shield, AP(const float, STR(0x4a9758, "333?\300\373\273\366"))), AP(const float, ADDR(k_0_5f))));
 				ac->armor += shield - lost - damage;
 				ac->shield = 0;
 			}
@@ -172,7 +172,7 @@ void THISCALL (actor_pickPathPoint)(u8 *scene, int p)
 			continue;
 		const Trigger *list = &st->triggers[i];
 		for (int j = 0; j < list->wayPointCount; j++) {
-			const float *pt = ((const WayPoint *)list->wayPoints)[j].pos;
+			const float *pt = (AP(const WayPoint, list->wayPoints))[j].pos;
 			if (!within(&pt[0], &from[0], range) || !within(&pt[1], &from[1], range) || !within(&pt[2], &from[2], range))
 				continue;
 			if (n < 5) {
@@ -204,7 +204,7 @@ void THISCALL (actor_pickPathPoint)(u8 *scene, int p)
 		ac->pathRange = f32(fmul_m(fld_m(range), k_1_5f));
 }
 
-#define K(address) ((const float *)RELOC(address))
+#define K(address) (AP(const float, RELOC(address)))
 #define BU ((Bullet *)b)   /* the same by its fields (src/scene.fields) */
 
 
@@ -266,7 +266,7 @@ void THISCALL (bullet_init)(u8 *s, int slot, int id, int owner, int homingTarget
 			Mat4_invert(inv, m);
 			glPopMatrix();
 			u32 cone[3] = { 0, 0x3e10d068, 0x3f7d6d5d };   /* 0, 0.141, 0.990: 8.1 degrees off the axis */
-			float *v = (float *)RELOC(cone);
+			float *v = AP(float, RELOC(cone));
 			Vec3_rotateAxis(v, 0, (int)next_rand(3600));
 			for (int r = 0; r < 3; r++)
 				dir[r] = f32(FMUL(v[2], inv[8 + r]) + FMUL(v[1], inv[4 + r]) + FMUL(inv[r], v[0]));
@@ -279,7 +279,7 @@ void THISCALL (bullet_init)(u8 *s, int slot, int id, int owner, int homingTarget
 		end[1] = f32(FADD(sy, from[1]));
 		end[2] = f32(fadd_m(sz, &from[2]));
 		float hit[3];
-		BU->hit = (struct CollisionTri *)collision_rayTrace(s, from, end, hit);
+		BU->hit = AREF(AP(struct CollisionTri, collision_rayTrace(s, from, end, hit)));
 		if (BU->hit) {
 			memcpy(end, hit, 12);
 			if (*speed > 0) {
@@ -310,7 +310,7 @@ void THISCALL (bullet_init)(u8 *s, int slot, int id, int owner, int homingTarget
 	float *vel = BU->vel;
 	for (int k = 0; k < 3; k++)
 		vel[k] = *speed > 0 ? f32(fmul_m(fld_m(speed), &dir[k])) : f32(fsub_m(fld_m(BU->impact + k), BU->from + k));
-	memcpy(BU->step, (const void *)ADDR(g_vecZero), 12);
+	memcpy(BU->step, AP(const void, ADDR(g_vecZero)), 12);
 	BU->hitActor = -1;
 	BU->homeTimer = 0.0f;
 	BU->homingTarget = homingTarget;
@@ -329,7 +329,7 @@ void THISCALL (bullet_init)(u8 *s, int slot, int id, int owner, int homingTarget
 		return;
 	u32 rec[13] = { ((u32)w->shotMode) + 10, ((u32)BU->owner) };
 	memcpy(&rec[2], BU->prev, 12);
-	memcpy(&rec[5], (const void *)OBJ(g_vecZero2), 12);
+	memcpy(&rec[5], AP(const void, OBJ(g_vecZero2)), 12);
 	rec[8] = BU->muzzle;   /* its matrixFrom */
 	float size = f32(fld_m(&w->hitRange));
 	memcpy(&rec[11], &size, 4);
@@ -578,10 +578,10 @@ static void decal(u8 *s, u8 *b, const u8 *w, u32 *r, const u8 *h, const float *N
 		const ShapePart *part = (const ShapePart *)ST->objects[*obj].model->parts + ((const CollisionTri *)h)->part;
 		float tri[9];
 		for (int k = 0; k < 3; k++)
-			memcpy(tri + k * 3, (const float *)part->vertices + ((const CollisionTri *)h)->cornerIndices[k] * 3, 12);
-		effect(s, r, WI->shotMode + 0x28, 0, imp, N, (u32)ST->objects[((const CollisionTri *)h)->unit->index].matrix, (u32)tri, (u32)uv, 0, 0);
+			memcpy(tri + k * 3, AP(const float, part->vertices) + ((const CollisionTri *)h)->cornerIndices[k] * 3, 12);
+		effect(s, r, WI->shotMode + 0x28, 0, imp, N, (u32)ST->objects[((const CollisionTri *)h)->unit->index].matrix, AV(tri), AV(uv), 0, 0);
 	} else
-		effect(s, r, WI->shotMode + 0x28, 0, imp, N, 0, (u32)P, (u32)uv, effect_size(w), 0);
+		effect(s, r, WI->shotMode + 0x28, 0, imp, N, 0, AV(P), AV(uv), effect_size(w), 0);
 }
 
 /* the surface the bullet hit (Bullet.hit, a CollisionTri: its corners, normal, object):
@@ -747,7 +747,7 @@ static void fly_local(u8 *s, u8 *b, const u8 *w, const float *dt)
 	if (WI->guidance > 0 && BU->hitActor < 0) {
 		float h[3];
 		int r = collision_rayTrace(s, prev, cur, h);
-		BU->hit = (struct CollisionTri *)r;
+		BU->hit = AREF(AP(struct CollisionTri, r));
 		if (r) {
 			memcpy(BU->impact, h, 12);
 			h[0] = f32(FSUB(h[0], prev[0]));

@@ -5,7 +5,7 @@
 #include <string.h>
 #define STS ((Stage *)scene)   /* the stage (named scene in these functions) by its fields */
 
-#define FIELD(type, obj, offset) GAME_VAR(type, (u8 *)RELOC(obj) + (offset))
+#define FIELD(type, obj, offset) GAME_VAR(type, AP(u8, RELOC(obj)) + (offset))
 
 /* an actor's input record: twelve ints (the moves and buttons the actor acts on this frame); the tenth
    (inWeaponSlot, index 9) is the one cleared to -1 */
@@ -370,10 +370,10 @@ void THISCALL (actor_applySpawnRecord)(u8 *scene, int a, const u8 *rec)
 #define SR ((SpawnRecord *)rec)   /* the same by its fields (src/scene.fields) */
 	int localActor = STS->playerActor;
 	if (localActor < 0)
-		sys_fatalError((char *)OBJ(g_logStage), (const char *)STR(0x4b4538, "invalid player actor slot(%d) - spawn..."), localActor);
+		sys_fatalError(AP(char, OBJ(g_logStage)), AP(const char, STR(0x4b4538, "invalid player actor slot(%d) - spawn...")), localActor);
 	u32 spawn[7] = { SR->player, SR->bot, BITS(SR->pos[0]), BITS(SR->pos[1]), BITS(SR->pos[2]) };
-	((float *)RELOC(spawn))[5] = f32(fld_m(&SR->pitch));
-	((float *)RELOC(spawn))[6] = f32(fld_m(&SR->yaw));
+	(AP(float, RELOC(spawn)))[5] = f32(fld_m(&SR->pitch));
+	(AP(float, RELOC(spawn)))[6] = f32(fld_m(&SR->yaw));
 	stage_setupActorSlot((Stage *)scene, a, -1, STS->playerActor, spawn);
 	if (a < 0)
 		return;
@@ -481,9 +481,9 @@ static u8 hue_byte(float *h)
 static u8 level_byte(float *v)
 {
 	if (!(*v >= *&k_m1f))
-		*(u32 *)RELOC(v) = 0xbf800000;   /* -1.0 */
+		*AP(u32, RELOC(v)) = 0xbf800000;   /* -1.0 */
 	else if (!(*v < *&k_1f))
-		*(u32 *)RELOC(v) = 0x3f7fbe77;   /* 0.999 */
+		*AP(u32, RELOC(v)) = 0x3f7fbe77;   /* 0.999 */
 	return (u8)ftol(fmul_m(fld_m(v), &k_128f));
 }
 
@@ -502,13 +502,13 @@ void THISCALL (playerRecord_setPartColour)(Stage *scene, int p, int part, float 
 	pr->partSaturation[part][1] = level_byte(&s2);
 	pr->partValue[part][1] = level_byte(&v2);
 	char suffix[0x100];
-	sprintf(suffix, (const char *)STR(0x4c77f8, "_T%d"), p);
+	sprintf(suffix, AP(const char, STR(0x4c77f8, "_T%d")), p);
 	if ((unsigned)part <= 4)
 		shape_setTextureSuffix((u8 *)pr + shapes[part], suffix, 2, *(u32 *)&h1, *(u32 *)&s1, *(u32 *)&v1,
 		                    *(u32 *)&h2, *(u32 *)&s2, *(u32 *)&v2);
 }
 
-#define K(address) ((const float *)RELOC(address))
+#define K(address) (AP(const float, RELOC(address)))
 #define A(type, offset) GAME_VAR(type, ac + (offset))
 #define AC ((Actor *)ac)   /* the same by its fields (src/scene.fields) */
 
@@ -579,7 +579,7 @@ void THISCALL (actor_drawIntoView)(u8 *s, int a, void *vv, int draw)
 		tint[3] = 0xff;
 	} else
 		tint = NULL;
-	u32 faintMatrix = tint && tint[3] <= 0x10 ? (u32)st->faintActorMatrix : 0;
+	u32 faintMatrix = tint && tint[3] <= 0x10 ? AV(st->faintActorMatrix) : 0;
 	u8 *lights = (u8 *)&st->actorLights;
 	int ok = 1;
 	u32 f;
@@ -588,7 +588,7 @@ void THISCALL (actor_drawIntoView)(u8 *s, int a, void *vv, int draw)
 			ok = ObjectList_queue(weapon_list(ac), vv, lights, tint, 1, (u32)-1, faintMatrix) & 1;
 			f = ((u32)AC->stateFlags);
 			if ((f & 0x100) || (f & 0xc00))
-				ok &= ObjectList_queue(weapon_list(ac), vv, lights, tint, 1, flag_texture(s, f), (u32)st->overlayMatrix);
+				ok &= ObjectList_queue(weapon_list(ac), vv, lights, tint, 1, flag_texture(s, f), AV(st->overlayMatrix));
 		}
 	} else if (draw != 1) {
 		f = ((u32)AC->stateFlags);
@@ -622,7 +622,7 @@ void THISCALL (actor_drawIntoView)(u8 *s, int a, void *vv, int draw)
 			u32 lt = flag_texture(s, f);
 			for (int k = 0; k < 8; k++)
 				if (k != 4 || !AC->viewMarked)
-					ok &= ObjectList_queue(ac + k_partLists[k], vv, lights, tint, 1, lt, (u32)st->overlayMatrix);
+					ok &= ObjectList_queue(ac + k_partLists[k], vv, lights, tint, 1, lt, AV(st->overlayMatrix));
 		}
 	}
 	AC->viewMarked = 0;
@@ -807,7 +807,7 @@ void THISCALL (actor_setupFromParts)(u8 *s, int a, int id, u32 controlledBy, con
 	PlayerRecord *pr = (PlayerRecord *)p;
 	mech_stats(s, ac, p, 0);
 	AC->inPlay = 1;
-	strcpy(AC->name, (const char *)RELOC(p) + 4);
+	strcpy(AC->name, AP(const char, RELOC(p)) + 4);
 	AC->id = id >= 0 ? id : st->actorSerial++;
 	AC->active = 1;
 	AC->player = spawn[0];
@@ -851,8 +851,8 @@ void THISCALL (actor_setupFromParts)(u8 *s, int a, int id, u32 controlledBy, con
 		AC->shotBullets[k] = -1;
 	}
 	AC->sendNow = 0;
-	memcpy(AC->velocity, (const void *)ADDR(g_vecZero), 12);
-	memcpy(AC->move, (const void *)ADDR(g_vecZero), 12);
+	memcpy(AC->velocity, AP(const void, ADDR(g_vecZero)), 12);
+	memcpy(AC->move, AP(const void, ADDR(g_vecZero)), 12);
 	AC->radius = 500.0f;   /* 500 */
 	AC->chatIcon = 0;
 	AC->stateFlags = AC->id % 2 == 1 ? 0x4000 : 0;
@@ -891,16 +891,16 @@ void THISCALL (actor_setupFromParts)(u8 *s, int a, int id, u32 controlledBy, con
 	AC->invulnerable = 0;
 	fill_dwords(ac + offsetof(Actor, lookActor), 5, (u32)-1);   /* lookActor .. botTarget */
 	fill_dwords(ac + offsetof(Actor, scanTime), 5, 0);   /* scanTime .. heightTime */
-	memcpy(AC->cleared8838, (const void *)ADDR(g_vecZero), 12);
+	memcpy(AC->cleared8838, AP(const void, ADDR(g_vecZero)), 12);
 	AC->lookTime = 0.0f;
 	BITS(AC->pathRange) = 0x44bb8000;   /* 1500 */
 	fill_dwords(ac + offsetof(Actor, outOfPlay), 3, 0);   /* outOfPlay .. hitFlash */
-	memcpy(AC->push, (const void *)ADDR(g_vecZero), 12);
+	memcpy(AC->push, AP(const void, ADDR(g_vecZero)), 12);
 	AC->botTargetTime = 0.0f;
 	AC->killPending = 0;
 	AC->stuckTime = 1.0f;
 	AC->stuckPath = -1;
-	memcpy(AC->stuckMove, (const void *)ADDR(g_vecZero), 12);
+	memcpy(AC->stuckMove, AP(const void, ADDR(g_vecZero)), 12);
 	AC->homedOn = (*(int *)&AC->beepTimer) = 0;
 	(*(int *)&st->lockHeld[a]) = 0;
 	st->rankingDirty = 1;

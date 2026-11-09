@@ -5,7 +5,7 @@
 #include <stdarg.h>
 #include <string.h>
 
-#define FIELD(type, obj, offset) GAME_VAR(type, (u8 *)RELOC(obj) + (offset))
+#define FIELD(type, obj, offset) GAME_VAR(type, AP(u8, RELOC(obj)) + (offset))
 
 static void clear(void *p, int dwords)
 {
@@ -104,8 +104,8 @@ static void free_owned(void *self)
 {
 	BlockOwner *bo = (BlockOwner *)self;
 	if (bo->ownsBlock == 1) {
-		operator_delete(bo->block);
-		bo->block = NULL;
+		operator_delete(AP(void, bo->block));
+		bo->block = AREF(NULL);
 		bo->ownsBlock = 0;
 	}
 }
@@ -123,14 +123,14 @@ void *THISCALL (Unit_deletingDtor)(u32 *self, int flags)
 	return self;
 }
 /* 0x46ce50: the object's file closed (fclose's result, 0 for none) */
-u32 THISCALL (BMPRGBFile_close)(u32 *self) { return self[1] ? fclose((void *)RELOC(self[1])) : 0; }
+u32 THISCALL (BMPRGBFile_close)(u32 *self) { return self[1] ? fclose(AP(void, RELOC(self[1]))) : 0; }
 /* 0x467d60: p freed (operator delete's eax; 0 for none) */
 u32 (mem_free)(void *p) { return p ? CRT_CALL(operator_delete, u32, void *)(p) : 0; }
 
 /* ---- network tables cleared ---- */
-void (net_clearServerList)(void) { clear((void *)OBJ(g_serverList), 0x16c0); }
-void (net_clearRoomList)(void) { clear((void *)OBJ(g_roomList), 0x1e40); }
-void (net_clearPlayerList)(void) { clear((void *)OBJ(g_netPlayerList), 0x9b); }
+void (net_clearServerList)(void) { clear(AP(void, OBJ(g_serverList)), 0x16c0); }
+void (net_clearRoomList)(void) { clear(AP(void, OBJ(g_roomList)), 0x1e40); }
+void (net_clearPlayerList)(void) { clear(AP(void, OBJ(g_netPlayerList)), 0x9b); }
 /* 0x46cb60: a path upper-cased in place, '/' turned into '\\'; returns it (NULL as it is) */
 char *(path_normalize)(char *s)
 {
@@ -173,7 +173,7 @@ void (replaySelect_allIn)(void) { for (int i = 0; i < g_replayFileCount; i++) g_
 void (newPartsNotice_clickClose)(void) { if (g_frameOpening == 0 && g_mouseClick != 0) g_skirmishNewPartsNotice = 0; }
 /* 0x4411e0: the menu tunnel started from its first ring: the ring count (g_tunnelRings) back to 0 and one ring
    (number 0) appended to g_menuTunnel (tunnel_appendRing). Returns that call's eax. It frees nothing */
-u32 (tunnel_restart)(void) { g_tunnelRings = 0; return tunnel_appendRing((void *)ADDR(g_menuTunnel)); }
+u32 (tunnel_restart)(void) { g_tunnelRings = 0; return tunnel_appendRing(AP(void, ADDR(g_menuTunnel))); }
 /* 0x44ad30: the text colour */
 void (text_setColor)(u32 r, u32 g, u32 b, u32 a) { set_colour_bits(g_textColour, r, g, b, a); }
 /* 0x404120, 0x431db0, 0x44b080: a dialog's box rectangle */
@@ -321,12 +321,12 @@ void THISCALL (space_resetUnits)(u8 *self)
 	for (int i = 0; i < sp->units.count; i++)
 		spaceSlot_clear((int *)(sp->units.records + i * sizeof(SpaceUnit)));
 	for (int i = 1; i < sp->units.count; i++) {
-		u8 *e = sp->units.records + i * sizeof(SpaceUnit);
-		((SpaceUnit *)e)->poolPrev = e - sizeof(SpaceUnit);
+		u8 *e = AP(u8, sp->units.records + i * sizeof(SpaceUnit));
+		((SpaceUnit *)e)->poolPrev = AREF(e - sizeof(SpaceUnit));
 	}
 	for (int i = 0; i < sp->units.count - 1; i++) {
-		u8 *e = sp->units.records + i * sizeof(SpaceUnit);
-		((SpaceUnit *)e)->poolNext = e + sizeof(SpaceUnit);
+		u8 *e = AP(u8, sp->units.records + i * sizeof(SpaceUnit));
+		((SpaceUnit *)e)->poolNext = AREF(e + sizeof(SpaceUnit));
 	}
 	sp->units.used = 0;
 	sp->units.freeHead = sp->units.records;
@@ -362,7 +362,7 @@ void THISCALL (stage_triggerActionNone)(void *self, int a) { (void)self; (void)a
 /* 0x45dfe0: the stage's actor without footstep sounds (silentActor) set (returned) */
 int THISCALL (stage_setSilentActor)(Stage *stage, int v) { stage->silentActor = v; return v; }
 /* 0x468720: the time sync object at g_loadTimer constructed */
-void *(static_initTimeSync)(void) { return TimeSync_ctor((void *)OBJ(g_loadTimer)); }
+void *(static_initTimeSync)(void) { return TimeSync_ctor(AP(void, OBJ(g_loadTimer))); }
 /* 0x470f80: the stage's name (stageName: the map's name, the folder of Stage\<name>\Clan, its sounds and animations)
    set, upper-cased with back slashes (returned) */
 char *THISCALL (stage_setName)(Stage *self, const char *folder)
@@ -406,7 +406,7 @@ void THISCALL (anim_setTime)(u8 *anim, int i, float t)
 	if (!ol->skeletons || i >= ol->skelCount)
 		return;
 	ol->skel = i;
-	const int *skeleton = ((int **)ol->skeletons)[i];
+	const int *skeleton = (AP(int *, ol->skeletons))[i];
 	ol->animTick = ftol(fmul_m((long double)skeleton[8], &t));
 }
 
@@ -532,7 +532,7 @@ void (log_message)(int a, int b, int c, const char *format, ...)
 static u32 reg_write(u32 value, const char *name)
 {
 	u32 key = value, data = value;
-	if (!RegOpenKeyExA(0x80000001, (const char *)STR(0x4b0458, "SOFTWARE\\AxisArena\\Launcher"), 0, 0xf003f, &key))
+	if (!RegOpenKeyExA(0x80000001, AP(const char, STR(0x4b0458, "SOFTWARE\\AxisArena\\Launcher")), 0, 0xf003f, &key))
 		RegSetValueExA(key, name, 0, 4, &data, 4);
 	return RegCloseKey(key);
 }
@@ -547,27 +547,27 @@ u32 (reg_writeLadderSettings)(void)
 	strcpy(g_ladderEmail, g_accountEmail);
 	strcpy(g_ladderIdCopy, g_ladderId);
 	strcpy(g_roomRecName, g_roomSettingsName);
-	memcpy((void *)ADDR(g_roomRecMap), (const void *)ADDR(g_roomMap), 6);
+	memcpy(AP(void, ADDR(g_roomRecMap)), AP(const void, ADDR(g_roomMap)), 6);
 	u32 key;
 	__asm__("" : "=m"(key));   /* left as the stack has it: a failed open leaves it so, and the original closes it anyway */
-	if (!RegOpenKeyExA(0x80000001, (const char *)STR(0x4b179c, "SOFTWARE\\AxisArena\\Character"), 0, 0xf003f, &key)) {
-		RegSetValueExA(key, (const char *)STR(0x4b1794, "Name"), 0, 1, (const void *)OBJ(g_ladderId), 0x1e);   /* REG_SZ */
-		RegSetValueExA(key, (const char *)STR(0x4b1788, "GameName"), 0, 1, (const void *)OBJ(g_roomRecName), 0x20);
-		const signed char *choice = (const signed char *)ADDR(g_roomRecMap);
+	if (!RegOpenKeyExA(0x80000001, AP(const char, STR(0x4b179c, "SOFTWARE\\AxisArena\\Character")), 0, 0xf003f, &key)) {
+		RegSetValueExA(key, AP(const char, STR(0x4b1794, "Name")), 0, 1, AP(const void, OBJ(g_ladderId)), 0x1e);   /* REG_SZ */
+		RegSetValueExA(key, AP(const char, STR(0x4b1788, "GameName")), 0, 1, AP(const void, OBJ(g_roomRecName)), 0x20);
+		const signed char *choice = AP(const signed char, ADDR(g_roomRecMap));
 		static const u32 names[6] = { STR(0x4b1784, "Map"), STR(0x4b1778, "PlayerNum"), STR(0x4b176c, "GameType"), STR(0x4b1760, "FlagLimit"), STR(0x4b1754, "TimeLimit"), STR(0x4b1748, "Customize") };
 		static const u8 order[6] = { 0, 1, 3, 4, 5, 2 };
 		for (int i = 0; i < 6; i++) {
 			int k = order[i];
 			u32 data = (k == 4 || k == 5) ? (u8)choice[k] : (u32)(int)choice[k];
-			RegSetValueExA(key, (const char *)RELOC(names[i]), 0, 4, &data, 4);
+			RegSetValueExA(key, AP(const char, RELOC(names[i])), 0, 4, &data, 4);
 		}
 	}
 	return RegCloseKey(key);
 }
 
 /* 0x41f880, 0x43f7f0: the end mode and the start mode */
-u32 (reg_writeEndMode)(u32 value) { return reg_write(value, (const char *)STR(0x4b0450, "EndMode")); }
-u32 (reg_writeStartMode)(u32 value) { return reg_write(value, (const char *)STR(0x4b29dc, "StartMode")); }
+u32 (reg_writeEndMode)(u32 value) { return reg_write(value, AP(const char, STR(0x4b0450, "EndMode"))); }
+u32 (reg_writeStartMode)(u32 value) { return reg_write(value, AP(const char, STR(0x4b29dc, "StartMode"))); }
 
 /* 0x44ace0: the in-match text field's typing ended (the chat line, or the Esc menu's replay name). g_keptChat (0x400
    bytes) is cleared and, when the typed line (g_inputLine)
@@ -576,14 +576,14 @@ u32 (reg_writeStartMode)(u32 value) { return reg_write(value, (const char *)STR(
    Returns that call's eax */
 u32 (match_endTyping)(void)
 {
-	memset((void *)OBJ(g_keptChat), 0, 0x400);
+	memset(AP(void, OBJ(g_keptChat)), 0, 0x400);
 	if (strlen(g_inputLine)) {
-		memcpy((void *)OBJ(g_keptChat), (const void *)OBJ(g_inputLine), 0x400);
+		memcpy(AP(void, OBJ(g_keptChat)), AP(const void, OBJ(g_inputLine)), 0x400);
 		g_chatTyping = 0;
 	}
 	g_textFieldOpen = 0;
 	input_resetKeys();   /* input_resetKeys: the key state */
-	return (u32)input_initKeyboard(g_mainWindow);
+	return (u32)input_initKeyboard(AP(void, g_mainWindow));
 }
 
 /* 0x42ef30: a display mode change's problem reported (ChangeDisplaySettings' answer): codes 1 and -1 .. -5 each show their message (MSG(103, "SYSTEM MODE CHANGE RESTART") ..) in a box titled
@@ -600,7 +600,7 @@ int (app_reportDisplayModeError)(int code)
 	case -3: text = MSG(108, "SYSTEM MODE CHANGE NOTUPDATED"); break;
 	default: return code;
 	}
-	return MessageBoxA(g_mainWindow, (const char *)RELOC(text), (const char *)MSG(100, "USERMESSAGE"), 0);
+	return MessageBoxA(AP(void, g_mainWindow), AP(const char, RELOC(text)), AP(const char, MSG(100, "USERMESSAGE")), 0);
 }
 
 
@@ -612,7 +612,7 @@ static const u8 choice_order[6] = { 0, 1, 3, 4, 5, 2 };
 static const u32 choice_names[6] = { STR(0x4b1784, "Map"), STR(0x4b1778, "PlayerNum"), STR(0x4b176c, "GameType"), STR(0x4b1760, "FlagLimit"), STR(0x4b1754, "TimeLimit"), STR(0x4b1748, "Customize") };
 static u32 choice_dword(int k)
 {
-	const signed char *choice = (const signed char *)ADDR(g_roomRecMap);
+	const signed char *choice = AP(const signed char, ADDR(g_roomRecMap));
 	return (k == 4 || k == 5) ? (u8)choice[k] : (u32)(int)choice[k];
 }
 
@@ -635,39 +635,39 @@ static void read_string(u32 key, const char *name, char *dest, u32 size, u32 *ty
    the eax it leaves */
 void (reg_readLadderSettings)(void)
 {
-	strcpy(g_ladderId, (const char *)STR(0x4b17d0, "AxisPlayer"));
-	strcpy(g_roomRecName, (const char *)STR(0x4b17bc, "Axis Ladder Game"));
+	strcpy(g_ladderId, AP(const char, STR(0x4b17d0, "AxisPlayer")));
+	strcpy(g_roomRecName, AP(const char, STR(0x4b17bc, "Axis Ladder Game")));
 	static const u8 defaults[6] = { 0, 8, 0, 0, 10, 10 };
-	memcpy((void *)ADDR(g_roomRecMap), defaults, 6);
+	memcpy(AP(void, ADDR(g_roomRecMap)), defaults, 6);
 	u32 key, disposition, type, value;
 	char buf[0x400];
 	__asm__("" : "=m"(disposition));   /* left as the stack has it when the key can't be created, as in the original */
-	REG_CREATE(0x80000001, (const char *)STR(0x4b179c, "SOFTWARE\\AxisArena\\Character"), 0, NULL, 0, 0xf003f, NULL, &key, &disposition);   /* RegCreateKeyExA */
-	signed char *choice = (signed char *)ADDR(g_roomRecMap);
+	REG_CREATE(0x80000001, AP(const char, STR(0x4b179c, "SOFTWARE\\AxisArena\\Character")), 0, NULL, 0, 0xf003f, NULL, &key, &disposition);   /* RegCreateKeyExA */
+	signed char *choice = AP(signed char, ADDR(g_roomRecMap));
 	if (disposition == 1) {   /* REG_CREATED_NEW_KEY */
-		RegSetValueExA(key, (const char *)STR(0x4b1794, "Name"), 0, 1, (const void *)OBJ(g_ladderId), 0x1e);
-		RegSetValueExA(key, (const char *)STR(0x4b1788, "GameName"), 0, 1, (const void *)OBJ(g_roomRecName), 0x20);
+		RegSetValueExA(key, AP(const char, STR(0x4b1794, "Name")), 0, 1, AP(const void, OBJ(g_ladderId)), 0x1e);
+		RegSetValueExA(key, AP(const char, STR(0x4b1788, "GameName")), 0, 1, AP(const void, OBJ(g_roomRecName)), 0x20);
 		for (int i = 0; i < 6; i++) {
 			value = choice_dword(choice_order[i]);
-			RegSetValueExA(key, (const char *)RELOC(choice_names[i]), 0, 4, &value, 4);
+			RegSetValueExA(key, AP(const char, RELOC(choice_names[i])), 0, 4, &value, 4);
 		}
 	} else if (disposition == 2) {   /* REG_OPENED_EXISTING_KEY */
-		read_string(key, (const char *)STR(0x4b1794, "Name"), g_ladderId, 0x1e, &type, buf);
-		read_string(key, (const char *)STR(0x4b1788, "GameName"), g_roomRecName, 0x20, &type, buf);
+		read_string(key, AP(const char, STR(0x4b1794, "Name")), g_ladderId, 0x1e, &type, buf);
+		read_string(key, AP(const char, STR(0x4b1788, "GameName")), g_roomRecName, 0x20, &type, buf);
 		u32 size = 4;   /* set once: each read leaves the size it found for the next (as in the original) */
 		value = 0;
 		for (int i = 0; i < 6; i++) {
 			int k = choice_order[i];
-			if (!RegQueryValueExA(key, (const char *)RELOC(choice_names[i]), 0, &type, &value, &size))
+			if (!RegQueryValueExA(key, AP(const char, RELOC(choice_names[i])), 0, &type, &value, &size))
 				choice[k] = (signed char)value;
 			else {
 				value = choice_dword(k);
-				RegSetValueExA(key, (const char *)RELOC(choice_names[i]), 0, 4, &value, 4);
+				RegSetValueExA(key, AP(const char, RELOC(choice_names[i])), 0, 4, &value, 4);
 			}
 		}
 	} else
 		return;
-	u8 *limit = (u8 *)ADDR(g_roomRecFragLimit);
+	u8 *limit = AP(u8, ADDR(g_roomRecFragLimit));
 	for (int k = 0; k < 2; k++)
 		limit[k] = limit[k] < 5 ? 5 : limit[k] > 30 ? 30 : limit[k];
 	if (choice[0] < 0 || choice[0] > 0x15)
@@ -687,17 +687,17 @@ void (reg_readLadderSettings)(void)
 int (reg_readServerSettings)(void)
 {
 	u32 key, type, size;
-	if (RegOpenKeyExA(0x80000001, (const char *)STR(0x4b1728, "SOFTWARE\\AxisArena\\SelectServer"), 0, 0xf003f, &key)) {
-		sys_messageBox((const char *)(g_language == 1 ? STR(0x4b16a4, "     \260\324\300\323\274\255\271\366\270\246 \274\261\305\303\307\317\301\366 \276\312\276\322\275\300\264\317\264\331.\n...") : STR(0x4b1660, "     Cannot find Server list.\nSelect ...")));
+	if (RegOpenKeyExA(0x80000001, AP(const char, STR(0x4b1728, "SOFTWARE\\AxisArena\\SelectServer")), 0, 0xf003f, &key)) {
+		sys_messageBox(AP(const char, (g_language == 1 ? STR(0x4b16a4, "     \260\324\300\323\274\255\271\366\270\246 \274\261\305\303\307\317\301\366 \276\312\276\322\275\300\264\317\264\331.\n...") : STR(0x4b1660, "     Cannot find Server list.\nSelect ..."))));
 		RegCloseKey(key);
-		return PostMessageA(g_mainWindow, 0x10, 0, 0);   /* WM_CLOSE */
+		return PostMessageA(AP(void, g_mainWindow), 0x10, 0, 0);   /* WM_CLOSE */
 	}
 	size = 50;
-	RegQueryValueExA(key, (const char *)STR(0x4b1720, "TcpDNS"), 0, &type, (void *)OBJ(g_tcpDns), &size);
-	RegQueryValueExA(key, (const char *)STR(0x4b1714, "LadderDNS"), 0, &type, (void *)OBJ(g_ladderDns), &size);
+	RegQueryValueExA(key, AP(const char, STR(0x4b1720, "TcpDNS")), 0, &type, AP(void, OBJ(g_tcpDns)), &size);
+	RegQueryValueExA(key, AP(const char, STR(0x4b1714, "LadderDNS")), 0, &type, AP(void, OBJ(g_ladderDns)), &size);
 	size = 4;
-	RegQueryValueExA(key, (const char *)STR(0x4b170c, "TcpPort"), 0, &type, (void *)ADDR(g_lobbyTcpPort), &size);
-	RegQueryValueExA(key, (const char *)STR(0x4b1700, "LadderPort"), 0, &type, (void *)ADDR(g_ladderPort), &size);
+	RegQueryValueExA(key, AP(const char, STR(0x4b170c, "TcpPort")), 0, &type, AP(void, ADDR(g_lobbyTcpPort)), &size);
+	RegQueryValueExA(key, AP(const char, STR(0x4b1700, "LadderPort")), 0, &type, AP(void, ADDR(g_ladderPort)), &size);
 	return RegCloseKey(key);
 }
 
@@ -727,7 +727,7 @@ int (app_screenSizeForMode)(void)
 int (sys_checkClockTampering)(void)
 {
 	const u16 *now = g_clockNowTime, *last = g_clockLastTime;   /* SYSTEMTIME: [4] hour, [5] minute, [6] second */
-	TIME_UTC((void *)OBJ(g_clockNowTime));
+	TIME_UTC(AP(void, OBJ(g_clockNowTime)));
 	u32 tick = TIME_MS();
 	g_clockCheckTick = tick;
 	u32 minutes = now[5] + (now[4] > last[4] ? 60 : 0);
@@ -737,16 +737,16 @@ int (sys_checkClockTampering)(void)
 	g_clockCheckTickSeconds = tickSeconds;
 	long double ticked = (long double)(uint64_t)tickSeconds;
 	if (ticked * k_0_3 + (long double)(uint64_t)(u32)seconds < ticked) {   /* clock + 0.3 * ticks < ticks */
-		sys_messageBox((const char *)(g_language == 1 ? STR(0x4b2914, "\300\337\270\370\265\307\260\305\263\252 \300\314\273\363\307\321 \307\301\267\316\261\327\267\245\300\314 \265\277\300\333\307\317\260\355...") : STR(0x4b2888, "Now Unauthorized program is running\n\n...")));
+		sys_messageBox(AP(const char, (g_language == 1 ? STR(0x4b2914, "\300\337\270\370\265\307\260\305\263\252 \300\314\273\363\307\321 \307\301\267\316\261\327\267\245\300\314 \265\277\300\333\307\317\260\355...") : STR(0x4b2888, "Now Unauthorized program is running\n\n..."))));
 		if (g_clockCheckQuits) {
-			PostMessageA(g_mainWindow, 0x10, 0, 0);   /* WM_CLOSE */
+			PostMessageA(AP(void, g_mainWindow), 0x10, 0, 0);   /* WM_CLOSE */
 			return 1;
 		}
-		TIME_UTC((void *)OBJ(g_clockLastTime));
+		TIME_UTC(AP(void, OBJ(g_clockLastTime)));
 		g_startTicks = TIME_MS();
 		return 0;
 	}
-	TIME_UTC((void *)OBJ(g_clockLastTime));
+	TIME_UTC(AP(void, OBJ(g_clockLastTime)));
 	g_startTicks = TIME_MS();
 	return 1;
 }
@@ -761,13 +761,13 @@ void THISCALL (stage_advanceScenePath)(u8 *stage, u32 dtBits)
 	if (!st->scriptMode)
 		return;
 	if (!st->scenePath.opened)
-		scenePath_openStub((u8 *)&st->scenePath, st->scriptName, (const void *)STR(0x4c45e4, "Scene"));
+		scenePath_openStub((u8 *)&st->scenePath, st->scriptName, AP(const void, STR(0x4c45e4, "Scene")));
 	if (!scenePath_advanceStub((u8 *)&st->scenePath, dtBits))
 		st->scriptMode = 0;
 	const char *name = st->pathSound;
 	if (*name) {
 		char text[0x100];
-		sprintf(text, (const char *)STR(0x4c8304, "scenePath\\%s"), name);
+		sprintf(text, AP(const char, STR(0x4c8304, "scenePath\\%s")), name);
 		sound_playFile(text, 100);
 	}
 }
@@ -841,7 +841,7 @@ static int set_part(u8 *stage, int p, int type, const PartKind *k)
 	if (GAME_VAR(int, pl + k->field) == type)
 		return 1;
 	if (type >= GAME_VAR(int, stage + k->count))
-		sys_fatalError((char *)OBJ(g_logStage), (const char *)(uintptr_t)k->message, type);
+		sys_fatalError(AP(char, OBJ(g_logStage)), (const char *)(uintptr_t)k->message, type);
 	ShapeManager_releaseShapes(pl + k->shapes);
 	SkeletonManager_releaseSkeletons(pl + k->skels);
 	strcpy((char *)pl + k->name, (const char *)stage + k->names + type * k->stride);
@@ -874,11 +874,11 @@ void THISCALL (actor_setActorTypeItemInfoBy)(Stage *stage, int p, int slot, int 
 	if (mode <= 9)
 		item = slot == 0 ? fixed[mode / 2] : mode >= 8 && slot == 1 ? 0x17 : -1;
 	if (item >= 0)
-		strcpy(((PlayerRecord *)RELOC(record))->itemNames[slot], (const char *)(u8 *)&st->actorItems[item]);
+		strcpy((AP(PlayerRecord, RELOC(record)))->itemNames[slot], (const char *)(u8 *)&st->actorItems[item]);
 	else
 		record->itemNames[slot][0] = 0;
 	if (item >= st->actorItemCount)
-		sys_fatalError((char *)OBJ(g_logStage), (const char *)STR(0x4c76f0, "invalid itemIndex(%d) - setActorTypeI..."), item);
+		sys_fatalError(AP(char, OBJ(g_logStage)), AP(const char, STR(0x4c76f0, "invalid itemIndex(%d) - setActorTypeI...")), item);
 	record->items[slot] = item;
 	for (int i = 0; i < st->actorCount; i++)
 		if (st->actors[i].player == p)

@@ -5,13 +5,17 @@
 #include "layout.h"
 extern struct GameRdata g_rdata;
 extern struct GameData g_data;
+#ifdef AXIS_64   /* (the 64-bit build: both at their original addresses in the game's address space) */
+#define g_rdata (*(struct GameRdata *)(g_arena + 0x4a9000))
+#define g_data (*(struct GameData *)(g_arena + 0x4ad000))
+#endif
 #include "split.h"   /* (the variables split out of g_data) */
 #undef g_accountForm
 #define g_accountForm ((u8 *)g_accountForm_v)
 #undef g_accountOldPassword
 #define g_accountOldPassword ((char *)g_data.g_accountOldPassword_)
 #undef g_accountPacket
-#define g_accountPacket (*(AccountPacket * *)g_accountPacket_v)
+#define g_accountPacket (*(APTR(AccountPacket) *)g_accountPacket_v)
 #undef g_accountPanelBottom
 #define g_accountPanelBottom (*(int *)g_accountPanelBottom_v)
 #undef g_accountPanelLeft
@@ -71,7 +75,7 @@ extern struct GameData g_data;
 #undef g_arenaGameType
 #define g_arenaGameType (*(u8 *)((u8 *)g_arenaName_v + 0x23))
 #undef g_arenaInfoPacket
-#define g_arenaInfoPacket (*(u8 * *)g_arenaInfoPacket_v)
+#define g_arenaInfoPacket (*(APTR(u8) *)g_arenaInfoPacket_v)
 #undef g_arenaJoinNeedsPassword
 #define g_arenaJoinNeedsPassword (*(int *)g_arenaJoinNeedsPassword_v)
 #undef g_arenaJoinPassword
@@ -103,7 +107,7 @@ extern struct GameData g_data;
 #undef g_arenaListRefreshTimer
 #define g_arenaListRefreshTimer (*(float *)g_arenaListRefreshTimer_v)
 #undef g_arenaListRequest
-#define g_arenaListRequest (*(u32 * *)g_arenaListRequest_v)
+#define g_arenaListRequest (*(APTR(u32) *)g_arenaListRequest_v)
 #undef g_arenaLocked
 #define g_arenaLocked (*(u8 *)((u8 *)g_arenaName_v + 0x2e))
 #undef g_arenaMap
@@ -117,7 +121,7 @@ extern struct GameData g_data;
 #undef g_arenaOnOff
 #define g_arenaOnOff ((char *)g_arenaOnOff_v)
 #undef g_arenaPacket
-#define g_arenaPacket (*(ArenaRecord * *)g_arenaPacket_v)
+#define g_arenaPacket (*(APTR(ArenaRecord) *)g_arenaPacket_v)
 #undef g_arenaPassword
 #define g_arenaPassword (*(u32 *)((u8 *)g_arenaName_v + 0x26))
 #undef g_arenaPassword4
@@ -233,7 +237,7 @@ extern struct GameData g_data;
 #undef g_bindWaiting
 #define g_bindWaiting (*(int *)g_bindWaiting_v)
 #undef g_bitStream
-#define g_bitStream (*(const u8 * *)g_bitStream_v)
+#define g_bitStream (*(APTR(const u8) *)g_bitStream_v)
 #undef g_boosterActiveTime
 #define g_boosterActiveTime (*(float *)((u8 *)g_boosterStats_v + 0x4))
 #undef g_boosterCount
@@ -271,7 +275,7 @@ extern struct GameData g_data;
 #undef g_briefingShown
 #define g_briefingShown (*(int *)g_briefingShown_v)
 #undef g_briefingSource
-#define g_briefingSource (*(u8 * *)g_briefingSource_v)
+#define g_briefingSource (*(APTR(u8) *)g_briefingSource_v)
 #undef g_briefingStart
 #define g_briefingStart (*(int *)g_briefingStart_v)
 #undef g_briefingText
@@ -319,7 +323,7 @@ extern struct GameData g_data;
 #undef g_camPoints
 #define g_camPoints ((float *)g_camPoints_v)
 #undef g_catalogueFile
-#define g_catalogueFile (*(const char * *)g_catalogueFile_v)
+#define g_catalogueFile (*(APTR(const char) *)g_catalogueFile_v)
 #undef g_cfgLinearFilter
 #define g_cfgLinearFilter (*(u32 *)((u8 *)g_graphicSettings_v + 0xc))
 #undef g_cfgMipmaps
@@ -375,13 +379,13 @@ extern struct GameData g_data;
 #undef g_coloursChanged
 #define g_coloursChanged (*(int *)g_coloursChanged_v)
 #undef g_componentDatPath
-#define g_componentDatPath (*(const char * *)g_componentDatPath_v)
+#define g_componentDatPath (*(APTR(const char) *)g_componentDatPath_v)
 #undef g_connectedServer
 #define g_connectedServer (*(int *)g_connectedServer_v)
 #undef g_connectionAwaited
 #define g_connectionAwaited (*(int *)g_connectionAwaited_v)
 #undef g_connectionCopy
-#define g_connectionCopy (*(void * *)g_connectionCopy_v)
+#define g_connectionCopy (*(APTR(void) *)g_connectionCopy_v)
 #undef g_connectionKind
 #define g_connectionKind (*(int *)g_connectionKind_v)
 #undef g_controls
@@ -703,7 +707,7 @@ extern struct GameData g_data;
 #undef g_directInputMade
 #define g_directInputMade (*(int *)g_directInputMade_v)
 #undef g_directSound
-#define g_directSound (*(void * *)g_directSound_v)
+#define g_directSound (*(APTR(void) *)g_directSound_v)
 #undef g_displayModeChanged
 #define g_displayModeChanged (*(u8 *)g_displayModeChanged_v)
 #undef g_displayModeLeft
@@ -719,9 +723,9 @@ extern struct GameData g_data;
 #undef g_dpTimeout
 #define g_dpTimeout (*(u32 *)g_dpTimeout_v)
 #undef g_dplay
-#define g_dplay (*(void * *)g_dplay_v)
+#define g_dplay (*(APTR(void) *)g_dplay_v)
 #undef g_dplayLobby
-#define g_dplayLobby (*(void * *)g_dplayLobby_v)
+#define g_dplayLobby (*(APTR(void) *)g_dplayLobby_v)
 #undef g_dplaySessionCount
 #define g_dplaySessionCount (*(int *)g_dplaySessionCount_v)
 #undef g_dplaySessionOpen
@@ -899,7 +903,7 @@ extern struct GameData g_data;
 #undef g_gameServerAnswer
 #define g_gameServerAnswer (*(int *)g_gameServerAnswer_v)
 #undef g_gameServerKeepAlive
-#define g_gameServerKeepAlive (*(char * *)g_gameServerKeepAlive_v)
+#define g_gameServerKeepAlive (*(APTR(char) *)g_gameServerKeepAlive_v)
 #undef g_gameServerReply
 #define g_gameServerReply ((u8 *)g_gameServerReply_v)
 #undef g_gameServerReplyCode
@@ -931,11 +935,11 @@ extern struct GameData g_data;
 #undef g_glWidth
 #define g_glWidth (*(int *)g_glWidth_v)
 #undef g_glWindow
-#define g_glWindow (*(void * *)g_glWindow_v)
+#define g_glWindow (*(APTR(void) *)g_glWindow_v)
 #undef g_glWindowContext
-#define g_glWindowContext (*(void * *)g_glWindowContext_v)
+#define g_glWindowContext (*(APTR(void) *)g_glWindowContext_v)
 #undef g_glWindowDc
-#define g_glWindowDc (*(void * *)g_glWindowDc_v)
+#define g_glWindowDc (*(APTR(void) *)g_glWindowDc_v)
 #undef g_glWindowMade
 #define g_glWindowMade (*(int *)g_glWindowMade_v)
 #undef g_graphicEdited
@@ -943,9 +947,9 @@ extern struct GameData g_data;
 #undef g_graphicSettings
 #define g_graphicSettings ((int *)g_graphicSettings_v)
 #undef g_hEditField
-#define g_hEditField (*(void * *)g_hEditField_v)
+#define g_hEditField (*(APTR(void) *)g_hEditField_v)
 #undef g_hInstance
-#define g_hInstance (*(void * *)g_hInstance_v)
+#define g_hInstance (*(APTR(void) *)g_hInstance_v)
 #undef g_hanChoBottom
 #define g_hanChoBottom ((float *)g_hanChoBottom_v)
 #undef g_hanChoLeft
@@ -1031,7 +1035,7 @@ extern struct GameData g_data;
 #undef g_headWeight
 #define g_headWeight (*(float *)g_headWeight_v)
 #undef g_hostAddressBlock
-#define g_hostAddressBlock (*(void * *)g_hostAddressBlock_v)
+#define g_hostAddressBlock (*(APTR(void) *)g_hostAddressBlock_v)
 #undef g_hostAnswer
 #define g_hostAnswer (*(int *)g_hostAnswer_v)
 #undef g_hostErrorBox
@@ -1047,7 +1051,7 @@ extern struct GameData g_data;
 #undef g_hostingState
 #define g_hostingState (*(int *)g_hostingState_v)
 #undef g_inputFont
-#define g_inputFont (*(void * *)g_inputFont_v)
+#define g_inputFont (*(APTR(void) *)g_inputFont_v)
 #undef g_inputHistory
 #define g_inputHistory ((char *)g_inputHistory_v)
 #undef g_inputLine
@@ -1061,7 +1065,7 @@ extern struct GameData g_data;
 #undef g_inputLineY
 #define g_inputLineY (*(int *)g_inputLineY_v)
 #undef g_insertCdMessage
-#define g_insertCdMessage (*(const char * *)g_insertCdMessage_v)
+#define g_insertCdMessage (*(APTR(const char) *)g_insertCdMessage_v)
 #undef g_introTextures
 #define g_introTextures ((int *)g_introTextures_v)
 #undef g_ipxProviderGuid
@@ -1189,7 +1193,7 @@ extern struct GameData g_data;
 #undef g_languageId
 #define g_languageId (*(u16 *)g_languageId_v)
 #undef g_lastChatLine
-#define g_lastChatLine (*(char * *)g_lastChatLine_v)
+#define g_lastChatLine (*(APTR(char) *)g_lastChatLine_v)
 #undef g_lastChatLineSet
 #define g_lastChatLineSet (*(int *)g_lastChatLineSet_v)
 #undef g_lastCrosshair
@@ -1203,9 +1207,9 @@ extern struct GameData g_data;
 #undef g_lastTime
 #define g_lastTime (*(double *)((u8 *)g_timerClocks_v + 0x8))
 #undef g_launchArgs
-#define g_launchArgs ((char * *)g_data.g_launchArgs_)
+#define g_launchArgs ((APTR(char) *)g_data.g_launchArgs_)
 #undef g_launchMessage
-#define g_launchMessage (*(const char * *)g_launchMessage_v)
+#define g_launchMessage (*(APTR(const char) *)g_launchMessage_v)
 #undef g_launchStartStep
 #define g_launchStartStep (*(int *)g_launchStartStep_v)
 #undef g_launchedAsHost
@@ -1249,7 +1253,7 @@ extern struct GameData g_data;
 #undef g_loadFade
 #define g_loadFade (*(float *)g_loadFade_v)
 #undef g_loadGame
-#define g_loadGame (*(Scene * *)g_loadGame_v)
+#define g_loadGame (*(APTR(Scene) *)g_loadGame_v)
 #undef g_loadLimit
 #define g_loadLimit (*(float *)((u8 *)g_mechSpeeds_v + 0x14))
 #undef g_loadScroll
@@ -1263,15 +1267,15 @@ extern struct GameData g_data;
 #undef g_loadTimer
 #define g_loadTimer ((u8 *)g_loadTimer_v)
 #undef g_lobbyConnectionBlock
-#define g_lobbyConnectionBlock (*(void * *)g_lobbyConnectionBlock_v)
+#define g_lobbyConnectionBlock (*(APTR(void) *)g_lobbyConnectionBlock_v)
 #undef g_lobbyConnectionOpen
 #define g_lobbyConnectionOpen (*(int *)g_lobbyConnectionOpen_v)
 #undef g_lobbyJoinStarted
 #define g_lobbyJoinStarted (*(int *)g_lobbyJoinStarted_v)
 #undef g_lobbyKeepAlive
-#define g_lobbyKeepAlive (*(char * *)g_lobbyKeepAlive_v)
+#define g_lobbyKeepAlive (*(APTR(char) *)g_lobbyKeepAlive_v)
 #undef g_lobbyLeavePacket
-#define g_lobbyLeavePacket (*(u8 * *)g_lobbyLeavePacket_v)
+#define g_lobbyLeavePacket (*(APTR(u8) *)g_lobbyLeavePacket_v)
 #undef g_lobbyListAnswer
 #define g_lobbyListAnswer (*(int *)g_lobbyListAnswer_v)
 #undef g_lobbyPanelsSliding
@@ -1319,7 +1323,7 @@ extern struct GameData g_data;
 #undef g_logConsole
 #define g_logConsole ((u32 *)g_logConsole_v)
 #undef g_logHook
-#define g_logHook (*(void * *)g_logHook_v)
+#define g_logHook (*(APTR(void) *)g_logHook_v)
 #undef g_logLight
 #define g_logLight ((u32 *)g_logLight_v)
 #undef g_logOutDialogBottom
@@ -1379,7 +1383,7 @@ extern struct GameData g_data;
 #undef g_mainMenuTextures
 #define g_mainMenuTextures ((int *)g_mainMenuTextures_v)
 #undef g_mainWindow
-#define g_mainWindow (*(void * *)g_mainWindow_v)
+#define g_mainWindow (*(APTR(void) *)g_mainWindow_v)
 #undef g_mapAbouts
 #define g_mapAbouts ((char *)g_mapAbouts_v)
 #undef g_mapChoiceKeptTable
@@ -1563,7 +1567,7 @@ extern struct GameData g_data;
 #undef g_menuSoundBuffers
 #define g_menuSoundBuffers ((u32 *)g_menuSoundBuffers_v)
 #undef g_menuTunnel
-#define g_menuTunnel (*(TunnelRing * *)g_menuTunnel_v)
+#define g_menuTunnel (*(APTR(TunnelRing) *)g_menuTunnel_v)
 #undef g_menuTunnelSpeed
 #define g_menuTunnelSpeed (*(float *)g_menuTunnelSpeed_v)
 #undef g_menuTunnelTexture
@@ -1661,7 +1665,7 @@ extern struct GameData g_data;
 #undef g_mouseY
 #define g_mouseY (*(int *)((u8 *)g_mousePos_v + 0x4))
 #undef g_music
-#define g_music (*(void * *)g_music_v)
+#define g_music (*(APTR(void) *)g_music_v)
 #undef g_musicDuration
 #define g_musicDuration ((u32 *)g_musicDuration_v)
 #undef g_musicFile
@@ -1675,13 +1679,13 @@ extern struct GameData g_data;
 #undef g_musicVolumeSetting
 #define g_musicVolumeSetting (*(int *)g_musicVolumeSetting_v)
 #undef g_netAccountBuffer
-#define g_netAccountBuffer (*(char * *)g_netAccountBuffer_v)
+#define g_netAccountBuffer (*(APTR(char) *)g_netAccountBuffer_v)
 #undef g_netAccountRequest
-#define g_netAccountRequest (*(char * *)g_netAccountRequest_v)
+#define g_netAccountRequest (*(APTR(char) *)g_netAccountRequest_v)
 #undef g_netBlockSize
 #define g_netBlockSize (*(u32 *)g_netBlockSize_v)
 #undef g_netByteBuffer
-#define g_netByteBuffer (*(char * *)g_netByteBuffer_v)
+#define g_netByteBuffer (*(APTR(char) *)g_netByteBuffer_v)
 #undef g_netChatMessageFrom
 #define g_netChatMessageFrom (*(int *)g_netChatMessageFrom_v)
 #undef g_netChatMessageKind
@@ -1699,11 +1703,11 @@ extern struct GameData g_data;
 #undef g_netHostLeftMessageKind
 #define g_netHostLeftMessageKind (*(int *)((u8 *)g_hostLeavingMsg_v + 0x0))
 #undef g_netKindBuffer
-#define g_netKindBuffer (*(u32 * *)g_netKindBuffer_v)
+#define g_netKindBuffer (*(APTR(u32) *)g_netKindBuffer_v)
 #undef g_netLastRequest
 #define g_netLastRequest (*(int *)g_netLastRequest_v)
 #undef g_netLeaveBuffer
-#define g_netLeaveBuffer (*(char * *)g_netLeaveBuffer_v)
+#define g_netLeaveBuffer (*(APTR(char) *)g_netLeaveBuffer_v)
 #undef g_netListDone
 #define g_netListDone (*(int *)g_netListDone_v)
 #undef g_netPacketMessageKind
@@ -1711,15 +1715,15 @@ extern struct GameData g_data;
 #undef g_netPlayerList
 #define g_netPlayerList ((RankedPlayer *)g_netPlayerList_v)
 #undef g_netPlayerRecordPacket
-#define g_netPlayerRecordPacket (*(u8 * *)g_netPlayerRecordPacket_v)
+#define g_netPlayerRecordPacket (*(APTR(u8) *)g_netPlayerRecordPacket_v)
 #undef g_netQueueOnline
 #define g_netQueueOnline (*(int *)g_netQueueOnline_v)
 #undef g_netRankingBuffer
-#define g_netRankingBuffer (*(int * *)g_netRankingBuffer_v)
+#define g_netRankingBuffer (*(APTR(int) *)g_netRankingBuffer_v)
 #undef g_netRole
 #define g_netRole (*(int *)g_netRole_v)
 #undef g_netSelectionPacket
-#define g_netSelectionPacket (*(u8 * *)g_netSelectionPacket_v)
+#define g_netSelectionPacket (*(APTR(u8) *)g_netSelectionPacket_v)
 #undef g_netSendPacket
 #define g_netSendPacket ((NetPacketMessage *)g_netSendPacket_v)
 #undef g_netSlotMessageKind
@@ -1923,11 +1927,11 @@ extern struct GameData g_data;
 #undef g_pingAddresses
 #define g_pingAddresses ((char *)g_pingAddresses_v)
 #undef g_pingStartEvent
-#define g_pingStartEvent (*(void * *)g_pingStartEvent_v)
+#define g_pingStartEvent (*(APTR(void) *)g_pingStartEvent_v)
 #undef g_pingStopEvent
-#define g_pingStopEvent (*(void * *)g_pingStopEvent_v)
+#define g_pingStopEvent (*(APTR(void) *)g_pingStopEvent_v)
 #undef g_pingThread
-#define g_pingThread (*(void * *)g_pingThread_v)
+#define g_pingThread (*(APTR(void) *)g_pingThread_v)
 #undef g_pingThreadId
 #define g_pingThreadId (*(int *)g_pingThreadId_v)
 #undef g_pingTime
@@ -1969,7 +1973,7 @@ extern struct GameData g_data;
 #undef g_pointerGliding
 #define g_pointerGliding (*(int *)g_pointerGliding_v)
 #undef g_primarySoundBuffer
-#define g_primarySoundBuffer (*(void * *)g_primarySoundBuffer_v)
+#define g_primarySoundBuffer (*(APTR(void) *)g_primarySoundBuffer_v)
 #undef g_profileChosen
 #define g_profileChosen (*(int *)g_profileChosen_v)
 #undef g_profileColour
@@ -2059,7 +2063,7 @@ extern struct GameData g_data;
 #undef g_projMode
 #define g_projMode (*(int *)g_projMode_v)
 #undef g_providerGuid
-#define g_providerGuid (*(const void * *)g_providerGuid_v)
+#define g_providerGuid (*(APTR(const void) *)g_providerGuid_v)
 #undef g_ptxAcCodes
 #define g_ptxAcCodes ((int *)g_ptxAcCodes_v)
 #undef g_ptxBitPos
@@ -2069,7 +2073,7 @@ extern struct GameData g_data;
 #undef g_ptxCbGreen
 #define g_ptxCbGreen ((int *)g_ptxCbGreen_v)
 #undef g_ptxClamp
-#define g_ptxClamp (*(const u8 * *)g_ptxClamp_v)
+#define g_ptxClamp (*(APTR(const u8) *)g_ptxClamp_v)
 #undef g_ptxClampTable
 #define g_ptxClampTable ((u8 *)g_ptxClampTable_v)
 #undef g_ptxCrGreen
@@ -2165,7 +2169,7 @@ extern struct GameData g_data;
 #undef g_receivedRank
 #define g_receivedRank (*(int *)((u8 *)g_rankReply_v + 0x16))
 #undef g_receivedSession
-#define g_receivedSession (*(const u8 * *)g_receivedSession_v)
+#define g_receivedSession (*(APTR(const u8) *)g_receivedSession_v)
 #undef g_rectColour
 #define g_rectColour ((Colour *)g_rectColour_v)
 #undef g_repeatDown
@@ -2269,13 +2273,13 @@ extern struct GameData g_data;
 #undef g_roomGameMode
 #define g_roomGameMode (*(signed char *)((u8 *)g_roomSettingsName_v + 0x23))
 #undef g_roomInfoPacket
-#define g_roomInfoPacket (*(u8 * *)g_roomInfoPacket_v)
+#define g_roomInfoPacket (*(APTR(u8) *)g_roomInfoPacket_v)
 #undef g_roomJoinNeedsPassword
 #define g_roomJoinNeedsPassword (*(int *)g_roomJoinNeedsPassword_v)
 #undef g_roomJoinStarted
 #define g_roomJoinStarted (*(int *)g_roomJoinStarted_v)
 #undef g_roomLeavePacket
-#define g_roomLeavePacket (*(u8 * *)g_roomLeavePacket_v)
+#define g_roomLeavePacket (*(APTR(u8) *)g_roomLeavePacket_v)
 #undef g_roomList
 #define g_roomList ((RoomRecord *)g_roomList_v)
 #undef g_roomListAnswer
@@ -2287,7 +2291,7 @@ extern struct GameData g_data;
 #undef g_roomListRefreshTimer
 #define g_roomListRefreshTimer (*(float *)g_roomListRefreshTimer_v)
 #undef g_roomListRequest
-#define g_roomListRequest (*(u32 * *)g_roomListRequest_v)
+#define g_roomListRequest (*(APTR(u32) *)g_roomListRequest_v)
 #undef g_roomLoginBottom
 #define g_roomLoginBottom (*(int *)g_roomLoginBottom_v)
 #undef g_roomLoginDue
@@ -2311,7 +2315,7 @@ extern struct GameData g_data;
 #undef g_roomOutlines
 #define g_roomOutlines ((int *)g_roomOutlines_v)
 #undef g_roomPacket
-#define g_roomPacket (*(RoomRecord * *)g_roomPacket_v)
+#define g_roomPacket (*(APTR(RoomRecord) *)g_roomPacket_v)
 #undef g_roomPanelsSliding
 #define g_roomPanelsSliding (*(int *)g_roomPanelsSliding_v)
 #undef g_roomRecFragLimit
@@ -2403,7 +2407,7 @@ extern struct GameData g_data;
 #undef g_sensitivitySlider
 #define g_sensitivitySlider (*(int *)((u8 *)g_controlsEdit_v + 0x108))
 #undef g_sentChatBlock
-#define g_sentChatBlock (*(char * *)g_sentChatBlock_v)
+#define g_sentChatBlock (*(APTR(char) *)g_sentChatBlock_v)
 #undef g_serialProviderGuid
 #define g_serialProviderGuid ((u8 *)g_serialProviderGuid_v)
 #undef g_serverAddressArg
@@ -2583,7 +2587,7 @@ extern struct GameData g_data;
 #undef g_stereoReverse
 #define g_stereoReverse (*(int *)((u8 *)g_soundSettings_v + 0xc))
 #undef g_storedConnection
-#define g_storedConnection (*(void * *)g_storedConnection_v)
+#define g_storedConnection (*(APTR(void) *)g_storedConnection_v)
 #undef g_tan10Table
 #define g_tan10Table ((float *)g_tan10Table_v)
 #undef g_tanTable
@@ -2639,7 +2643,7 @@ extern struct GameData g_data;
 #undef g_textureManagerObject
 #define g_textureManagerObject ((u32 *)g_textureManagerObject_v)
 #undef g_textures
-#define g_textures (*(TextureManager * *)g_textures_v)
+#define g_textures (*(APTR(TextureManager) *)g_textures_v)
 #undef g_timeLimit
 #define g_timeLimit (*(int *)g_timeLimit_v)
 #undef g_timerClocks
@@ -2873,7 +2877,7 @@ extern struct GameData g_data;
 #undef g_windowClass
 #define g_windowClass ((u8 *)g_windowClass_v)
 #undef g_windowDC
-#define g_windowDC (*(void * *)g_windowDC_v)
+#define g_windowDC (*(APTR(void) *)g_windowDC_v)
 #undef g_writeMatchLog
 #define g_writeMatchLog (*(int *)g_writeMatchLog_v)
 #undef k_0_00125f
@@ -3070,94 +3074,94 @@ extern struct GameData g_data;
 #define k_tenth (g_rdata.k_tenth_)
 /* names that are no member of their own type: at IMG()'s place */
 #undef k_panelSlideEnd
-#define k_panelSlideEnd (*(double *)IMG(0x4a9440))
+#define k_panelSlideEnd (*AP(double, IMG(0x4a9440)))
 #undef k_degToRad
-#define k_degToRad (*(double *)IMG(0x4aa290))
+#define k_degToRad (*AP(double, IMG(0x4aa290)))
 #undef k_tenthDegreeRad
-#define k_tenthDegreeRad (*(double *)IMG(0x4aa298))
+#define k_tenthDegreeRad (*AP(double, IMG(0x4aa298)))
 #undef k_15f
-#define k_15f (*(float *)IMG(0x4aa498))
+#define k_15f (*AP(float, IMG(0x4aa498)))
 #undef k_oneOver180
-#define k_oneOver180 (*(double *)IMG(0x4a9540))
+#define k_oneOver180 (*AP(double, IMG(0x4a9540)))
 #undef g_energyBarWidth
-#define g_energyBarWidth (*(float *)IMG(0xb68ce0))
+#define g_energyBarWidth (*AP(float, IMG(0xb68ce0)))
 #undef g_energyBarHeight
-#define g_energyBarHeight (*(float *)IMG(0xb68ce4))
+#define g_energyBarHeight (*AP(float, IMG(0xb68ce4)))
 #undef k_3600f
-#define k_3600f (*(float *)IMG(0x4a94c8))
+#define k_3600f (*AP(float, IMG(0x4a94c8)))
 #undef k_0f
-#define k_0f (*(float *)IMG(0x4a93e8))
+#define k_0f (*AP(float, IMG(0x4a93e8)))
 #undef k_2f
-#define k_2f (*(float *)IMG(0x4a93fc))
+#define k_2f (*AP(float, IMG(0x4a93fc)))
 #undef k_0_5f
-#define k_0_5f (*(float *)IMG(0x4a942c))
+#define k_0_5f (*AP(float, IMG(0x4a942c)))
 #undef k_360f
-#define k_360f (*(float *)IMG(0x4a9460))
+#define k_360f (*AP(float, IMG(0x4a9460)))
 #undef k_m1f
-#define k_m1f (*(float *)IMG(0x4a9474))
+#define k_m1f (*AP(float, IMG(0x4a9474)))
 #undef k_m2f
-#define k_m2f (*(float *)IMG(0x4a94a8))
+#define k_m2f (*AP(float, IMG(0x4a94a8)))
 #undef k_0_01
-#define k_0_01 (*(double *)IMG(0x4a94c0))
+#define k_0_01 (*AP(double, IMG(0x4a94c0)))
 #undef k_0_9f
-#define k_0_9f (*(float *)IMG(0x4a9508))
+#define k_0_9f (*AP(float, IMG(0x4a9508)))
 #undef k_m1000f
-#define k_m1000f (*(float *)IMG(0x4a95c0))
+#define k_m1000f (*AP(float, IMG(0x4a95c0)))
 #undef k_27_7778f
-#define k_27_7778f (*(float *)IMG(0x4a9750))
+#define k_27_7778f (*AP(float, IMG(0x4a9750)))
 #undef k_1em8f
-#define k_1em8f (*(float *)IMG(0x4aa268))
+#define k_1em8f (*AP(float, IMG(0x4aa268)))
 #undef k_1em8
-#define k_1em8 (*(double *)IMG(0x4aa458))
+#define k_1em8 (*AP(double, IMG(0x4aa458)))
 #undef g_imp_wsprintfA
-#define g_imp_wsprintfA (*(void * *)IMG(0x4a92f0))
+#define g_imp_wsprintfA (*(APTR(void) *)IMG(0x4a92f0))
 #undef k_5f
-#define k_5f (*(float *)IMG(0x4a93d0))
+#define k_5f (*AP(float, IMG(0x4a93d0)))
 #undef k_1000000f
-#define k_1000000f (*(float *)IMG(0x4a94ec))
+#define k_1000000f (*AP(float, IMG(0x4a94ec)))
 #undef k_0_2f
-#define k_0_2f (*(float *)IMG(0x4a94f8))
+#define k_0_2f (*AP(float, IMG(0x4a94f8)))
 #undef k_640f
-#define k_640f (*(float *)IMG(0x4a9510))
+#define k_640f (*AP(float, IMG(0x4a9510)))
 #undef k_3f
-#define k_3f (*(float *)IMG(0x4a9534))
+#define k_3f (*AP(float, IMG(0x4a9534)))
 #undef k_27
-#define k_27 (*(double *)IMG(0x4aa408))
+#define k_27 (*AP(double, IMG(0x4aa408)))
 #undef g_scene
-#define g_scene (*(Scene * *)IMG(0x9087b4))
+#define g_scene (*(APTR(Scene) *)IMG(0x9087b4))
 #undef g_white
-#define g_white (*(u32 *)IMG(0xa1f23c))
+#define g_white (*AP(u32, IMG(0xa1f23c)))
 #undef k_1_95f
-#define k_1_95f (*(float *)IMG(0x4a9710))
+#define k_1_95f (*AP(float, IMG(0x4a9710)))
 #undef k_26f
-#define k_26f (*(float *)IMG(0x4aa27c))
+#define k_26f (*AP(float, IMG(0x4aa27c)))
 #undef k_0_002777778f
-#define k_0_002777778f (*(float *)IMG(0x4a9488))
+#define k_0_002777778f (*AP(float, IMG(0x4a9488)))
 #undef k_0_2777778f
-#define k_0_2777778f (*(float *)IMG(0x4a9490))
+#define k_0_2777778f (*AP(float, IMG(0x4a9490)))
 #undef k_m200f
-#define k_m200f (*(float *)IMG(0x4a94a0))
+#define k_m200f (*AP(float, IMG(0x4a94a0)))
 #undef k_105f
-#define k_105f (*(float *)IMG(0x4a94b4))
+#define k_105f (*AP(float, IMG(0x4a94b4)))
 #undef k_0_001111111f
-#define k_0_001111111f (*(float *)IMG(0x4a971c))
+#define k_0_001111111f (*AP(float, IMG(0x4a971c)))
 #undef k_0_0005555556f
-#define k_0_0005555556f (*(float *)IMG(0x4a9724))
+#define k_0_0005555556f (*AP(float, IMG(0x4a9724)))
 #undef k_572_9578f
-#define k_572_9578f (*(float *)IMG(0x4a9738))
+#define k_572_9578f (*AP(float, IMG(0x4a9738)))
 #undef k_250000f
-#define k_250000f (*(float *)IMG(0x4a9740))
+#define k_250000f (*AP(float, IMG(0x4a9740)))
 #undef k_170f
-#define k_170f (*(float *)IMG(0x4a9748))
+#define k_170f (*AP(float, IMG(0x4a9748)))
 #undef k_0_04f
-#define k_0_04f (*(float *)IMG(0x4aa25c))
+#define k_0_04f (*AP(float, IMG(0x4aa25c)))
 #undef k_0_125f
-#define k_0_125f (*(float *)IMG(0x4aa274))
+#define k_0_125f (*AP(float, IMG(0x4aa274)))
 #undef k_0_01666667f
-#define k_0_01666667f (*(float *)IMG(0x4aa2a8))
+#define k_0_01666667f (*AP(float, IMG(0x4aa2a8)))
 #undef k_0_001745329f
-#define k_0_001745329f (*(float *)IMG(0x4aa44c))
+#define k_0_001745329f (*AP(float, IMG(0x4aa44c)))
 #undef k_0_85f
-#define k_0_85f (*(float *)IMG(0x4aa478))
+#define k_0_85f (*AP(float, IMG(0x4aa478)))
 #undef k_14_11765f
-#define k_14_11765f (*(float *)IMG(0x4aa48c))
+#define k_14_11765f (*AP(float, IMG(0x4aa48c)))

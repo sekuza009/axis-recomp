@@ -3,7 +3,7 @@
    chain (tunnel_appendRing). */
 #include "../game.h"
 
-#define FIELD(type, obj, offset) GAME_VAR(type, (u8 *)RELOC(obj) + (offset))
+#define FIELD(type, obj, offset) GAME_VAR(type, AP(u8, RELOC(obj)) + (offset))
 
 /* node's links (prev, next) at link, the list's head and count at head */
 static void push_front(void *self, u8 *node, int link, int head)
@@ -37,9 +37,9 @@ u32 (tunnel_appendRing)(u8 **head)
 	} else {
 		TunnelRing *last = (TunnelRing *)first;
 		while (last->next)
-			last = last->next;
-		last->next = ring;
-		ring->back = last;
+			last = AP(TunnelRing, last->next);
+		last->next = AREF(ring);
+		ring->back = AREF(last);
 	}
 	ring->next = 0;
 	return tunnelRing_build(node, g_tunnelRings);

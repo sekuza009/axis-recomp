@@ -2097,10 +2097,10 @@ struct __attribute__((packed)) GameData {
 	u8 g_crtTenPowersUp_[352];
 	u8 g_crtTenPowersDown_[352];
 	u8 _gap_4d15b8[0x8e0];
-	void * g_directInput_;
+	APTR(void) g_directInput_;
 	u8 _gap_4d1e9c[0x104];
-	void * g_keyboard_;
-	void * g_mouse_;
+	APTR(void) g_keyboard_;
+	APTR(void) g_mouse_;
 	u8 _gap_4d1fa8[0x9578];
 	int g_arenaJoinPassword_;
 	int g_arenaJoinPassword4_;
@@ -2143,8 +2143,8 @@ struct __attribute__((packed)) GameData {
 	u8 _gap_5b195c[0x18];
 	int g_dikSlash_;
 	u8 _gap_5b1978[0x356e3c];
-	void * g_scene_;
-	void * g_glContext_;
+	APTR(void) g_scene_;
+	APTR(void) g_glContext_;
 	u8 _gap_9087bc[0xd25e4];
 	u8 g_codeColours_[112];
 	u8 _gap_9dae10[0x1194];

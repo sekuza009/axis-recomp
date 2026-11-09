@@ -6,7 +6,7 @@
 #include <string.h>
 #define ST ((Stage *)s)   /* the stage (s in each function) by its fields (src/scene.fields) */
 
-#define FIELD(type, obj, offset) GAME_VAR(type, (u8 *)RELOC(obj) + (offset))
+#define FIELD(type, obj, offset) GAME_VAR(type, AP(u8, RELOC(obj)) + (offset))
 
 static int paused(void *s) { return ST->scriptMode && ST->scriptHoldsPlay == 1; }   /* (a script holds the actors) */
 
@@ -93,7 +93,7 @@ int THISCALL (bullet_spawn)(u8 *s, u32 id, u32 owner, u32 homingTarget, const u8
 {
 #define COUNT ST->bulletSlotsUsed
 #define NEXT ST->bulletFreeHint
-	if (((const FiredRound *)RELOC(shot))->weapon < 0 || NEXT >= 400)
+	if ((AP(const FiredRound, RELOC(shot)))->weapon < 0 || NEXT >= 400)
 		return -1;
 	if (NEXT == COUNT) {
 		COUNT++;
@@ -105,7 +105,7 @@ int THISCALL (bullet_spawn)(u8 *s, u32 id, u32 owner, u32 homingTarget, const u8
 			NEXT = k;
 			break;
 		}
-	bullet_init(s, slot, id, owner, homingTarget, (u32)shot, quiet);
+	bullet_init(s, slot, id, owner, homingTarget, AV(shot), quiet);
 	return slot;
 #undef COUNT
 #undef NEXT
@@ -119,7 +119,7 @@ int THISCALL (object_addObjectBy)(u8 *s, u32 type)
 #define COUNT ST->objectCount
 #define NEXT ST->objectFreeHint
 	if (NEXT >= 1000) {
-		sys_errorMessage((char *)OBJ(g_logStage), (const char *)STR(0x4c8398, "objectPool overflow(%d/%d)-addObjectBy()"), NEXT + 1, 1000);
+		sys_errorMessage(AP(char, OBJ(g_logStage)), AP(const char, STR(0x4c8398, "objectPool overflow(%d/%d)-addObjectBy()")), NEXT + 1, 1000);
 		return -1;
 	}
 	if (NEXT == COUNT) {
@@ -159,7 +159,7 @@ void THISCALL (script_processTriggers)(u8 *s)
 		int localActor = ST->playerActor;
 		if (flags & 2 && localActor >= 0) {
 			const float *at = ST->actors[localActor].pos;
-			const float *point = ((const float *)t->wayPoints);
+			const float *point = (AP(const float, t->wayPoints));
 			long double dx = (long double)at[0] - point[0], dy = (long double)at[1] - point[1], dz = (long double)at[2] - point[2];
 			if (!(dz * dz + dy * dy + dx * dx >= t->radiusSq))
 				t->fired = 1;
@@ -211,11 +211,11 @@ void THISCALL (effect_initShapes)(u8 *s)
 	char name[0x100];
 	for (int set = 0; set < 3; set++)
 		for (int k = 0; k < 8; k++) {
-			sprintf(name, (const char *)RELOC(sets[set]), k);
+			sprintf(name, AP(const char, RELOC(sets[set])), k);
 			ST->thrustShapes[set][k] = shape_getByName((u8 *)&ST->itemShapes, name, 1);
 		}
 	for (int k = 0; k < 8; k++)
-		ST->effectShapes[k] = shape_getByName((u8 *)&ST->itemShapes, (const char *)RELOC(singles[k]), 1);
+		ST->effectShapes[k] = shape_getByName((u8 *)&ST->itemShapes, AP(const char, RELOC(singles[k])), 1);
 }
 
 /* 0x483770 (thiscall on the scene): way point `entry` of trigger trig (the triggers' 0x1c-byte records; WayPoint 0x14
@@ -230,10 +230,10 @@ void THISCALL (script_processCommandBy)(u8 *s, int actorIndex, int trig, int ent
 {
 	u8 *actor = actorIndex >= 0 ? (u8 *)&ST->actors[actorIndex] : NULL;
 	Actor *ac = (Actor *)actor;
-	WayPoint *e = (WayPoint *)(ST->triggers[trig].wayPoints + entry * 0x14);
+	WayPoint *e = AP(WayPoint, (ST->triggers[trig].wayPoints + entry * 0x14));
 	char name[0x100];
 	for (int i = 0; i < e->commandCount; i++) {
-		u32 *c = (u32 *)(e->commands + i * 0x30);
+		u32 *c = AP(u32, (e->commands + i * 0x30));
 		switch (c[0]) {
 		case 0: ST->triggers[c[1]].armed = 1; break;
 		case 1: ST->triggers[c[1]].armed = 0; break;
@@ -268,7 +268,7 @@ void THISCALL (script_processCommandBy)(u8 *s, int actorIndex, int trig, int ent
 			break;
 		case 13:
 			if (actor)
-				ac->speed = f32(fmul_m(fld_m((const float *)&c[1]), (const float *)ADDR(k_27_7778f)));
+				ac->speed = f32(fmul_m(fld_m((const float *)&c[1]), AP(const float, ADDR(k_27_7778f))));
 			break;
 		case 14: if (actor) ac->invulnerable = 1; break;
 		case 15: actor_applySpawnRecord(s, c[1], (u8 *)&ST->mapActors[c[1]]); break;
@@ -302,21 +302,21 @@ void THISCALL (script_processCommandBy)(u8 *s, int actorIndex, int trig, int ent
 		case 25: script_holdActor(s, -1, -1, 0); break;
 		case 26:   /* MESSAGE (nothing fills Stage.speakers / texts, so with the game's data this stops the game with the message below) */
 			if (*(const int *)ST->speakers[c[1]] == 0)
-				sys_fatalError((char *)OBJ(g_logStage), (const char *)STR(0x4c7a8c, "invalid speaker (%d) in command MESSA..."), c[1]);
+				sys_fatalError(AP(char, OBJ(g_logStage)), AP(const char, STR(0x4c7a8c, "invalid speaker (%d) in command MESSA...")), c[1]);
 			if (*(const int *)ST->texts[c[2]] == 0)
-				sys_fatalError((char *)OBJ(g_logStage), (const char *)STR(0x4c7a48, "invalid text (%d) in command MESSAGE ..."), c[2]);
+				sys_fatalError(AP(char, OBJ(g_logStage)), AP(const char, STR(0x4c7a48, "invalid text (%d) in command MESSAGE ...")), c[2]);
 			script_pushMessage(s, c[1], c[2], c[3], c[4]);
 			break;
 		case 27:
-			sprintf(name, (const char *)STR(0x4c7a3c, "%s/%s.scp"), ST->sceneDir, (const char *)&c[1]);
+			sprintf(name, AP(const char, STR(0x4c7a3c, "%s/%s.scp")), ST->sceneDir, (const char *)&c[1]);
 			script_startScenePath(s, name, c[9]);
 			break;
 		case 28:
-			sprintf(name, (const char *)STR(0x4c7a30, "%s/%s/%s"), s + 8, ST->stageName, (const char *)&c[2]);
+			sprintf(name, AP(const char, STR(0x4c7a30, "%s/%s/%s")), s + 8, ST->stageName, (const char *)&c[2]);
 			object_setAnimation(s, c[1], name, c[10], c[11]);
 			break;
 		case 29:
-			sprintf(name, (const char *)STR(0x4c7a20, "%s/Sound/%s.wav"), ST->stageName, (const char *)&c[1]);
+			sprintf(name, AP(const char, STR(0x4c7a20, "%s/Sound/%s.wav")), ST->stageName, (const char *)&c[1]);
 			sound_playFile(name, 100);
 			break;
 		case 30: object_activate(s, c[1]); break;
@@ -352,7 +352,7 @@ void THISCALL (object_initObjectBy)(Stage *s, int i, const ObjectInfo *info)
 			break;
 	if (idx == ST->objectNameCount) {
 		if (idx >= 1000)
-			sys_fatalError((char *)OBJ(g_logStage), (const char *)STR(0x4c8364, "object type buffer overflow (%d) - in..."), 1000);
+			sys_fatalError(AP(char, OBJ(g_logStage)), AP(const char, STR(0x4c8364, "object type buffer overflow (%d) - in...")), 1000);
 		idx = ST->objectNameCount++;
 		strcpy(ST->objectNames[idx], info->name);
 	}
@@ -361,19 +361,19 @@ void THISCALL (object_initObjectBy)(Stage *s, int i, const ObjectInfo *info)
 	mo->nameIndex = idx;
 	memcpy(obj + offsetof(MapObject, flags), &info->flags, 12);   /* flags, trigger, animPeriod */
 	if (info->animName[0])
-		sprintf(mo->animPath, (const char *)STR(0x4c7a30, "%s/%s/%s"), ST->stageDir, ST->stageName, info->animName);
+		sprintf(mo->animPath, AP(const char, STR(0x4c7a30, "%s/%s/%s")), ST->stageDir, ST->stageName, info->animName);
 	else
 		obj[0x18] = 0;
 	memcpy(mo->place, info->place, 12);
 	u32 move[16];
 	identity4(move);
 	for (int c = 0; c < 3; c++)
-		((float *)RELOC(move))[12 + c] = f32(fld_m(mo->place + c));
+		(AP(float, RELOC(move)))[12 + c] = f32(fld_m(mo->place + c));
 	memcpy(mo->rotation, info->rotation, 16);
 	float turn[16];
 	Mat4_fromQuat(turn, mo->rotation);
 	float *m = mo->matrix;
-	Mat4_multiply(mo->placeMatrix, (const float *)RELOC(move), turn);
+	Mat4_multiply(mo->placeMatrix, AP(const float, RELOC(move)), turn);
 	Mat4_invert(mo->placeInverse, mo->placeMatrix);
 	Mat4_copy(m, mo->placeMatrix);
 	Mat4_invert(mo->matrixInverse, m);
@@ -381,13 +381,13 @@ void THISCALL (object_initObjectBy)(Stage *s, int i, const ObjectInfo *info)
 	identity4((u32 *)mo->animInverse);
 	Mat4_multiply(mo->relMatrix, m, mo->placeInverse);
 	Mat4_invert(mo->relInverse, mo->relMatrix);
-	Shape *shape = (Shape *)((u8 *)shape_getByName((u8 *)&ST->objectShapes, info->name, 1));
-	mo->model = (Shape *)((u8 *)shape);
+	Shape *shape = (Shape *)(AP(u8, shape_getByName((u8 *)&ST->objectShapes, info->name, 1)));
+	mo->model = AREF((Shape *)((u8 *)shape));
 	for (int r = 0; r < 2; r++) {
 		int need = ST->objectColourCount + shape->colourCount;
 		if (need > 1000000)
-			sys_fatalErrorN((char *)OBJ(g_logStage), (const char *)STR(0x4c8314, "object(%d) objectShapeElementShadingC..."), i, need, 1000000);
-		mo->colourRuns[r] = (u32)&ST->objectColours[ST->objectColourCount];
+			sys_fatalErrorN(AP(char, OBJ(g_logStage)), AP(const char, STR(0x4c8314, "object(%d) objectShapeElementShadingC...")), i, need, 1000000);
+		mo->colourRuns[r] = AV(&ST->objectColours[ST->objectColourCount]);
 		ST->objectColourCount += mo->model->colourCount;
 	}
 	mo->colourSide = 1;
@@ -405,7 +405,7 @@ void THISCALL (object_initObjectBy)(Stage *s, int i, const ObjectInfo *info)
 	BITS(mo->glow) = 0;
 	BITS(mo->waitTime) = 0;
 	if (ST->shadingCached == 0)
-		shape_shadingColours((*(u32 * *)&mo->colourRuns[0]), 1, mo->model, (const LightFactors *)&s->mapLights,
+		shape_shadingColours((*(u32 * *)&mo->colourRuns[0]), 1, AP(Shape, mo->model), (const LightFactors *)&s->mapLights,
 		                 mo->matrixInverse);
 }
 
@@ -414,7 +414,7 @@ static void spawn_at(u8 *s, u32 kind, const float *p)
 {
 	u32 rec[13] = { kind, 0 };
 	memcpy(&rec[2], p, 12);
-	memcpy(&rec[5], (const void *)ADDR(g_vecZero), 12);
+	memcpy(&rec[5], AP(const void, ADDR(g_vecZero)), 12);
 	particle_spawn(s, rec);
 }
 
@@ -425,7 +425,7 @@ static void debris(u8 *s, u8 *p, float dt)
 {
 	Particle *pr = (Particle *)p;
 	float *pos = pr->pos;
-	const float *v = pr->target, *k = (const float *)ADDR(k_2000f);
+	const float *v = pr->target, *k = AP(const float, ADDR(k_2000f));
 	float dy = f32(FMUL(dt, v[1])), dz = f32(FMUL(dt, v[2]));
 	float hit[3], below[3];
 	hit[0] = f32(fadd_m(FMUL(dt, v[0]), &pos[0]));
@@ -443,8 +443,8 @@ static void debris(u8 *s, u8 *p, float dt)
 	glPushMatrix();
 	glLoadIdentity();
 	glTranslatef_stored(pos);
-	glRotatef(f32(fmul_m(fld_m(&pr->drawAge), (const float *)ADDR(k_3600f))), 0.0f, 1.0f, 0.0f);
-	glRotatef(f32(fmul_m(fld_m(&pr->drawAge), (const float *)ADDR(k_3600f))), 0.0f, 0.0f, 1.0f);
+	glRotatef(f32(fmul_m(fld_m(&pr->drawAge), AP(const float, ADDR(k_3600f)))), 0.0f, 1.0f, 0.0f);
+	glRotatef(f32(fmul_m(fld_m(&pr->drawAge), AP(const float, ADDR(k_3600f)))), 0.0f, 0.0f, 1.0f);
 	glGetFloatv(0xba6, pr->matrix);
 	glPopMatrix();
 	long double wait = FSUB(pr->puffWait, dt);
@@ -496,8 +496,8 @@ void THISCALL (particle_update)(u8 *s, int slot, float dt)
 		break;
 	}
 	if (radius) {
-		long double u = fsub_m(fld_m((const float *)ADDR(k_1f)), &t);
-		pr->lightRadius = f32(fmul_m(u * u, (const float *)RELOC(radius)));
+		long double u = fsub_m(fld_m(AP(const float, ADDR(k_1f))), &t);
+		pr->lightRadius = f32(fmul_m(u * u, AP(const float, RELOC(radius))));
 	}
 	pr->age = f32(FADD(dt, pr->age));
 }
@@ -537,7 +537,7 @@ static void item_pickup(u8 *s, u8 *ac, u8 *it, int i, u8 *t, int type)
 	case 0:
 	case 1: {
 		if (type < 10 && type > 5) {
-			sys_fatalError((char *)OBJ(g_logStage), (const char *)STR(0x4c81d0, "can't figure out the item type (%d) -..."), type);
+			sys_fatalError(AP(char, OBJ(g_logStage)), AP(const char, STR(0x4c81d0, "can't figure out the item type (%d) -...")), type);
 			return;
 		}
 		int k = type < 10 ? type : 6 + type % 10;
@@ -563,10 +563,10 @@ static void item_pickup(u8 *s, u8 *ac, u8 *it, int i, u8 *t, int type)
 			if (AC->controlledBy == ST->playerActor && !(AC->warpWait > 0) && AC->lastWarp != i) {
 				MapItem *to = &ST->items[mi->warpTo];
 				memcpy(AC->nextPos, to->pos, 12);
-				AC->nextPitch = f32(fmul_m((long double)to->warpPitch, (const float *)ADDR(k_10f)));
+				AC->nextPitch = f32(fmul_m((long double)to->warpPitch, AP(const float, ADDR(k_10f))));
 				BITS(AC->nextYaw) = BITS(to->angle);
 				AC->lastWarp = mi->warpTo;
-				strcpy(AC->message, (const char *)STR(0x4c8198, "WARP ZONE"));   /* WARP ZONE */
+				strcpy(AC->message, AP(const char, STR(0x4c8198, "WARP ZONE")));   /* WARP ZONE */
 				AC->messageTime = 0.0f;
 				AC->whiteFlash = 1.0f;
 				AC->warpWait = 2.0f;
@@ -585,10 +585,10 @@ static void item_pickup(u8 *s, u8 *ac, u8 *it, int i, u8 *t, int type)
 		bigPickup = 1;
 		break;
 	default:
-		CALL_FN(sys_errorMessage, void, char *, const char *, int)((char *)OBJ(g_logStage), (const char *)STR(0x4c81d0, "can't figure out the item type (%d) -..."), type);
+		CALL_FN(sys_errorMessage, void, char *, const char *, int)(AP(char, OBJ(g_logStage)), AP(const char, STR(0x4c81d0, "can't figure out the item type (%d) -...")), type);
 		return;
 	}
-	strcpy(AC->message, (const char *)RELOC(text));
+	strcpy(AC->message, AP(const char, RELOC(text)));
 	AC->messageTime = 0.0f;
 	if (bigPickup)
 		ST->lastPickup = i;
@@ -658,7 +658,7 @@ void THISCALL (item_update)(u8 *s, float dt)
 #undef A
 
 #define PR ((Particle *)p)   /* the same by its fields (src/scene.fields) */
-#define K(address) ((const float *)RELOC(address))
+#define K(address) (AP(const float, RELOC(address)))
 
 /* the next of the game's random numbers (its table g_randTable by the counter g_randPos) below n */
 static u32 table_rand_below(u32 n)
@@ -672,7 +672,7 @@ static u32 table_rand_below(u32 n)
 /* the particle placed at its matrix's origin (pos: the origin g_vecOrigin through its matrix) */
 static void particle_placeAtMatrix(u8 *p)
 {
-	const float *m = PR->matrix, *v = (const float *)ADDR(g_vecOrigin);
+	const float *m = PR->matrix, *v = AP(const float, ADDR(g_vecOrigin));
 	for (int r = 0; r < 3; r++)
 		PR->pos[r] = f32(fadd_m(FMUL(v[2], m[8 + r]) + FMUL(v[1], m[4 + r]) + FMUL(v[0], m[r]),
 		                                    &m[12 + r]));
@@ -739,7 +739,7 @@ static void particle_beam(u8 *s, u8 *p, u32 colour)
 	if (n <= 1) {
 		memset(rec, 0, sizeof rec);
 		memcpy(&rec[2], at, 12);
-		memcpy(&rec[5], (const void *)OBJ(g_vecZero2), 12);
+		memcpy(&rec[5], AP(const void, OBJ(g_vecZero2)), 12);
 		float size = f32(fld_m(&PR->baseSize));
 		memcpy(&rec[11], &size, 4);
 		particle_spawn(s, rec);
@@ -754,7 +754,7 @@ static void particle_beam(u8 *s, u8 *p, u32 colour)
 		float pos[3] = { f32(fadd_m(fmul_m(sx, &kf), &at[0])), f32(FADD(y, at[1])), f32(FADD(z, at[2])) };
 		rec[0] = rec[1] = 0;
 		memcpy(&rec[2], pos, 12);
-		memcpy(&rec[5], (const void *)OBJ(g_vecZero2), 12);
+		memcpy(&rec[5], AP(const void, OBJ(g_vecZero2)), 12);
 		rec[8] = rec[9] = rec[10] = 0;
 		float size = f32(fld_m(&PR->baseSize));
 		memcpy(&rec[11], &size, 4);
@@ -771,10 +771,10 @@ static void particle_mark(u8 *p, const u8 *desc, u32 margin)
 {
 	const ParticleDesc *pd = (const ParticleDesc *)desc;
 	PR->life = 2.0f;   /* 2 s */
-	memcpy(PR->markPoints[0], pd->markCorners, 12);
-	memcpy(PR->markPoints[1], pd->markCorners + 3, 12);
-	memcpy(PR->markPoints[2], pd->markCorners + 6, 12);
-	const float *q = pd->markCoords;
+	memcpy(PR->markPoints[0], AP(const void, pd->markCorners), 12);
+	memcpy(PR->markPoints[1], AP(const void, pd->markCorners + 3), 12);
+	memcpy(PR->markPoints[2], AP(const void, pd->markCorners + 6), 12);
+	const float *q = AP(const float, pd->markCoords);
 	static const u8 uv[5] = { 0, 2, 3, 4, 5 };   /* (q[k] gives markUv[k]; q[1] is not used) */
 	if (!margin) {
 		for (int k = 0; k < 5; k++) {

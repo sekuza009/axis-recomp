@@ -21,16 +21,16 @@ static int report(u32 flag, const u8 *object, u32 timeFormat, const char *format
 	GAME_VAR(int, flag) = 1;
 	TIME_LOCAL(st);
 	if (object)
-		sprintf_game(stamp, (const char *)RELOC(timeFormat), *(const u32 *)(object + 4), st[0], st[1], st[3], st[4], st[5], st[6], st[7]);
+		sprintf_game(stamp, AP(const char, RELOC(timeFormat)), *(const u32 *)(object + 4), st[0], st[1], st[3], st[4], st[5], st[6], st[7]);
 	else
-		sprintf_game(stamp, (const char *)RELOC(timeFormat), st[0], st[1], st[3], st[4], st[5], st[6], st[7]);
+		sprintf_game(stamp, AP(const char, RELOC(timeFormat)), st[0], st[1], st[3], st[4], st[5], st[6], st[7]);
 	vsprintf_game(text, format, args);
 	if (g_errorLogging == 1) {
-		void *f = crt_fopen((const char *)STR(0x4c582c, "ERROR.TXT"), (const char *)STR(0x4c5838, "at+"));   /* ERROR.TXT, appended */
+		void *f = crt_fopen(AP(const char, STR(0x4c582c, "ERROR.TXT")), AP(const char, STR(0x4c5838, "at+")));   /* ERROR.TXT, appended */
 		if (f) {
 			fseek(f, 0, 2);
-			fprintf_game(f, (const char *)STR(0x4c5824, "%s\n%s\n"), stamp, text);
-			fprintf_game(f, (const char *)STR(0x4c57d0, "-------------------------------------..."));
+			fprintf_game(f, AP(const char, STR(0x4c5824, "%s\n%s\n")), stamp, text);
+			fprintf_game(f, AP(const char, STR(0x4c57d0, "-------------------------------------...")));
 			fclose(f);
 		}
 	}

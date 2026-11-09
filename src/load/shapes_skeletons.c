@@ -5,7 +5,7 @@
 #include "../fixes/fixes.h"
 #include <string.h>
 
-#define AT(type, p, offset) GAME_VAR(type, (u8 *)RELOC(p) + (offset))
+#define AT(type, p, offset) GAME_VAR(type, AP(u8, RELOC(p)) + (offset))
 
 /* the block (BlockOwner: block, its size blockSize): allocated (owned: ownsBlock 1) without memory given, else the
    memory given (owned 0 when own_flag; the caller's size checked) */
@@ -13,14 +13,14 @@ static void take_block(u8 *self, void *mem, int size, char *out, u32 no_memory, 
 {
 	BlockOwner *bo = (BlockOwner *)self;
 	if (!mem) {
-		bo->block = operator_new(bo->blockSize);
+		bo->block = AREF(operator_new(bo->blockSize));
 		if (!bo->block)
-			sys_fatalError(out, (const char *)RELOC(no_memory), bo->blockSize);
+			sys_fatalError(out, AP(const char, RELOC(no_memory)), bo->blockSize);
 		bo->ownsBlock = 1;
 	} else {
 		if (size < bo->blockSize)
-			sys_fatalErrorN(out, (const char *)RELOC(too_small), bo->blockSize, size);
-		bo->block = mem;
+			sys_fatalErrorN(out, AP(const char, RELOC(too_small)), bo->blockSize, size);
+		bo->block = AREF(mem);
 		if (own_flag)
 			bo->ownsBlock = 0;
 	}
@@ -34,12 +34,12 @@ void THISCALL (skel_loadFromFile)(u8 *self, void *f, void *mem, int size)
 	Skeleton *sko = (Skeleton *)self;
 	Skeleton_release(self);
 	crt_fread(self, 0x24, 1, f);
-	take_block(self, mem, size, (char *)OBJ(g_logSkeleton), STR(0x4c4bec, "insufficient memory for dataMemory(%d..."), STR(0x4c4b08, "reserved dataMemory overflow(%d/%d)-l..."), 1);
-	u8 *bones = sko->bones = sko->block;
+	take_block(self, mem, size, AP(char, OBJ(g_logSkeleton)), STR(0x4c4bec, "insufficient memory for dataMemory(%d..."), STR(0x4c4b08, "reserved dataMemory overflow(%d/%d)-l..."), 1);
+	u8 *bones = AP(u8, sko->bones = sko->block);
 	crt_fread(bones, 0x70, ((u32)sko->boneCount), f);
 	int at = sko->boneCount * 0x70;
 	for (int i = 0; i < sko->boneCount; i++) {
-		u8 *bone = sko->bones + i * 0x70;
+		u8 *bone = AP(u8, sko->bones + i * 0x70);
 		Bone *bn = (Bone *)bone;
 		bn->posKeys = sko->block + at;
 		u32 keys = ((u32)bn->posKeyCount);
@@ -59,18 +59,18 @@ void THISCALL (SkeletonManager_initBy)(u8 *self, const char *dir, int n, u32 sou
 {
 	ShapeManager *mg = (ShapeManager *)self;
 	SkeletonManager_release(self);
-	strcpy(mg->dir, dir ? dir : (const char *)STR(0x4b1304, "."));
+	strcpy(mg->dir, dir ? dir : AP(const char, STR(0x4b1304, ".")));
 	mg->source = source;
 	mg->capacity = n;
 	mg->dataSize = extra;
 	mg->blockSize = n * 0x70 + extra;
-	take_block(self, mem, size, (char *)OBJ(g_logSkeletonManager), STR(0x4c4bec, "insufficient memory for dataMemory(%d..."), STR(0x4c4b08, "reserved dataMemory overflow(%d/%d)-l..."), 0);
+	take_block(self, mem, size, AP(char, OBJ(g_logSkeletonManager)), STR(0x4c4bec, "insufficient memory for dataMemory(%d..."), STR(0x4c4b08, "reserved dataMemory overflow(%d/%d)-l..."), 0);
 	n = mg->capacity;
 	mg->nodes = mg->block;
 	mg->items = mg->block + n * 0x4c;
 	for (int i = 0; i < mg->capacity; i++) {
-		Skeleton_clear(mg->items + i * 0x24);
-		Skeleton_release(mg->items + i * 0x24);
+		Skeleton_clear(AP(void, mg->items + i * 0x24));
+		Skeleton_release(AP(void, mg->items + i * 0x24));
 	}
 	mg->data = mg->block + n * 0x70;
 }
@@ -84,7 +84,7 @@ void THISCALL (ShapeManager_initBy)(u8 *self, const char *dir, int n, u32 source
 {
 	ShapeManager *mg = (ShapeManager *)self;
 	ShapeManager_release(self);
-	if (dir && strcmp(dir, (const char *)STR(0x4b1304, ".")) != 0)
+	if (dir && strcmp(dir, AP(const char, STR(0x4b1304, "."))) != 0)
 		strcpy(mg->dir, dir);
 	else
 		mg->dir[0] = 0;
@@ -93,13 +93,13 @@ void THISCALL (ShapeManager_initBy)(u8 *self, const char *dir, int n, u32 source
 	mg->capacity = n;
 	mg->dataSize = extra;
 	mg->blockSize = n * 0x98 + extra;
-	take_block(self, mem, size, (char *)OBJ(g_logShapeManager), STR(0x4c4cec, "insufficient memory for dataMemory(%d..."), STR(0x4c4cbc, "reserved dataMemory overflow(%d/%d) -..."), 0);
+	take_block(self, mem, size, AP(char, OBJ(g_logShapeManager)), STR(0x4c4cec, "insufficient memory for dataMemory(%d..."), STR(0x4c4cbc, "reserved dataMemory overflow(%d/%d) -..."), 0);
 	n = mg->capacity;
 	mg->nodes = mg->block;
 	mg->items = mg->block + n * 0x4c;
 	for (int i = 0; i < mg->capacity; i++) {
-		Shape_clear(mg->items + i * 0x4c);
-		Shape_release(mg->items + i * 0x4c);
+		Shape_clear(AP(void, mg->items + i * 0x4c));
+		Shape_release(AP(void, mg->items + i * 0x4c));
 	}
 	mg->textureSuffix[0] = 0;
 	mg->data = mg->block + n * 0x98;
@@ -132,9 +132,9 @@ static int file_format(const char *path, const char *first, const char *second)
    message; the file closed. Its callers ignore the eax it leaves */
 void THISCALL (shape_loadFrom)(u8 *shape, const char *path, void *mem, int size)
 {
-	void *f = crt_fopen(path, (const char *)STR(0x4ad170, "rb"));
+	void *f = crt_fopen(path, AP(const char, STR(0x4ad170, "rb")));
 	if (!f)
-		sys_fatalError((char *)OBJ(g_logShape), (const char *)STR(0x4c4ae4, "can not read file %s-loadFrom()"), (int)path);
+		sys_fatalError(AP(char, OBJ(g_logShape)), AP(const char, STR(0x4c4ae4, "can not read file %s-loadFrom()")), (int)AV(path));
 	switch (file_format(path, "shp", "obj")) {
 	case 0:
 		shape_read(shape, f, mem, size);
@@ -143,7 +143,7 @@ void THISCALL (shape_loadFrom)(u8 *shape, const char *path, void *mem, int size)
 		shape_readObj(shape, f, mem, size);
 		break;
 	default:
-		sys_fatalError((char *)OBJ(g_logShape), (const char *)STR(0x4c4aa4, "can't figure out what the format of t..."), (int)path);
+		sys_fatalError(AP(char, OBJ(g_logShape)), AP(const char, STR(0x4c4aa4, "can't figure out what the format of t...")), (int)AV(path));
 	}
 	fclose(f);
 }
@@ -152,9 +152,9 @@ void THISCALL (shape_loadFrom)(u8 *shape, const char *path, void *mem, int size)
    ASCII scene export (skel_loadAseFrom). Its callers ignore the eax it leaves */
 void THISCALL (skel_loadFrom)(u8 *sk, const char *path, void *mem, int size)
 {
-	void *f = crt_fopen(path, (const char *)STR(0x4ad170, "rb"));
+	void *f = crt_fopen(path, AP(const char, STR(0x4ad170, "rb")));
 	if (!f)
-		sys_fatalError((char *)OBJ(g_logSkeleton), (const char *)STR(0x4c4ae4, "can not read file %s-loadFrom()"), (int)path);
+		sys_fatalError(AP(char, OBJ(g_logSkeleton)), AP(const char, STR(0x4c4ae4, "can not read file %s-loadFrom()")), (int)AV(path));
 	switch (file_format(path, "ske", "ase")) {
 	case 0:
 		skel_loadFromFile(sk, f, mem, size);
@@ -163,7 +163,7 @@ void THISCALL (skel_loadFrom)(u8 *sk, const char *path, void *mem, int size)
 		skel_loadAseFrom(sk, f, mem, size);
 		break;
 	default:
-		sys_fatalError((char *)OBJ(g_logSkeleton), (const char *)STR(0x4c4aa4, "can't figure out what the format of t..."), (int)path);
+		sys_fatalError(AP(char, OBJ(g_logSkeleton)), AP(const char, STR(0x4c4aa4, "can't figure out what the format of t...")), (int)AV(path));
 	}
 	fclose(f);
 }
@@ -193,36 +193,36 @@ void THISCALL (ObjectList_load)(u8 *list, void *shapes, void *skels, int ns, con
 		if (i < 64)
 			found[i] = shape;
 		if (shape)
-			ol->colourCount += ((Shape *)shape)->colourCount;
+			ol->colourCount += (AP(Shape, shape))->colourCount;
 	}
 	ol->blockSize = (ol->count * 25 + ol->skelCount) * 4;
 	if (ol->preLit == 1)
 		ol->blockSize += ol->colourCount * 4;
 	if (!mem) {
-		ol->block = operator_new(((u32)ol->blockSize));
+		ol->block = AREF(operator_new(((u32)ol->blockSize)));
 		if (!ol->block)
-			sys_fatalError((char *)OBJ(g_logUnit), (const char *)STR(0x4c4bec, "insufficient memory for dataMemory(%d..."), ol->blockSize);
+			sys_fatalError(AP(char, OBJ(g_logUnit)), AP(const char, STR(0x4c4bec, "insufficient memory for dataMemory(%d...")), ol->blockSize);
 		ol->ownsBlock = 1;
 	} else {
 		if (size < ol->blockSize)
-			sys_fatalErrorN((char *)OBJ(g_logUnit), (const char *)STR(0x4c4b08, "reserved dataMemory overflow(%d/%d)-l..."), ol->blockSize, size);
-		ol->block = mem;
+			sys_fatalErrorN(AP(char, OBJ(g_logUnit)), AP(const char, STR(0x4c4b08, "reserved dataMemory overflow(%d/%d)-l...")), ol->blockSize, size);
+		ol->block = AREF(mem);
 	}
-	ol->entries = (ListedObject *)ol->block;
+	ol->entries = AREF(AP(ListedObject, ol->block));
 	int colours = ol->count * 100;
-	u32 *entry = (u32 *)ol->entries;
+	u32 *entry = AP(u32, ol->entries);
 	for (int i = 0; i < ol->count; i++, entry += 25) {
 		entry[0] = i < 64 ? found[i] : shape_getByName(shapes, (const char *)names + i * 0x44, 0);
 		entry[1] = AT(u32, names, i * 0x44 + 0x40);
 		if (ol->preLit == 1 && entry[0]) {
 			entry[2] = (u32)(ol->block + colours);
-			colours += ((const Shape *)RELOC(entry[0]))->colourCount * 4;
+			colours += (AP(const Shape, RELOC(entry[0])))->colourCount * 4;
 		} else
 			entry[2] = 0;
 	}
-	ol->skeletons = (struct Skeleton **)(ol->block + colours);
+	ol->skeletons = AREF(AP(struct Skeleton *, (ol->block + colours)));
 	for (int j = 0; j < ol->skelCount; j++)
-		AT(void *, ol->skeletons, j * 4) = skel_getSkeletonPtrBy(skels, (u32)(knames + j * 0x40));
+		AT(void *, ol->skeletons, j * 4) = skel_getSkeletonPtrBy(skels, AV((knames + j * 0x40)));
 	if (ol->preLit == 1)
 		ObjectList_relight(list, factors, tint);
 }
@@ -231,7 +231,7 @@ void THISCALL (ObjectList_load)(u8 *list, void *shapes, void *skels, int ns, con
    one starting at or before it (a binary search); a time before the first key is moved up to it */
 static u8 *key_at(u8 *keys, int n, int size, int *time)
 {
-#define KEY_TIME(p) (((const PosKey *)RELOC(p))->time)   /* (PosKey and RotKey both start with it: ms) */
+#define KEY_TIME(p) ((AP(const PosKey, RELOC(p)))->time)   /* (PosKey and RotKey both start with it: ms) */
 	int lo = 0;
 	if (*time < KEY_TIME(keys))
 		*time = KEY_TIME(keys);
@@ -290,17 +290,17 @@ void THISCALL (skel_getBoneMatrix)(u8 *sk, u32 *out, int bone, float t)
 	else if (animTime >= duration)
 		animTime = duration;
 	glLoadIdentity();
-	u8 *b = sko->bones + bone * 0x70;
+	u8 *b = AP(u8, sko->bones + bone * 0x70);
 	Bone *bn = (Bone *)b;
 	if (bn->posKeyCount > 0) {
-		float *key = (float *)key_at(bn->posKeys, bn->posKeyCount, 0x20, &animTime);
+		float *key = (float *)key_at(AP(u8, bn->posKeys), bn->posKeyCount, 0x20, &animTime);
 		int length = ((int *)key)[1];
-		long double f = length > 0 ? (long double)(animTime - ((int *)key)[0]) / length : fld_m((const float *)ADDR(k_0f));
+		long double f = length > 0 ? (long double)(animTime - ((int *)key)[0]) / length : fld_m(AP(const float, ADDR(k_0f)));
 		glTranslatef(fadd_m(fmul_m(f, &key[5]), &key[2]), fadd_m(fmul_m(f, &key[6]), &key[3]), fadd_m(fmul_m(f, &key[7]), &key[4]));
 	} else
 		glTranslatef_bits(BITS(bn->pos[0]), BITS(bn->pos[1]), BITS(bn->pos[2]));
 	if (bn->rotKeyCount > 0) {
-		RotKey *key = (RotKey *)key_at(bn->rotKeys, bn->rotKeyCount, 0x28, &animTime);
+		RotKey *key = (RotKey *)key_at(AP(u8, bn->rotKeys), bn->rotKeyCount, 0x28, &animTime);
 		int length = key->length;
 		float f = length > 0 ? f32((long double)(animTime - key->time) / length) : 0;
 		rotate(fmul_m(fld_m(&key->rotation[0]), toDegrees), &key->rotation[1]);
@@ -319,8 +319,8 @@ static int tree_lookup(u8 *cache, const char *key, char *out, u32 no_room, u32 f
 	ShapeManager *mg = (ShapeManager *)cache;
 	*added = 0;
 	if (mg->capacity == 0)
-		sys_fatalErrorN(out, (const char *)RELOC(no_room));
-	u8 *nodes = mg->nodes, *node = nodes;
+		sys_fatalErrorN(out, AP(const char, RELOC(no_room)));
+	u8 *nodes = AP(u8, mg->nodes), *node = nodes;
 	u8 **link = NULL;
 	if (mg->count != 0)
 		for (;;) {
@@ -335,9 +335,9 @@ static int tree_lookup(u8 *cache, const char *key, char *out, u32 no_room, u32 f
 	int i = mg->count;
 	if (link) {
 		if (i >= mg->capacity)
-			sys_fatalError(out, (const char *)RELOC(full), i);
+			sys_fatalError(out, AP(const char, RELOC(full)), i);
 		i = mg->count;
-		*link = node = mg->nodes + i * 0x4c;
+		*link = node = AP(u8, mg->nodes + i * 0x4c);
 	}
 	strcpy((char *)node, key);
 	((TreeNode *)node)->index = link ? i : 0;
@@ -354,13 +354,13 @@ static void item_path(char *path, u8 *cache, const char *name, u32 ext0, u32 ext
 	char ext[4];
 	int format = ((int)mg->source);
 	if (format == 0 || format == 1)
-		strcpy(ext, (const char *)(RELOC(format) ? ext1 : ext0));
+		strcpy(ext, AP(const char, (RELOC(format) ? ext1 : ext0)));
 	else
-		sys_fatalError(log, (const char *)RELOC(bad), format);
+		sys_fatalError(log, AP(const char, RELOC(bad)), format);
 	if (mg->dir[0])
-		sprintf(path, (const char *)STR(0x4c4d5c, "%s\\%s.%s"), mg->dir, name, ext);
+		sprintf(path, AP(const char, STR(0x4c4d5c, "%s\\%s.%s")), mg->dir, name, ext);
 	else
-		sprintf(path, (const char *)STR(0x4c4d54, "%s.%s"), name, ext);
+		sprintf(path, AP(const char, STR(0x4c4d54, "%s.%s")), name, ext);
 }
 
 /* 0x46b1a0 (thiscall on a skeleton cache): the skeleton named name (upper-cased; empty or starting with '.': none,
@@ -376,19 +376,19 @@ u8 *THISCALL (skel_getSkeletonPtrBy)(u8 *cache, const char *name)
 	path_normalize(key);
 	if (key[0] == 0 || key[0] == '.')
 		return NULL;
-	int added, i = tree_lookup(cache, key, (char *)OBJ(g_logSkeletonManager), STR(0x4c5528, "sizeOfSkeletonBuffer is zero-getSkele..."), STR(0x4c54c8, "skeleton overflow(%d)-getSkeletonPtrBy()"), &added);
-	Skeleton *sk = (Skeleton *)(mg->items + i * 0x24);
+	int added, i = tree_lookup(cache, key, AP(char, OBJ(g_logSkeletonManager)), STR(0x4c5528, "sizeOfSkeletonBuffer is zero-getSkele..."), STR(0x4c54c8, "skeleton overflow(%d)-getSkeletonPtrBy()"), &added);
+	Skeleton *sk = AP(Skeleton, (mg->items + i * 0x24));
 	if (!added)
 		return ((u8 *)sk);
-	const char *own = (const char *)mg->nodes + i * 0x4c;
-	u8 *mem = mg->data;
+	const char *own = AP(const char, mg->nodes) + i * 0x4c;
+	u8 *mem = AP(u8, mg->data);
 	void *at = mem ? mem + mg->dataUsed : NULL;
 	int room = mem ? mg->dataSize - mg->dataUsed : 0;
 	if (((int)mg->source) == 2)
 		skel_loadFromFile((u8 *)sk, skelDat_getItemFileBy(key), at, room);
 	else {
 		char path[0x100];
-		item_path(path, cache, own, STR(0x4c54f4, "ske"), STR(0x4c54f8, "ase"), (char *)OBJ(g_logSkeletonManager), STR(0x4c54fc, "invalid file format(%s)-getSkeletonPt..."));
+		item_path(path, cache, own, STR(0x4c54f4, "ske"), STR(0x4c54f8, "ase"), AP(char, OBJ(g_logSkeletonManager)), STR(0x4c54fc, "invalid file format(%s)-getSkeletonPt..."));
 		skel_loadFrom((u8 *)sk, path, at, room);
 	}
 	if (mem)
@@ -409,12 +409,12 @@ u8 *THISCALL (shape_getByName)(u8 *cache, const char *name, int bind)
 	path_normalize(key);
 	if (key[0] == 0 || key[0] == '.')
 		return NULL;
-	int added, i = tree_lookup(cache, key, (char *)OBJ(g_logShapeManager), STR(0x4c4d98, "sizeOfShapeBuffer is zero-getShapePtr..."), STR(0x4c4d30, "shape overflow(%d)-getShapePtrBy()"), &added);
-	u8 *shape = mg->items + i * 0x4c;
+	int added, i = tree_lookup(cache, key, AP(char, OBJ(g_logShapeManager)), STR(0x4c4d98, "sizeOfShapeBuffer is zero-getShapePtr..."), STR(0x4c4d30, "shape overflow(%d)-getShapePtrBy()"), &added);
+	u8 *shape = AP(u8, mg->items + i * 0x4c);
 	Shape *md = (Shape *)shape;
 	if (added) {
-		const char *own = (const char *)mg->nodes + i * 0x4c;
-		u8 *mem = mg->data;
+		const char *own = AP(const char, mg->nodes) + i * 0x4c;
+		u8 *mem = AP(u8, mg->data);
 		void *at = mem ? mem + mg->dataUsed : NULL;
 		int room = mem ? mg->dataSize - mg->dataUsed : 0;
 		if (((int)mg->source) == 2)
@@ -426,7 +426,7 @@ u8 *THISCALL (shape_getByName)(u8 *cache, const char *name, int bind)
 #endif
 		else {
 			char path[0x100];
-			item_path(path, cache, own, STR(0x4c4d68, "shp"), STR(0x4c4d6c, "obj"), (char *)OBJ(g_logShapeManager), STR(0x4c4d70, "invalid file format(%s)-getShapePtrBy()"));
+			item_path(path, cache, own, STR(0x4c4d68, "shp"), STR(0x4c4d6c, "obj"), AP(char, OBJ(g_logShapeManager)), STR(0x4c4d70, "invalid file format(%s)-getShapePtrBy()"));
 			shape_loadFrom(shape, path, at, room);
 		}
 		if (mem)
@@ -460,34 +460,34 @@ void THISCALL (shape_read)(u8 *shape, void *f, void *mem, int size)
 		md->blockSize += md->partCount * 0x18;
 		crt_fseek(f, at, 0);   /* SEEK_SET */
 	}
-	take_block(shape, mem, size, (char *)OBJ(g_logShape), STR(0x4c4bec, "insufficient memory for dataMemory(%d..."), STR(0x4c4b08, "reserved dataMemory overflow(%d/%d)-l..."), 1);
-	u8 *parts = md->parts = md->block;
+	take_block(shape, mem, size, AP(char, OBJ(g_logShape)), STR(0x4c4bec, "insufficient memory for dataMemory(%d..."), STR(0x4c4b08, "reserved dataMemory overflow(%d/%d)-l..."), 1);
+	u8 *parts = AP(u8, md->parts = md->block);
 	if (current)
 		crt_fread(parts, 0x80, ((u32)md->partCount), f);
 	else
 		for (int i = 0; i < md->partCount; i++)
-			crt_fread(md->parts + i * 0x80, 0x68, 1, f);
+			crt_fread(AP(void, md->parts + i * 0x80), 0x68, 1, f);
 	int at = md->partCount * 0x80;
 	for (int i = 0; i < md->partCount; i++) {
-		u8 *p = md->parts + i * 0x80;
+		u8 *p = AP(u8, md->parts + i * 0x80);
 		ShapePart *sp = (ShapePart *)p;
 		sp->texture = -1;
 		int n = sp->vertexCount;
 		static const u8 sizes[4] = { 12, 12, 4, 8 };   /* vertices, normals, colours, texture coordinates */
 		u8 **arrays[4] = { &sp->vertices, &sp->normals, &sp->colours, (u8 **)&sp->texCoords };
 		for (int t = 0; t < 4; t++) {
-			*arrays[t] = md->block + at;
+			*arrays[t] = AP(u8, md->block + at);
 			at += n * sizes[t];
 		}
 		for (int t = 0; t < 4; t++)
 			crt_fread(*arrays[t], sizes[t], ((u32)sp->vertexCount), f);
 		sp->prims = md->block + at;
-		crt_fread(sp->prims, 0xc, ((u32)sp->primCount), f);
+		crt_fread(AP(void, sp->prims), 0xc, ((u32)sp->primCount), f);
 		at += 0xc;
 		for (int k = 0; k < sp->primCount; k++) {
-			ShapePrim *prim = (ShapePrim *)(sp->prims + k * 0xc);
+			ShapePrim *prim = AP(ShapePrim, (sp->prims + k * 0xc));
 			prim->indices = md->block + at;
-			crt_fread(prim->indices, 4, ((u32)prim->indexCount), f);
+			crt_fread(AP(void, prim->indices), 4, ((u32)prim->indexCount), f);
 			at += prim->indexCount * 4;
 		}
 	}
@@ -497,7 +497,7 @@ void THISCALL (shape_read)(u8 *shape, void *f, void *mem, int size)
 	memcpy(md->high, md->centre, 12);
 	float *low = md->low, *high = md->high;
 	for (int i = 0; i < md->partCount; i++) {
-		const float *box = (const float *)(md->parts + i * 0x80 + 0x68);
+		const float *box = AP(const float, (md->parts + i * 0x80 + 0x68));
 		for (int c = 0; c < 3; c++)
 			if (low[c] > box[c])
 				((u32 *)low)[c] = ((const u32 *)box)[c];
@@ -530,26 +530,26 @@ void THISCALL (ObjectList_poseBones)(u8 *list, const float *base)
 	float saved[16], root[16];
 	glGetFloatv(0xba6, saved);   /* GL_MODELVIEW_MATRIX */
 	Mat4_copy(root, base ? base : saved);
-	u8 **entry = ((u8 **)ol->skeletons) + ol->skel;
+	u8 **entry = (AP(u8 *, ol->skeletons)) + ol->skel;
 	if (!*entry)
 		return;
-	const float *toDegrees = k_57_2958f, *point = (const float *)ADDR(g_vecOrigin);
+	const float *toDegrees = k_57_2958f, *point = AP(const float, ADDR(g_vecOrigin));
 	for (int i = 0; i < ol->count; i++) {
 		Skeleton *sk = (Skeleton *)(*entry);
-		ListedObject *out = (ListedObject *)(((u8 *)ol->entries) + i * 0x64);
-		u8 *b = sk->bones + i * 0x70;
+		ListedObject *out = (ListedObject *)((AP(u8, ol->entries)) + i * 0x64);
+		u8 *b = AP(u8, sk->bones + i * 0x70);
 		Bone *bn = (Bone *)b;
 		int animTime = ol->animTick % (sk->duration + 1);
 		if (i >= sk->boneCount)
 			break;
 		int parent = bn->parent;
-		glLoadMatrixf(parent < 0 ? root : (const float *)(((u8 *)ol->entries) + parent * 0x64 + 0xc));
+		glLoadMatrixf(parent < 0 ? root : (const float *)((AP(u8, ol->entries)) + parent * 0x64 + 0xc));
 		const float *scale = &out->scale;
 		if (bn->posKeyCount > 0) {
 			int at = animTime;
-			PosKey *key = (PosKey *)key_at(bn->posKeys, bn->posKeyCount, 0x20, &at);
+			PosKey *key = (PosKey *)key_at(AP(u8, bn->posKeys), bn->posKeyCount, 0x20, &at);
 			int length = key->length;
-			long double f = length > 0 ? (long double)(at - key->time) / length : fld_m((const float *)ADDR(k_0f));
+			long double f = length > 0 ? (long double)(at - key->time) / length : fld_m(AP(const float, ADDR(k_0f)));
 			glTranslatef(fmul_m(fadd_m(fmul_m(f, &key->delta[0]), &key->pos[0]), scale), fmul_m(fadd_m(fmul_m(f, &key->delta[1]), &key->pos[1]), scale),
 			             fmul_m(fadd_m(fmul_m(f, &key->delta[2]), &key->pos[2]), scale));
 		} else
@@ -557,7 +557,7 @@ void THISCALL (ObjectList_poseBones)(u8 *list, const float *base)
 			             fmul_m(fld_m(&bn->pos[2]), scale));
 		if (bn->rotKeyCount > 0) {
 			int at = animTime;
-			RotKey *key = (RotKey *)key_at(bn->rotKeys, bn->rotKeyCount, 0x28, &at);
+			RotKey *key = (RotKey *)key_at(AP(u8, bn->rotKeys), bn->rotKeyCount, 0x28, &at);
 			int length = key->length;
 			float f = length > 0 ? f32((long double)(at - key->time) / length) : 0;
 			rotate(fmul_m(fld_m(&key->rotation[0]), toDegrees), &key->rotation[1]);
@@ -567,7 +567,7 @@ void THISCALL (ObjectList_poseBones)(u8 *list, const float *base)
 		float *m = out->matrix;
 		glGetFloatv(0xba6, m);
 		transform(out->pos, m, &point[0], &point[1], &point[2]);
-		const Shape *shape = out->shape;
+		const Shape *shape = AP(const Shape, out->shape);
 		if (shape) {
 			for (int r = 0; r < 3; r++)   /* (here the z, x, y terms in that order for the y and z rows) */
 				out->centre[r] = r == 0
@@ -580,7 +580,7 @@ void THISCALL (ObjectList_poseBones)(u8 *list, const float *base)
 }
 
 #define crt_fgets(line, n, f) CRT_CALL(fgets, char *, char *, int, void *)(line, n, f)
-#define TOKEN(delims) crt_strtok(NULL, (const char *)RELOC(delims))
+#define TOKEN(delims) crt_strtok(NULL, AP(const char, RELOC(delims)))
 #define SPACE STR(0x4ad5dc, " \t")
 #define LINE_END STR(0x4b4310, " \t\n")
 
@@ -621,12 +621,12 @@ void THISCALL (skel_loadAseFrom)(u8 *sk, void *f, u8 *mem, int memSize)
 	Skeleton_release(sk);
 	sko->boneCount = sko->rotKeyTotal = sko->posKeyTotal = 0;
 	while (crt_fgets(line, 0x100, f)) {
-		const char *t = crt_strtok(line, (const char *)STR(0x4c5498, "* \t"));
-		if (!strcmp(t, (const char *)STR(0x4c548c, "GEOMOBJECT")))
+		const char *t = crt_strtok(line, AP(const char, STR(0x4c5498, "* \t")));
+		if (!strcmp(t, AP(const char, STR(0x4c548c, "GEOMOBJECT"))))
 			sko->boneCount++;
-		else if (!strcmp(t, (const char *)STR(0x4c5478, "CONTROL_TCB_POS_KEY")) || !strcmp(t, (const char *)STR(0x4c5460, "CONTROL_BEZIER_POS_KEY")))
+		else if (!strcmp(t, AP(const char, STR(0x4c5478, "CONTROL_TCB_POS_KEY"))) || !strcmp(t, AP(const char, STR(0x4c5460, "CONTROL_BEZIER_POS_KEY"))))
 			sko->posKeyTotal++;
-		else if (!strcmp(t, (const char *)STR(0x4c544c, "CONTROL_TCB_ROT_KEY")))
+		else if (!strcmp(t, AP(const char, STR(0x4c544c, "CONTROL_TCB_ROT_KEY"))))
 			sko->rotKeyTotal++;
 	}
 	int bones = sko->boneCount;
@@ -636,12 +636,12 @@ void THISCALL (skel_loadAseFrom)(u8 *sk, void *f, u8 *mem, int memSize)
 	if (!mem) {
 		(*(void * *)&sko->block) = operator_new(size);
 		if (!(*(void * *)&sko->block))
-			sys_fatalError((char *)OBJ(g_logSkeleton), (const char *)STR(0x4c4bec, "insufficient memory for dataMemory(%d..."), sko->blockSize);
+			sys_fatalError(AP(char, OBJ(g_logSkeleton)), AP(const char, STR(0x4c4bec, "insufficient memory for dataMemory(%d...")), sko->blockSize);
 		sko->ownsBlock = 1;
 	} else {
 		if (memSize < size)
-			sys_fatalErrorN((char *)OBJ(g_logSkeleton), (const char *)STR(0x4c4b08, "reserved dataMemory overflow(%d/%d)-l..."), size, memSize);
-		sko->block = mem;
+			sys_fatalErrorN(AP(char, OBJ(g_logSkeleton)), AP(const char, STR(0x4c4b08, "reserved dataMemory overflow(%d/%d)-l...")), size, memSize);
+		sko->block = AREF(mem);
 		sko->ownsBlock = 0;
 	}
 	sko->bones = sko->block;
@@ -650,55 +650,55 @@ void THISCALL (skel_loadAseFrom)(u8 *sk, void *f, u8 *mem, int memSize)
 	int frames = 0, ms = 0x21, ticks = 0xa0, skip = -1, index = -1, at = -0x70;
 	Bone *b = NULL;
 	while (crt_fgets(line, 0x100, f)) {
-		const char *t = crt_strtok(line, (const char *)STR(0x4c5498, "* \t"));
-		if (!strcmp(t, (const char *)STR(0x4c543c, "SCENE_LASTFRAME")))   /* SCENE_LASTFRAME */
+		const char *t = crt_strtok(line, AP(const char, STR(0x4c5498, "* \t")));
+		if (!strcmp(t, AP(const char, STR(0x4c543c, "SCENE_LASTFRAME"))))   /* SCENE_LASTFRAME */
 			frames = crt_atoi(TOKEN(LINE_END));
-		else if (!strcmp(t, (const char *)STR(0x4c541c, "SCENE_FRAMESPEED"))) {   /* SCENE_FRAMESPEED */
+		else if (!strcmp(t, AP(const char, STR(0x4c541c, "SCENE_FRAMESPEED")))) {   /* SCENE_FRAMESPEED */
 			ms = 1000 / crt_atoi(TOKEN(LINE_END));
 			sko->duration = ms * frames;
-		} else if (!strcmp(t, (const char *)STR(0x4c5408, "SCENE_TICKSPERFRAME")))   /* SCENE_TICKSPERFRAME */
+		} else if (!strcmp(t, AP(const char, STR(0x4c5408, "SCENE_TICKSPERFRAME"))))   /* SCENE_TICKSPERFRAME */
 			ticks = crt_atoi(TOKEN(LINE_END));
-		else if (!strcmp(t, (const char *)STR(0x4c548c, "GEOMOBJECT"))) {   /* GEOMOBJECT */
+		else if (!strcmp(t, AP(const char, STR(0x4c548c, "GEOMOBJECT")))) {   /* GEOMOBJECT */
 			index++;
 			skip = 0;
 			at += 0x70;
-			b = (Bone *)(sko->bones + at);
+			b = AP(Bone, (sko->bones + at));
 			b->parent = -1;
 			b->posKeyCount = (*(int *)&b->posKeys) = b->rotKeyCount = (*(int *)&b->rotKeys) = 0;
-		} else if (!strcmp(t, (const char *)STR(0x4c53f8, "CAMERAOBJECT"))) {   /* CAMERAOBJECT */
+		} else if (!strcmp(t, AP(const char, STR(0x4c53f8, "CAMERAOBJECT")))) {   /* CAMERAOBJECT */
 			skip = 1;
 			continue;
 		}
 		if (skip)
 			continue;
-		if (!strcmp(t, (const char *)STR(0x4c5430, "NODE_NAME")))   /* NODE_NAME */
-			strcpy((char *)RELOC(b), TOKEN(STR(0x4c53f4, "\"")));
-		else if (!strcmp(t, (const char *)STR(0x4c53e8, "NODE_PARENT"))) {   /* NODE_PARENT */
+		if (!strcmp(t, AP(const char, STR(0x4c5430, "NODE_NAME"))))   /* NODE_NAME */
+			strcpy(AP(char, RELOC(b)), TOKEN(STR(0x4c53f4, "\"")));
+		else if (!strcmp(t, AP(const char, STR(0x4c53e8, "NODE_PARENT")))) {   /* NODE_PARENT */
 			strcpy(parent, TOKEN(STR(0x4c53f4, "\"")));
 			if (at > 0)
 				for (int j = 0; j < index; j++)
-					if (!strcmp((const char *)sko->bones + j * 0x70, parent)) {
+					if (!strcmp(AP(const char, sko->bones) + j * 0x70, parent)) {
 						b->parent = j;
 						break;
 					}
 			if (b->parent < 0)
-				sys_fatalError((char *)OBJ(g_logSkeleton), (const char *)STR(0x4c53b8, "can't find parent part(%s)-loadAseFor..."), (int)parent);
-		} else if (!strcmp(t, (const char *)STR(0x4c53b0, "TM_POS"))) {   /* TM_POS */
+				sys_fatalError(AP(char, OBJ(g_logSkeleton)), AP(const char, STR(0x4c53b8, "can't find parent part(%s)-loadAseFor...")), (int)AV(parent));
+		} else if (!strcmp(t, AP(const char, STR(0x4c53b0, "TM_POS")))) {   /* TM_POS */
 			b->pos[0] = ase_float(SPACE, 0);
 			b->pos[2] = ase_float(SPACE, 1);
 			b->pos[1] = ase_float(LINE_END, 0);
-		} else if (!strcmp(t, (const char *)STR(0x4c53a4, "TM_ROTAXIS"))) {   /* TM_ROTAXIS */
+		} else if (!strcmp(t, AP(const char, STR(0x4c53a4, "TM_ROTAXIS")))) {   /* TM_ROTAXIS */
 			b->rotation[1] = ase_float(SPACE, 0);
 			b->rotation[3] = ase_float(SPACE, 1);
 			b->rotation[2] = ase_float(LINE_END, 0);
-		} else if (!strcmp(t, (const char *)STR(0x4c5398, "TM_ROTANGLE")))   /* TM_ROTANGLE */
+		} else if (!strcmp(t, AP(const char, STR(0x4c5398, "TM_ROTANGLE"))))   /* TM_ROTANGLE */
 			b->rotation[0] = ase_float(LINE_END, 1);
-		else if (!strcmp(t, (const char *)STR(0x4c5388, "CONTROL_POS_TCB")) || !strcmp(t, (const char *)STR(0x4c5374, "CONTROL_POS_BEZIER"))) {   /* CONTROL_POS_TCB / _BEZIER */
+		else if (!strcmp(t, AP(const char, STR(0x4c5388, "CONTROL_POS_TCB"))) || !strcmp(t, AP(const char, STR(0x4c5374, "CONTROL_POS_BEZIER")))) {   /* CONTROL_POS_TCB / _BEZIER */
 			b->posKeys = sko->block + keyAt;
 			while (crt_fgets(line, 0x100, f)) {
-				t = crt_strtok(line, (const char *)STR(0x4c535c, "* \t\n"));
-				if (!strcmp(t, (const char *)STR(0x4c5478, "CONTROL_TCB_POS_KEY")) || !strcmp(t, (const char *)STR(0x4c5460, "CONTROL_BEZIER_POS_KEY"))) {
-					PosKey *k = (PosKey *)(b->posKeys + b->posKeyCount * 0x20);
+				t = crt_strtok(line, AP(const char, STR(0x4c535c, "* \t\n")));
+				if (!strcmp(t, AP(const char, STR(0x4c5478, "CONTROL_TCB_POS_KEY"))) || !strcmp(t, AP(const char, STR(0x4c5460, "CONTROL_BEZIER_POS_KEY")))) {
+					PosKey *k = AP(PosKey, (b->posKeys + b->posKeyCount * 0x20));
 					k->time = ase_time(ticks, ms);
 					k->pos[0] = ase_float(SPACE, 0);
 					k->pos[2] = ase_float(SPACE, 1);
@@ -708,12 +708,12 @@ void THISCALL (skel_loadAseFrom)(u8 *sk, void *f, u8 *mem, int memSize)
 					break;
 			}
 			keyAt += b->posKeyCount * 0x20;
-		} else if (!strcmp(t, (const char *)STR(0x4c5364, "CONTROL_ROT_TCB"))) {   /* CONTROL_ROT_TCB */
+		} else if (!strcmp(t, AP(const char, STR(0x4c5364, "CONTROL_ROT_TCB")))) {   /* CONTROL_ROT_TCB */
 			b->rotKeys = sko->block + keyAt;
 			while (crt_fgets(line, 0x100, f)) {
-				t = crt_strtok(line, (const char *)STR(0x4c535c, "* \t\n"));
-				if (!strcmp(t, (const char *)STR(0x4c544c, "CONTROL_TCB_ROT_KEY"))) {
-					RotKey *rk = (RotKey *)(b->rotKeys + b->rotKeyCount * 0x28);
+				t = crt_strtok(line, AP(const char, STR(0x4c535c, "* \t\n")));
+				if (!strcmp(t, AP(const char, STR(0x4c544c, "CONTROL_TCB_ROT_KEY")))) {
+					RotKey *rk = AP(RotKey, (b->rotKeys + b->rotKeyCount * 0x28));
 					rk->time = ase_time(ticks, ms);
 					rk->rotation[1] = ase_float(SPACE, 0);
 					rk->rotation[3] = ase_float(SPACE, 1);
@@ -721,7 +721,7 @@ void THISCALL (skel_loadAseFrom)(u8 *sk, void *f, u8 *mem, int memSize)
 					rk->rotation[0] = ase_float(SPACE, 1);
 					if (b->rotKeyCount > 0) {
 						float r[4];
-						axisAngle_combine(r, (const float *)((u8 *)RELOC(rk) + 8), (const float *)((u8 *)RELOC(rk) + 8 - 0x28));
+						axisAngle_combine(r, (const float *)(AP(u8, RELOC(rk)) + 8), (const float *)(AP(u8, RELOC(rk)) + 8 - 0x28));
 						memcpy((u8 *)rk + 8, r, 16);
 					}
 					b->rotKeyCount++;
@@ -731,7 +731,7 @@ void THISCALL (skel_loadAseFrom)(u8 *sk, void *f, u8 *mem, int memSize)
 			keyAt += b->rotKeyCount * 0x28;
 		}
 	}
-	u8 *all = ((Skeleton *)sk)->bones;
+	u8 *all = AP(u8, ((Skeleton *)sk)->bones);
 	for (int i = ((Skeleton *)sk)->boneCount - 1; i >= 0; i--) {
 		u8 *bone = all + i * 0x70;
 		if (((Bone *)bone)->parent < 0)
@@ -752,20 +752,20 @@ void THISCALL (skel_loadAseFrom)(u8 *sk, void *f, u8 *mem, int memSize)
 		axisAngle_fromMatrix(((Bone *)bone)->rotation, rel);
 	}
 	for (int i = 0; i < ((Skeleton *)sk)->boneCount; i++) {
-		u8 *bone = ((Skeleton *)sk)->bones + i * 0x70;
+		u8 *bone = AP(u8, ((Skeleton *)sk)->bones + i * 0x70);
 		for (int k = 0; k < ((Bone *)bone)->posKeyCount - 1; k++) {
-			u8 *key = ((Bone *)bone)->posKeys + k * 0x20;
+			u8 *key = AP(u8, ((Bone *)bone)->posKeys + k * 0x20);
 			((PosKey *)key)->length = ((PosKey *)key)[1].time - ((PosKey *)key)->time;
 			for (int c = 0; c < 3; c++)
 				((PosKey *)key)->delta[c] = f32(FSUB(((PosKey *)key)[1].pos[c], ((PosKey *)key)->pos[c]));
 		}
 		if (((Bone *)bone)->posKeyCount > 0) {
-			u8 *last = ((Bone *)bone)->posKeys + (((Bone *)bone)->posKeyCount - 1) * 0x20;
+			u8 *last = AP(u8, ((Bone *)bone)->posKeys + (((Bone *)bone)->posKeyCount - 1) * 0x20);
 			((PosKey *)last)->length = 0;
 			BITS(((PosKey *)last)->delta[0]) = BITS(((PosKey *)last)->delta[1]) = BITS(((PosKey *)last)->delta[2]) = 0;
 		}
 		for (int k = 0; k < ((Bone *)bone)->rotKeyCount - 1; k++) {
-			u8 *key = ((Bone *)bone)->rotKeys + k * 0x28;
+			u8 *key = AP(u8, ((Bone *)bone)->rotKeys + k * 0x28);
 			((RotKey *)key)->length = ((RotKey *)key)[1].time - ((RotKey *)key)->time;
 			float r[16], back[16], next[16], step[16];
 			Mat4_fromAxisAngle(r, ((RotKey *)key)->rotation);
@@ -775,7 +775,7 @@ void THISCALL (skel_loadAseFrom)(u8 *sk, void *f, u8 *mem, int memSize)
 			axisAngle_fromMatrix(((RotKey *)key)->step, step);
 		}
 		if (((Bone *)bone)->rotKeyCount > 0) {
-			u8 *last = ((Bone *)bone)->rotKeys + (((Bone *)bone)->rotKeyCount - 1) * 0x28;
+			u8 *last = AP(u8, ((Bone *)bone)->rotKeys + (((Bone *)bone)->rotKeyCount - 1) * 0x28);
 			((RotKey *)last)->length = 0;
 			BITS(((RotKey *)last)->step[0]) = BITS(((RotKey *)last)->step[1]) = BITS(((RotKey *)last)->step[2]) = BITS(((RotKey *)last)->step[3]) = 0;
 		}
@@ -787,17 +787,17 @@ void THISCALL (skel_loadAseFrom)(u8 *sk, void *f, u8 *mem, int memSize)
 #undef LINE_END
 
 #define crt_fgets(line, n, f) CRT_CALL(fgets, char *, char *, int, void *)(line, n, f)
-#define TOK(s, delims) crt_strtok(s, (const char *)RELOC(delims))
+#define TOK(s, delims) crt_strtok(s, AP(const char, RELOC(delims)))
 #define SPACE STR(0x4ad5dc, " \t")
 #define LINE_END STR(0x4b4310, " \t\n")
 #define SLASH STR(0x4ad564, "/")
-#define BAD_OBJ() sys_fatalError((char *)OBJ(g_logShape), (const char *)STR(0x4c4c20, "invalid obj format string(%s)-loadObj..."), (int)line)
+#define BAD_OBJ() sys_fatalError(AP(char, OBJ(g_logShape)), AP(const char, STR(0x4c4c20, "invalid obj format string(%s)-loadObj...")), (int)line)
 
 /* a face's first corner token: a lone "\" continues the face on the next line */
 static char *face_start(char *line, void *f)
 {
 	char *t = TOK(NULL, LINE_END);
-	if (!strcmp(t, (const char *)STR(0x4b1328, "\\"))) {
+	if (!strcmp(t, AP(const char, STR(0x4b1328, "\\")))) {
 		crt_fgets(line, 0x100, f);
 		t = TOK(line, LINE_END);
 	}
@@ -809,19 +809,19 @@ static char *face_start(char *line, void *f)
 static int obj_corner(u8 *part, int i, char *corner, const float *vs, const float *ns, const float *ts)
 {
 	ShapePart *sp = (ShapePart *)part;
-	memcpy(sp->vertices + i * 12, vs + (crt_atoi(TOK(corner, SLASH)) - 1) * 3, 12);
+	memcpy(AP(void, sp->vertices + i * 12), vs + (crt_atoi(TOK(corner, SLASH)) - 1) * 3, 12);
 	char *a = TOK(NULL, SLASH);
 	if (!a)
 		return 0;
 	int ai = crt_atoi(a) - 1;
 	char *b = TOK(NULL, SLASH);
-	float *uv = sp->texCoords + i * 2;
+	float *uv = AP(float, sp->texCoords + i * 2);
 	if (!b) {
 		BITS(uv[0]) = BITS(uv[1]) = 0;
-		memcpy(sp->normals + i * 12, ns + ai * 3, 12);
+		memcpy(AP(void, sp->normals + i * 12), ns + ai * 3, 12);
 	} else {
 		memcpy(uv, ts + ai * 2, 8);
-		memcpy(sp->normals + i * 12, ns + (crt_atoi(b) - 1) * 3, 12);
+		memcpy(AP(void, sp->normals + i * 12), ns + (crt_atoi(b) - 1) * 3, 12);
 	}
 	return 1;
 }
@@ -845,15 +845,15 @@ void THISCALL (shape_readObj)(u8 *sh, void *f, u8 *mem, int memSize)
 	md->partCount = 0;
 	while (crt_fgets(line, 0x100, f)) {
 		char *t = TOK(line, SPACE);
-		if (!strcmp(t, (const char *)STR(0x4c4c64, "usemtl")))
+		if (!strcmp(t, AP(const char, STR(0x4c4c64, "usemtl"))))
 			md->partCount++;
-		else if (!strcmp(t, (const char *)STR(0x4c4c60, "v")))
+		else if (!strcmp(t, AP(const char, STR(0x4c4c60, "v"))))
 			nv++;
-		else if (!strcmp(t, (const char *)STR(0x4c4c5c, "vn")))
+		else if (!strcmp(t, AP(const char, STR(0x4c4c5c, "vn"))))
 			nvn++;
-		else if (!strcmp(t, (const char *)STR(0x4c4c58, "vt")))
+		else if (!strcmp(t, AP(const char, STR(0x4c4c58, "vt"))))
 			nvt++;
-		else if (!strcmp(t, (const char *)STR(0x4c4c54, "f"))) {
+		else if (!strcmp(t, AP(const char, STR(0x4c4c54, "f")))) {
 			if (!face_start(line, f))
 				BAD_OBJ();
 			for (int k = 0; k < 2; k++)
@@ -877,27 +877,27 @@ void THISCALL (shape_readObj)(u8 *sh, void *f, u8 *mem, int memSize)
 	if (!mem) {
 		(*(void * *)&md->block) = operator_new(size);
 		if (!(*(void * *)&md->block))
-			sys_fatalError((char *)OBJ(g_logShape), (const char *)STR(0x4c4bec, "insufficient memory for dataMemory(%d..."), md->blockSize);
+			sys_fatalError(AP(char, OBJ(g_logShape)), AP(const char, STR(0x4c4bec, "insufficient memory for dataMemory(%d...")), md->blockSize);
 		md->ownsBlock = 1;
 		if (!(vs = operator_new(nv * 12)))
-			sys_fatalError((char *)OBJ(g_logShape), (const char *)STR(0x4c4bb4, "insufficient memory for vertexCoordAr..."), nv);
+			sys_fatalError(AP(char, OBJ(g_logShape)), AP(const char, STR(0x4c4bb4, "insufficient memory for vertexCoordAr...")), nv);
 		if (!(ns = operator_new(nvn * 12)))
-			sys_fatalError((char *)OBJ(g_logShape), (const char *)STR(0x4c4b78, "insufficient memory for vertexNormalA..."), nvn);
+			sys_fatalError(AP(char, OBJ(g_logShape)), AP(const char, STR(0x4c4b78, "insufficient memory for vertexNormalA...")), nvn);
 		if (!(ts = operator_new(nvt * 8)))
-			sys_fatalError((char *)OBJ(g_logShape), (const char *)STR(0x4c4b38, "insufficient memory for vertexTexture..."), nvt);
+			sys_fatalError(AP(char, OBJ(g_logShape)), AP(const char, STR(0x4c4b38, "insufficient memory for vertexTexture...")), nvt);
 		allocated = 1;
 	} else {
 		int need = nvt * 8 + (nvn + nv) * 0xc + size;
 		if (memSize < need)
-			sys_fatalErrorN((char *)OBJ(g_logShape), (const char *)STR(0x4c4b08, "reserved dataMemory overflow(%d/%d)-l..."), need, memSize);
-		md->block = mem;
+			sys_fatalErrorN(AP(char, OBJ(g_logShape)), AP(const char, STR(0x4c4b08, "reserved dataMemory overflow(%d/%d)-l...")), need, memSize);
+		md->block = AREF(mem);
 		md->ownsBlock = 0;
 		vs = (float *)(mem + md->blockSize);
 		ns = (float *)(mem + md->blockSize + nv * 0xc);
 		ts = (float *)(mem + md->blockSize + (nvn + nv) * 0xc);
 		allocated = 0;
 	}
-	u8 *all = md->parts = md->block;
+	u8 *all = AP(u8, md->parts = md->block);
 	int at = md->partCount << 7;
 	for (int k = 0; k < md->partCount; k++) {
 		u8 *pt = all + k * 0x80;
@@ -910,10 +910,10 @@ void THISCALL (shape_readObj)(u8 *sh, void *f, u8 *mem, int memSize)
 	int off = -0x80;
 	while (crt_fgets(line, 0x100, f)) {
 		char *t = TOK(line, SPACE);
-		if (!strcmp(t, (const char *)STR(0x4c4c64, "usemtl"))) {
+		if (!strcmp(t, AP(const char, STR(0x4c4c64, "usemtl")))) {
 			off += 0x80;
 			GAME_VAR(int, md->parts + 0x60 + off) = 1;
-		} else if (!strcmp(t, (const char *)STR(0x4c4c54, "f"))) {
+		} else if (!strcmp(t, AP(const char, STR(0x4c4c54, "f")))) {
 			if (!face_start(line, f))
 				BAD_OBJ();
 			for (int k = 0; k < 2; k++)
@@ -924,14 +924,14 @@ void THISCALL (shape_readObj)(u8 *sh, void *f, u8 *mem, int memSize)
 	}
 	int corner = 0;
 	for (int k = 0; k < md->partCount; k++) {
-		ShapePart *pt = (ShapePart *)(md->parts + k * 0x80);
-		u8 *data = md->block;
+		ShapePart *pt = AP(ShapePart, (md->parts + k * 0x80));
+		u8 *data = AP(u8, md->block);
 		int n = pt->vertexCount;
-		pt->vertices = data + at;
+		pt->vertices = AREF(data + at);
 		at += n * 12;
-		pt->normals = data + at;
+		pt->normals = AREF(data + at);
 		at += n * 12;
-		pt->colours = data + at;
+		pt->colours = AREF(data + at);
 		at += n * 4;
 		pt->colourBase = corner;
 		corner += n;
@@ -965,22 +965,22 @@ void THISCALL (shape_readObj)(u8 *sh, void *f, u8 *mem, int memSize)
 			} while (*r);
 		} else {
 			char *t = TOK(line, SPACE);
-			if (!strcmp(t, (const char *)STR(0x4c4c60, "v"))) {
+			if (!strcmp(t, AP(const char, STR(0x4c4c60, "v")))) {
 				vp[0] = f32(crt_atof(TOK(NULL, SPACE)));
 				vp[1] = f32(crt_atof(TOK(NULL, SPACE)));
 				vp[2] = f32(crt_atof(TOK(NULL, LINE_END)));
 				vp += 3;
-			} else if (!strcmp(t, (const char *)STR(0x4c4c5c, "vn"))) {
+			} else if (!strcmp(t, AP(const char, STR(0x4c4c5c, "vn")))) {
 				np[0] = f32(crt_atof(TOK(NULL, SPACE)));
 				np[1] = f32(crt_atof(TOK(NULL, SPACE)));
 				np[2] = f32(crt_atof(TOK(NULL, LINE_END)));
 				np += 3;
-			} else if (!strcmp(t, (const char *)STR(0x4c4c58, "vt"))) {
+			} else if (!strcmp(t, AP(const char, STR(0x4c4c58, "vt")))) {
 				tp[0] = f32(crt_atof(TOK(NULL, SPACE)));
 				tp[1] = f32(crt_atof(TOK(NULL, LINE_END)));
 				tp += 2;
-			} else if (!strcmp(t, (const char *)STR(0x4c4c64, "usemtl"))) {
-				part = (ShapePart *)(md->parts + poff);
+			} else if (!strcmp(t, AP(const char, STR(0x4c4c64, "usemtl")))) {
+				part = AP(ShapePart, (md->parts + poff));
 				poff += 0x80;
 				for (char *piece = TOK(NULL, STR(0x4c4b04, "_")); piece; piece = TOK(NULL, STR(0x4c4b04, "_")))
 					strcpy(last, piece);
@@ -989,7 +989,7 @@ void THISCALL (shape_readObj)(u8 *sh, void *f, u8 *mem, int memSize)
 				((u8 *)part)[(int)strlen(name) + 3] = 0;
 				part->texture = -1;
 				next = 0;
-			} else if (!strcmp(t, (const char *)STR(0x4c4c54, "f"))) {
+			} else if (!strcmp(t, AP(const char, STR(0x4c4c54, "f")))) {
 				strcpy(c[0], face_start(line, f));
 				strcpy(c[1], TOK(NULL, LINE_END));
 				strcpy(c[2], TOK(NULL, LINE_END));
@@ -1036,13 +1036,13 @@ void THISCALL (shape_readObj)(u8 *sh, void *f, u8 *mem, int memSize)
 		corner = next;
 	}
 	for (int k = 0; k < md->partCount; k++) {
-		ShapePart *pt = (ShapePart *)(md->parts + k * 0x80);
+		ShapePart *pt = AP(ShapePart, (md->parts + k * 0x80));
 		for (int i = 0; i < pt->vertexCount; i++)
 			GAME_VAR(u32 *, pt->prims + 8)[i] = i;
 	}
 	if (flip)
 		for (int k = 0; k < md->partCount; k++) {
-			ShapePart *pt = (ShapePart *)(md->parts + k * 0x80);
+			ShapePart *pt = AP(ShapePart, (md->parts + k * 0x80));
 			while (pt->vertexCount > 0) {   /* (never moves on, as the original) */
 				k++;
 				float *v = (*(float * *)&pt->vertices), *n = (*(float * *)&pt->normals);
@@ -1053,11 +1053,11 @@ void THISCALL (shape_readObj)(u8 *sh, void *f, u8 *mem, int memSize)
 				n[2] = f32(-fld_m(&n[1]));
 				n[1] = f32(y);
 				for (int c3 = 0; c3 < 3; c3++)
-					n[c3] = f32(fmul_m(fld_m(&n[c3]), (const float *)ADDR(k_m1f)));
+					n[c3] = f32(fmul_m(fld_m(&n[c3]), AP(const float, ADDR(k_m1f))));
 			}
 		}
 	for (int k = 0; k < md->partCount; k++) {
-		ShapePart *pt = (ShapePart *)(md->parts + k * 0x80);
+		ShapePart *pt = AP(ShapePart, (md->parts + k * 0x80));
 		for (int i = 0; i < pt->vertexCount; i++)
 			(*(u32 * *)&pt->colours)[i] = g_white;
 	}
@@ -1073,7 +1073,7 @@ void THISCALL (shape_readObj)(u8 *sh, void *f, u8 *mem, int memSize)
 	memcpy(md->low, md->centre, 12);
 	memcpy(md->high, md->centre, 12);
 	for (int k = 0; k < md->partCount; k++) {
-		ShapePart *pt = (ShapePart *)(md->parts + k * 0x80);
+		ShapePart *pt = AP(ShapePart, (md->parts + k * 0x80));
 		for (int a = 0; a < 3; a++)   /* (the values copied as bits: a NaN stays as it is) */
 			if (fld_m(&md->low[a]) > pt->box[a])
 				memcpy(&md->low[a], &pt->box[a], 4);

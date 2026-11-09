@@ -3,10 +3,10 @@
    their 32 bits (floats included). */
 #include "../game.h"
 
-#define g_armcColourBits ((u32 *)OBJ(g_armcColours))           /* the six colour slots, six values each (see g_armcColours) */
+#define g_armcColourBits (AP(u32, OBJ(g_armcColours)))           /* the six colour slots, six values each (see g_armcColours) */
 #define g_allPartsSlot ((u32 *)(OBJ(g_armcColours) + 0x78))            /* colour slot 5 (VIEW ALL): its six values */
-#define g_savedParts ((const u32 *)ADDR(g_savedMechHead))         /* the saved mech: head, chest, arm, leg, booster */
-#define g_workParts ((u32 *)OBJ(g_armcParts))                /* the working copy, same order */
+#define g_savedParts (AP(const u32, ADDR(g_savedMechHead)))         /* the saved mech: head, chest, arm, leg, booster */
+#define g_workParts (AP(u32, OBJ(g_armcParts)))                /* the working copy, same order */
 
 static void copy(u32 *to, const u32 *from, int n)
 {
@@ -40,12 +40,12 @@ void (armc_spreadAllColourSlot)(void)
 void (armc_syncPartCursors)(void)
 {
 	static const struct { u32 cursor, count, list, chosen; } kinds[] = {
-		{ ADDR(g_headCursor), ADDR(g_headCount), OBJ(g_headList), OBJ(g_armcParts) }, { ADDR(g_chestCursor), ADDR(g_chestCount), OBJ(g_chestList), (u32)&g_armcParts[1] },
-		{ ADDR(g_armCursor), ADDR(g_armCount), OBJ(g_armList), (u32)&g_armcParts[2] }, { ADDR(g_legCursor), ADDR(g_legCount), OBJ(g_legList), (u32)&g_armcParts[3] },
-		{ ADDR(g_boosterCursor), ADDR(g_boosterCount), OBJ(g_boosterList), (u32)&g_armcParts[4] } };   /* head, chest, arm, leg, booster */
+		{ ADDR(g_headCursor), ADDR(g_headCount), OBJ(g_headList), OBJ(g_armcParts) }, { ADDR(g_chestCursor), ADDR(g_chestCount), OBJ(g_chestList), ADDR_AT(g_armcParts, 1) },
+		{ ADDR(g_armCursor), ADDR(g_armCount), OBJ(g_armList), ADDR_AT(g_armcParts, 2) }, { ADDR(g_legCursor), ADDR(g_legCount), OBJ(g_legList), ADDR_AT(g_armcParts, 3) },
+		{ ADDR(g_boosterCursor), ADDR(g_boosterCount), OBJ(g_boosterList), ADDR_AT(g_armcParts, 4) } };   /* head, chest, arm, leg, booster */
 	for (int k = 0; k < 5; k++) {
-		int *cursor = (int *)kinds[k].cursor;
-		const int *list = (const int *)kinds[k].list;
+		int *cursor = AP(int, kinds[k].cursor);
+		const int *list = AP(const int, kinds[k].list);
 		*cursor = 0;
 		for (int i = 0; i < GAME_VAR(int, kinds[k].count); i++)
 			if (GAME_VAR(int, kinds[k].chosen) == list[i]) {
@@ -59,8 +59,8 @@ void (armc_syncPartCursors)(void)
    (g_camPoint0X.., g_camAim0X..: the ARM CENTER's own, set when it was entered), the preview off (g_armcPreview 0) */
 void (armc_snapCameraToPoint0)(void)
 {
-	copy((u32 *)ADDR(g_menuEyeX), (const u32 *)ADDR(g_camPoint0X), 3);
-	copy((u32 *)ADDR(g_menuCameraLook), (const u32 *)ADDR(g_camAim0X), 3);
+	copy(AP(u32, ADDR(g_menuEyeX)), AP(const u32, ADDR(g_camPoint0X)), 3);
+	copy(AP(u32, ADDR(g_menuCameraLook)), AP(const u32, ADDR(g_camAim0X)), 3);
 	g_armcPreview = 0;
 }
 
@@ -78,7 +78,7 @@ void (armc_loadSavedMech)(void)
 	(*(u32 *)&g_itemSlot5) = (*(u32 *)&g_savedMechItemSlot5);
 	g_mechWeaponSlot3 = (*(u32 *)&g_savedMechWeaponSlot3);
 	(*(u32 *)&g_itemSlot4) = (*(u32 *)&g_savedMechItemSlot4);
-	copy(g_armcColourBits, (const u32 *)OBJ(g_savedColourChoices), 0x90 / 4);
+	copy(g_armcColourBits, AP(const u32, OBJ(g_savedColourChoices)), 0x90 / 4);
 }
 
 /* 0x40f830: 1 if extra-list entry i (g_extraListTable) is a special item (actorItems 27 and up: EXPANSION MAGAZINE ..

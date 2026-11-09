@@ -73,7 +73,7 @@ u32 (text_ascii5Pass)(int x, int y, const u8 *s)
 	int left = x;
 	glBegin(7);   /* GL_QUADS */
 	for (u8 c = *s; c; c = *s) {
-		glColor4f_stored((const u32 *)OBJ(g_textColour));
+		glColor4f_stored(AP(const u32, OBJ(g_textColour)));
 		s++;
 		if (g_menuState != 9999 && c == '|') {
 			if (*s != '|') {
@@ -83,7 +83,7 @@ u32 (text_ascii5Pass)(int x, int y, const u8 *s)
 			}
 			s++;
 		} else if (c == '$' && s[0] == '[' && s[2] == ']' && s[4]) {
-			const u32 *colour = (const u32 *)(OBJ(g_codeColours) + ((signed char)s[1] - '0') * 16);
+			const u32 *colour = AP(const u32, (OBJ(g_codeColours) + ((signed char)s[1] - '0') * 16));
 			c = s[4];
 			s += 5;
 			glColor4f_stored(colour);
@@ -130,7 +130,7 @@ static u32 text_pass(int x, int y, const u8 *s, const TextPass *pass)
 			c = s[2];
 			s += 3;
 		}
-		glColor4f_stored(stickyOn && kept ? (const u32 *)(OBJ(g_codeColours) + colour * 16) : (const u32 *)OBJ(g_textColour));
+		glColor4f_stored(stickyOn && kept ? AP(const u32, (OBJ(g_codeColours) + colour * 16)) : AP(const u32, OBJ(g_textColour)));
 		if (g_menuState != 9999 && c == '|') {
 			if (*s != '|') {
 				y += pass->line;
@@ -144,7 +144,7 @@ static u32 text_pass(int x, int y, const u8 *s, const TextPass *pass)
 				colour = code;
 			c = s[4];
 			s += 5;
-			glColor4f_stored((const u32 *)(OBJ(g_codeColours) + code * 16));
+			glColor4f_stored(AP(const u32, (OBJ(g_codeColours) + code * 16)));
 		}
 		if (c == '\r' && *s == '\n') {
 			s++;

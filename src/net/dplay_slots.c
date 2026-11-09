@@ -132,7 +132,7 @@ int (dplay_host)(int session, int player, int user1, int maxPlayers, int user2, 
    there is no such session, 0x1f5 when it is full (players == maxPlayers), 0 for an unknown kind */
 int (dplay_join)(int session, int guid, int player, int data)
 {
-	const SessionDesc *rec = (const SessionDesc *)net_getSession(session);
+	const SessionDesc *rec = AP(const SessionDesc, net_getSession(session));
 	if (!rec)
 		return 0x1f7;
 	if (rec->players == rec->maxPlayers)
@@ -153,7 +153,7 @@ u32 (dplay_leaveSession)(void)
 		return 1;
 	if (g_isHost) {
 		g_hostGoneMessageFlag = 1;
-		CALL_FN(net_sendMessage, int, void *, u32, u32)((void *)ADDR(g_netHostLeftMessageKind), 0, 0);   /* net_sendMessage: send */
+		CALL_FN(net_sendMessage, int, void *, u32, u32)(AP(void, ADDR(g_netHostLeftMessageKind)), 0, 0);   /* net_sendMessage: send */
 	}
 	u32 kind = (*(u32 *)&g_connectionKind);
 	(*(u32 *)&g_connectionKind) = 4;

@@ -37,8 +37,8 @@ static float tex255(int n) { return f32((long double)n * (1.0f / 255)); }
 #define ENERGY_HEIGHT g_energyBarHeight
 #define ENERGY_WIDTH  g_energyBarWidth
 #else
-#define ENERGY_HEIGHT (*(const float *)RELOC(*(const u32 *)IMG(0x493db8)))   /* 160 on disk */
-#define ENERGY_WIDTH  (*(const float *)RELOC(*(const u32 *)IMG(0x493f29)))   /* 8 on disk */
+#define ENERGY_HEIGHT (*AP(const float, RELOC(*AP(const u32, IMG(0x493db8)))))   /* 160 on disk */
+#define ENERGY_WIDTH  (*AP(const float, RELOC(*AP(const u32, IMG(0x493f29)))))   /* 8 on disk */
 #endif
 
 /* the alert ring, drawn by main_draw while a round homes on the player (homedOn) or the held item is a lock-on weapon
@@ -301,7 +301,7 @@ static void main_snapshot(Scene *scene, Actor *player)
 	glEnable(GL_TEXTURE_2D);
 	if (scene->snapshotTex[player->heldItem] < 0) {
 		sprintf(name, "Actor/%s/SnapShot", scene->actorItems[player->heldItem].name);
-		scene->snapshotTex[player->heldItem] = tex_getIdByName(g_textures, name, 0, 0, 0, 0, 0, 0, 0);
+		scene->snapshotTex[player->heldItem] = tex_getIdByName(AP(void, g_textures), name, 0, 0, 0, 0, 0, 0, 0);
 	}
 	int id = scene->snapshotTex[player->heldItem];
 	tex_bind(g_textures->banks[id / 512], id % 512);

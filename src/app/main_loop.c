@@ -28,7 +28,7 @@ void (app_frameByScreen)(void)
 		input_updateMouse();
 		input_reacquireKeyboard();
 	}
-	if (match_frameByState(g_scene) == 0)
+	if (match_frameByState(AP(Scene, g_scene)) == 0)
 		game_postMatch();
 }
 
@@ -84,7 +84,7 @@ void (menu_frame)(void)
 	}
 	if (g_screen == 300 && g_replayShowOn && !g_dialogPending) {
 		g_viewAspect = f32(fsubr_m(fmul_m(fld_m(&g_frameTime), k_0_05f), &g_viewAspect));   /* 0.05 x the frame time */
-		g_menuEyeZ = fadd_m(fld_m((const float *)ADDR(g_menuEyeZ)), (const float *)ADDR(k_10f));                       /* the camera 10 back */
+		g_menuEyeZ = fadd_m(fld_m(AP(const float, ADDR(g_menuEyeZ))), AP(const float, ADDR(k_10f)));                       /* the camera 10 back */
 		long double zoom = FADD(g_replayZoomTime, g_frameTime);
 		g_replayZoomTime = zoom;
 		if (!(g_viewAspect >= k_0_01f))
@@ -122,15 +122,15 @@ void (menu_frame)(void)
 #endif
 	glDisable(0xbe2);   /* GL_BLEND */
 	glFinish();
-	SwapBuffers(g_windowDC);
+	SwapBuffers(AP(void, g_windowDC));
 	switch (g_freeCamZoom) {
 	case 1:
 		if (g_viewAngle > k_5f)
-			g_viewAngle = fsub_m(fld_m(&g_viewAngle), (const float *)ADDR(k_5f));
+			g_viewAngle = fsub_m(fld_m(&g_viewAngle), AP(const float, ADDR(k_5f)));
 		break;
 	case 2:
 		if (!(g_viewAngle >= k_45f))
-			g_viewAngle = fadd_m(fld_m(&g_viewAngle), (const float *)ADDR(k_5f));
+			g_viewAngle = fadd_m(fld_m(&g_viewAngle), AP(const float, ADDR(k_5f)));
 		break;
 	}
 	long double now = timer_now();
@@ -149,7 +149,7 @@ void (menu_frame)(void)
 	}
 	long double rate = k_1 / (now - g_lastFrameClock);
 	g_frameRate = rate;
-	long double frame = fdivr_m(rate, (const float *)ADDR(k_60f));   /* 60 / rate */
+	long double frame = fdivr_m(rate, AP(const float, ADDR(k_60f)));   /* 60 / rate */
 	g_frameTime = frame;
 	if (frame > k_20f)
 		g_frameTime = 1.0f;
@@ -160,12 +160,12 @@ void (menu_frame)(void)
 static void count_down(u8 *s, u32 offset, const float *dt)
 {
 	float *t = (float *)(s + offset);
-	const float *zero = (const float *)ADDR(k_0f);
+	const float *zero = AP(const float, ADDR(k_0f));
 	if (*t > *zero) {
 		long double left = fsub_m(fld_m(t), dt);
 		*t = f32(left);
 		if (!(left >= *zero))
-			*(u32 *)RELOC(t) = 0;
+			*AP(u32, RELOC(t)) = 0;
 	}
 }
 
@@ -244,7 +244,7 @@ static void mouse_offset(u8 *s, int steer)
 		dx = -dx;
 	SC->mouseDx = f32(dx);
 	long double k = fmul_m((long double)g_mouseSensitivity, k_0_02f);
-	long double f = fmul_m(fadd_m(k * k, (const float *)ADDR(k_1f)), (const float *)ADDR(k_0_5f));
+	long double f = fmul_m(fadd_m(k * k, AP(const float, ADDR(k_1f))), AP(const float, ADDR(k_0_5f)));
 	SC->mouseDy = f32(fmul_m(f, &SC->mouseDy));
 	SC->mouseDx = f32(steer ? fmul_m(f, &SC->mouseDx) : dx * f);
 	g_mouseX = gfx_getWidth() / 2;
@@ -257,12 +257,12 @@ static const u32 k_spectatePresetKeys[10][2] = { { ADDR(g_dikNumpad1), 1 }, { AD
 /* the follow keys, 1 .. 9, 0 (into followKey, one less than the player; the first six 10 more with left shift) */
 static const u32 k_followKeys[10] = { ADDR(g_dik1), ADDR(g_dik2), ADDR(g_dik3), ADDR(g_dik4), ADDR(g_dik5), ADDR(g_dik6), ADDR(g_dik7), ADDR(g_dik8), ADDR(g_dik9), ADDR(g_dik0) };
 /* the held controls: the binding's two keys and the flag they set */
-static const u32 k_heldKeys[10][2] = { { (u32)&g_controls[12], offsetof(Scene, holdAltitude) }, { ADDR(g_keyStepLeft), offsetof(Scene, holdStepLeft) }, { ADDR(g_keyStepRight), offsetof(Scene, holdStepRight) },
-                                       { ADDR(g_keyForward), offsetof(Scene, holdForward) }, { ADDR(g_keyBackward), offsetof(Scene, holdBackward) }, { (u32)&g_controls[16], offsetof(Scene, holdUp) },
-                                       { (u32)&g_controls[18], offsetof(Scene, holdDown) }, { (u32)&g_controls[38], offsetof(Scene, holdZoom) }, { (u32)&g_controls[56], offsetof(Scene, rankingKey) },
-                                       { (u32)&g_controls[14], offsetof(Scene, holdBooster) } };
+static const u32 k_heldKeys[10][2] = { { ADDR_AT(g_controls, 12), offsetof(Scene, holdAltitude) }, { ADDR(g_keyStepLeft), offsetof(Scene, holdStepLeft) }, { ADDR(g_keyStepRight), offsetof(Scene, holdStepRight) },
+                                       { ADDR(g_keyForward), offsetof(Scene, holdForward) }, { ADDR(g_keyBackward), offsetof(Scene, holdBackward) }, { ADDR_AT(g_controls, 16), offsetof(Scene, holdUp) },
+                                       { ADDR_AT(g_controls, 18), offsetof(Scene, holdDown) }, { ADDR_AT(g_controls, 38), offsetof(Scene, holdZoom) }, { ADDR_AT(g_controls, 56), offsetof(Scene, rankingKey) },
+                                       { ADDR_AT(g_controls, 14), offsetof(Scene, holdBooster) } };
 /* the weapon slot keys: HAND WEAPON 1 .. 4, R / L SHOULDER (bindings 15 .. 18, 13, 14): the slot of the last held into weaponKey, else -1 */
-static const u32 k_weaponKeys[6] = { (u32)&g_controls[30], (u32)&g_controls[32], (u32)&g_controls[34], (u32)&g_controls[36], (u32)&g_controls[26], (u32)&g_controls[28] };
+static const u32 k_weaponKeys[6] = { ADDR_AT(g_controls, 30), ADDR_AT(g_controls, 32), ADDR_AT(g_controls, 34), ADDR_AT(g_controls, 36), ADDR_AT(g_controls, 26), ADDR_AT(g_controls, 28) };
 
 /* 0x49d290 (thiscall on the game object): the match's input for this frame (match_resetInputState first; nothing
    more before the match is drawn, matchDrawing). With no chat line or menu open: spectating (playing 0) and out
@@ -282,7 +282,7 @@ void THISCALL (match_readInput)(u8 *s)
 	if (SC->chatMode == 0 && SC->escMenuOpen == 0) {
 		if (SC->playing == 0) {
 			if (SC->entryMenuShown == 0 || (SC->sessionMode == 0 && SC->players[SC->localPlayer].inPlay == 0)) {
-				if (pressed2((u32)&g_controls[20], (u32)&g_controls[21]))
+				if (pressed2(ADDR_AT(g_controls, 20), ADDR_AT(g_controls, 21)))
 					SC->quitAsked = 1;
 			} else {
 				if (g_mouseClick) {
@@ -307,9 +307,9 @@ void THISCALL (match_readInput)(u8 *s)
 				SC->followKey--;
 			}
 		} else {
-			if (held2((u32)&g_controls[20], (u32)&g_controls[21]))
+			if (held2(ADDR_AT(g_controls, 20), ADDR_AT(g_controls, 21)))
 				SC->holdFire = 1;
-			if (pressed2((u32)&g_controls[20], (u32)&g_controls[21]))
+			if (pressed2(ADDR_AT(g_controls, 20), ADDR_AT(g_controls, 21)))
 				SC->firePressed = 1;
 		}
 		for (int k = 0; k < 10; k++)
@@ -328,7 +328,7 @@ void THISCALL (match_readInput)(u8 *s)
 			SC->mouseY = g_mouseY;
 			(*(int *)&SC->mouseDy) = (*(int *)&SC->mouseDx) = 0;
 			long double k = fmul_m((long double)g_mouseSensitivity, k_0_02f);
-			long double f = fmul_m(fadd_m(k * k, (const float *)ADDR(k_1f)), (const float *)ADDR(k_0_5f));
+			long double f = fmul_m(fadd_m(k * k, AP(const float, ADDR(k_1f))), AP(const float, ADDR(k_0_5f)));
 			SC->mouseDy = f32(fmul_m(f, &SC->mouseDy));
 			SC->mouseDx = f32(fmul_m(f, &SC->mouseDx));
 			g_mouseX = gfx_getWidth() / 2;
@@ -336,28 +336,28 @@ void THISCALL (match_readInput)(u8 *s)
 		}
 		if (pressed2(ADDR(g_keyGameMenu), ADDR(g_keyGameMenu2)) && !(SC->keyGuard > 0))
 			SC->quitAsked = 1;
-		if (pressed2((u32)&g_controls[22], (u32)&g_controls[23]))
+		if (pressed2(ADDR_AT(g_controls, 22), ADDR_AT(g_controls, 23)))
 			SC->prevWeaponPressed = 1;
-		if (pressed2((u32)&g_controls[24], (u32)&g_controls[25]))
+		if (pressed2(ADDR_AT(g_controls, 24), ADDR_AT(g_controls, 25)))
 			SC->nextWeaponPressed = 1;
-		if (pressed2((u32)&g_controls[60], (u32)&g_controls[61]))
+		if (pressed2(ADDR_AT(g_controls, 60), ADDR_AT(g_controls, 61)))
 			SC->respawnCameraMode = SC->cameraMode == 1 ? 2 : SC->cameraMode == 2 ? 3 : 1;
-		if (pressed2(ADDR(g_keyChat), (u32)&g_controls[43]) && !(SC->keyGuard > 0))
+		if (pressed2(ADDR(g_keyChat), ADDR_AT(g_controls, 43)) && !(SC->keyGuard > 0))
 			SC->talkPressed = 1;
-		else if (pressed2((u32)&g_controls[44], (u32)&g_controls[45]) && !(SC->keyGuard > 0))
+		else if (pressed2(ADDR_AT(g_controls, 44), ADDR_AT(g_controls, 45)) && !(SC->keyGuard > 0))
 			SC->teamTalkPressed = 1;
-		if (pressed2((u32)&g_controls[62], (u32)&g_controls[63]))
+		if (pressed2(ADDR_AT(g_controls, 62), ADDR_AT(g_controls, 63)))
 			SC->helpPressed = 1;
 		if (input_justPressed(g_dikF11)) {
 			if (SC->messagesHidden == 0) {
 				SC->messagesHidden = 1;
-				notice_printCentre((Scene *)s, (const char *)STR(0x4c7d00, "HIDDEN MESSAGE BOX MODE"));
+				notice_printCentre((Scene *)s, AP(const char, STR(0x4c7d00, "HIDDEN MESSAGE BOX MODE")));
 			} else if (SC->hudHidden == 0) {
 				SC->hudHidden = 1;
-				notice_printCentre((Scene *)s, (const char *)STR(0x4c7cf0, "SCREENSHOT MODE"));
+				notice_printCentre((Scene *)s, AP(const char, STR(0x4c7cf0, "SCREENSHOT MODE")));
 			} else {
 				SC->messagesHidden = SC->hudHidden = 0;
-				notice_printCentre((Scene *)s, (const char *)STR(0x4c7ce4, "NORMAL MODE"));
+				notice_printCentre((Scene *)s, AP(const char, STR(0x4c7ce4, "NORMAL MODE")));
 			}
 		}
 	} else if (SC->escMenuOpen == 1) {
@@ -370,13 +370,13 @@ void THISCALL (match_readInput)(u8 *s)
 			PATCHED_CALL(0x49ddcc, void, void *)(s);   /* the patch DLL's menu_nav; its block then jumps on to 0x49de23 */
 #endif
 		else {
-			const float *low = (const float *)ADDR(k_m50f), *high = (const float *)ADDR(k_50f);
+			const float *low = AP(const float, ADDR(k_m50f)), *high = AP(const float, ADDR(k_50f));
 			if (!(SC->mouseDy >= *low) || !(SC->mouseDx >= *low))
 				SC->menuKeys[0] = 1;
 			if (SC->mouseDy > *high || SC->mouseDx > *high)
 				SC->menuKeys[1] = 1;
 		}
-		if (pressed2((u32)&g_controls[20], (u32)&g_controls[21]))
+		if (pressed2(ADDR_AT(g_controls, 20), ADDR_AT(g_controls, 21)))
 			SC->menuKeys[2] = 1;
 		(*(int *)&SC->mouseDy) = (*(int *)&SC->mouseDx) = 0;
 		if (input_justPressed(g_dikLeft) || input_justPressed(g_dikUp))
@@ -488,9 +488,9 @@ u32 THISCALL (match_mechTestFrame)(u8 *s)
 	SC->partStepDownPressed = input_asyncKeyPressed('Z') || (input_asyncKeyDown(0x10) && input_asyncKeyDown('Z'));
 	SC->partStepUpPressed = input_asyncKeyPressed('X') || (input_asyncKeyDown(0x10) && input_asyncKeyDown('X'));
 	scene_averageFrameTime(s);
-	float zoomFactor = f32(fld_m((const float *)ADDR(k_1f)) - fmul_m(fld_m(&SC->frameTime), k_0_6f));
+	float zoomFactor = f32(fld_m(AP(const float, ADDR(k_1f))) - fmul_m(fld_m(&SC->frameTime), k_0_6f));
 	float turn = f32(fmul_m(fld_m(&SC->frameTime), k_750f));
-	long double look = fmul_m(fld_m(&SC->frameTime), (const float *)ADDR(k_100f));
+	long double look = fmul_m(fld_m(&SC->frameTime), AP(const float, ADDR(k_100f)));
 	float yaw = f32(look * SC->mouseDx), pitch = f32(look * SC->mouseDy);
 	actor_setInput(stage, 0, (*(u32 *)&SC->holdForward), (*(u32 *)&SC->holdBackward), (*(u32 *)&SC->holdStepLeft), (*(u32 *)&SC->holdStepRight), *(u32 *)&pitch, *(u32 *)&yaw,
 	             (*(u32 *)&SC->holdFire), (*(u32 *)&SC->holdAltitude), (*(u32 *)&SC->holdBooster), (*(u32 *)&SC->weaponKey), 0, 0);
@@ -510,13 +510,13 @@ u32 THISCALL (match_mechTestFrame)(u8 *s)
 		long double v = FSUB(SC->cameraAngle[1], turn);
 		SC->cameraAngle[1] = f32(v);
 		if (!(v >= 0))
-			SC->cameraAngle[1] = f32(fadd_m(v, (const float *)ADDR(k_3600f)));
+			SC->cameraAngle[1] = f32(fadd_m(v, AP(const float, ADDR(k_3600f))));
 	}
 	if (SC->turnRightHeld) {
 		long double v = FADD(turn, SC->cameraAngle[1]);
 		SC->cameraAngle[1] = f32(v);
 		if (v >= k_3600f)
-			SC->cameraAngle[1] = f32(fsub_m(v, (const float *)ADDR(k_3600f)));
+			SC->cameraAngle[1] = f32(fsub_m(v, AP(const float, ADDR(k_3600f))));
 	}
 	float *zoom = (float *)&SC->cameraSettings[2][SC->cameraMode];
 	if (SC->zoomInHeld) {
@@ -604,12 +604,12 @@ u32 THISCALL (match_mechTestFrame)(u8 *s)
 				far_point(b, pitch + 100, yaw);
 				add_actor_pos(pb, b, actor);
 				add_actor_pos(pa, a, actor);
-				ViewVolume_addSegment(&SC->view, (const void *)ADDR(g_packedRed), pa, pb, 1);
+				ViewVolume_addSegment(&SC->view, AP(const void, ADDR(g_packedRed)), pa, pb, 1);
 				far_point(a, pitch, yaw);
 				far_point(b, pitch, yaw + 150);
 				add_actor_pos(pb, b, actor);
 				add_actor_pos(pa, a, actor);
-				ViewVolume_addSegment(&SC->view, (const void *)ADDR(g_packedRed), pa, pb, 1);
+				ViewVolume_addSegment(&SC->view, AP(const void, ADDR(g_packedRed)), pa, pb, 1);
 			}
 	stage_drawActors((Stage *)stage, &SC->view, -1);
 	stage_drawBullets(stage, &SC->view);
@@ -932,7 +932,7 @@ static void turn_view(u8 *s)
    three times as fast with holdBooster; the mouse turns the view (pitch within +-890, heading wrapped at 3600) */
 static void free_keys(u8 *s, float *mv, const float *speed, const float *turn)
 {
-	memcpy(mv, (const void *)ADDR(g_vecZero), 12);
+	memcpy(mv, AP(const void, ADDR(g_vecZero)), 12);
 	int bits = SC->holdStepLeft ? 1 : 0;
 	if (SC->holdStepRight)
 		bits |= 0x10;
@@ -984,9 +984,9 @@ static int run_down(u8 *s, u32 offset)
 }
 
 /* the replay viewer's held controls: each binding's two keys and the hold flag they set */
-static const u32 k_replayHeld[7][3] = { { (u32)&g_controls[12], (u32)&g_controls[13], offsetof(Scene, holdAltitude) }, { ADDR(g_keyStepLeft), (u32)&g_controls[5], offsetof(Scene, holdStepLeft) }, { ADDR(g_keyStepRight), (u32)&g_controls[7], offsetof(Scene, holdStepRight) },
-                                        { ADDR(g_keyForward), (u32)&g_controls[1], offsetof(Scene, holdForward) }, { ADDR(g_keyBackward), (u32)&g_controls[3], offsetof(Scene, holdBackward) }, { (u32)&g_controls[16], (u32)&g_controls[17], offsetof(Scene, holdUp) },
-                                        { (u32)&g_controls[18], (u32)&g_controls[19], offsetof(Scene, holdDown) } };
+static const u32 k_replayHeld[7][3] = { { ADDR_AT(g_controls, 12), ADDR_AT(g_controls, 13), offsetof(Scene, holdAltitude) }, { ADDR(g_keyStepLeft), ADDR_AT(g_controls, 5), offsetof(Scene, holdStepLeft) }, { ADDR(g_keyStepRight), ADDR_AT(g_controls, 7), offsetof(Scene, holdStepRight) },
+                                        { ADDR(g_keyForward), ADDR_AT(g_controls, 1), offsetof(Scene, holdForward) }, { ADDR(g_keyBackward), ADDR_AT(g_controls, 3), offsetof(Scene, holdBackward) }, { ADDR_AT(g_controls, 16), ADDR_AT(g_controls, 17), offsetof(Scene, holdUp) },
+                                        { ADDR_AT(g_controls, 18), ADDR_AT(g_controls, 19), offsetof(Scene, holdDown) } };
 /* the camera preset keys (presets 1 .. 9, 0) */
 static const u32 k_presetKeys[10] = { ADDR(g_dikNumpad1), ADDR(g_dikNumpad2), ADDR(g_dikNumpad3), ADDR(g_dikNumpad4), ADDR(g_dikNumpad5), ADDR(g_dikNumpad6), ADDR(g_dikNumpad7), ADDR(g_dikNumpad8), ADDR(g_dikNumpad9), ADDR(g_dikNumpad0) };
 /* the eight lines of a map light's marker star (markLights): each line's far end's signs (+-100) */
@@ -1061,19 +1061,19 @@ u32 THISCALL (replay_frame)(u8 *s)
 	follow--;
 	SC->replaySlow = input_isDown(g_dikSpace) ? 1 : 0;
 	SC->replaySkip = input_isDown(g_dikEnter) ? 1 : 0;
-	if (held2((u32)&g_controls[56], (u32)&g_controls[57]))
+	if (held2(ADDR_AT(g_controls, 56), ADDR_AT(g_controls, 57)))
 		SC->rankingKey = 1;
 	if (input_justPressed(g_dikF11)) {
 		const char *mode;
 		if (SC->messagesHidden == 0) {
 			SC->messagesHidden = 1;
-			mode = (const char *)STR(0x4c7d00, "HIDDEN MESSAGE BOX MODE");
+			mode = AP(const char, STR(0x4c7d00, "HIDDEN MESSAGE BOX MODE"));
 		} else if (SC->hudHidden == 0) {
 			SC->hudHidden = 1;
-			mode = (const char *)STR(0x4c7cf0, "SCREENSHOT MODE");
+			mode = AP(const char, STR(0x4c7cf0, "SCREENSHOT MODE"));
 		} else {
 			SC->messagesHidden = SC->hudHidden = 0;
-			mode = (const char *)STR(0x4c7ce4, "NORMAL MODE");
+			mode = AP(const char, STR(0x4c7ce4, "NORMAL MODE"));
 		}
 		notice_printCentre((Scene *)s, mode);
 	}
@@ -1145,14 +1145,14 @@ u32 THISCALL (replay_frame)(u8 *s)
 			do {
 				int from, len;
 				u8 packet[0x130];
-				if (fread_scrambled(&SC->recordTime, 4, 1, SC->replayFile) == 0 || SC->replaySkip == 1) {
+				if (fread_scrambled(&SC->recordTime, 4, 1, AP(void, SC->replayFile)) == 0 || SC->replaySkip == 1) {
 					if (replay_next(s))
 						return 1;
 					break;
 				}
-				fread_scrambled(&from, 4, 1, SC->replayFile);
-				fread_scrambled(&len, 4, 1, SC->replayFile);
-				fread_scrambled(packet, 1, len, SC->replayFile);
+				fread_scrambled(&from, 4, 1, AP(void, SC->replayFile));
+				fread_scrambled(&len, 4, 1, AP(void, SC->replayFile));
+				fread_scrambled(packet, 1, len, AP(void, SC->replayFile));
 				net_processGamePacket(s, from, len, packet);
 			} while (!(SC->recordTime > SC->replayTime));
 		stage_advanceClocks(stage, BITS(dt));
@@ -1208,7 +1208,7 @@ u32 THISCALL (replay_frame)(u8 *s)
 	SC->stateFrames++;
 
 	/* the scene */
-	tex_clearSetCounters(g_textures);
+	tex_clearSetCounters(AP(void, g_textures));
 	if (SC->clearOn == 1) {
 		glClearColor_stored(SC->clearColour);
 		glClearDepth(1.0);
@@ -1240,7 +1240,7 @@ u32 THISCALL (replay_frame)(u8 *s)
 			for (int l = 0; l < 8; l++) {
 				for (int k = 0; k < 3; k++)
 					q[k] = f32(k_star[l][k] > 0 ? FADD(p[k], k_100f) : FSUB(p[k], k_100f));
-				ViewVolume_addSegment(view, (const void *)OBJ(g_packedYellow), p, q, 1);
+				ViewVolume_addSegment(view, AP(const void, OBJ(g_packedYellow)), p, q, 1);
 			}
 		}
 	if (SC->fogOn == 1) {
@@ -1276,7 +1276,7 @@ u32 THISCALL (replay_frame)(u8 *s)
 #endif
 			text_setColor(1.0f, 1.0f, 1.0f, 1.0f);
 			int n = SC->cameraMode;
-			sprintf(text, (const char *)STR(0x4b0320, "%d"), n > 0 ? n : n + 10);
+			sprintf(text, AP(const char, STR(0x4b0320, "%d")), n > 0 ? n : n + 10);
 #ifdef AXIS_NATIVE
 			OVERLAY(FIX_AREA_OVERLAY_LEFT, text_drawSized(0x28, 0x10, text, 0x10));
 #else
@@ -1291,7 +1291,7 @@ u32 THISCALL (replay_frame)(u8 *s)
 			SITE_THISCALL(0x48a299, hud_drawIcon, void, void *, int, int, int)(s, 0x20e, 0x10, 5);   /* hud_drawIcon */
 #endif
 			text_setColor(1.0f, 1.0f, 1.0f, 1.0f);
-			sprintf(text, (const char *)STR(0x4c7cd8, "%02d:%02d"), SC->wholeSeconds / 60, SC->wholeSeconds % 60);
+			sprintf(text, AP(const char, STR(0x4c7cd8, "%02d:%02d")), SC->wholeSeconds / 60, SC->wholeSeconds % 60);
 #ifdef AXIS_NATIVE
 			OVERLAY(FIX_AREA_OVERLAY_RIGHT, text_drawSized(0x226, 0x10, text, 0x10));
 #else
@@ -1314,7 +1314,7 @@ u32 THISCALL (replay_frame)(u8 *s)
 		hud_drawCentreNotice((Scene *)s);
 	if (SC->quitAsked != 1)
 		return 4;
-	fclose(SC->replayFile);
+	fclose(AP(void, SC->replayFile));
 	music_stop();
 	return 0;
 }
@@ -1334,8 +1334,8 @@ static int team_game(void)
    time (the original's: the same slot the network packets are read into later) */
 static void write_log(u8 *s, const char *format, int own_time, int stack_time)
 {
-	static const char *const k_teams[3] = { (const char *)STR(0x4b21b8, "RED"), (const char *)STR(0x4b21b0, "BLUE"), (const char *)STR(0x4d06ec, "NOTEAM") };   /* NOTEAM */
-	void *f = crt_fopen((const char *)STR(0x4d06e0, "axiswl.log"), (const char *)STR(0x4b21a4, "wt"));
+	static const char *const k_teams[3] = { AP(const char, STR(0x4b21b8, "RED")), AP(const char, STR(0x4b21b0, "BLUE")), AP(const char, STR(0x4d06ec, "NOTEAM")) };   /* NOTEAM */
+	void *f = crt_fopen(AP(const char, STR(0x4d06e0, "axiswl.log")), AP(const char, STR(0x4b21a4, "wt")));
 	crt_fprintf(f, format, g_gameTitle, g_mapIndex, g_fragLimit, g_timeLimit, g_matchPlayerName);
 	for (int k = 0; k < SC->rankCount; k++) {
 		int e = SC->ranking[k];
@@ -1343,7 +1343,7 @@ static void write_log(u8 *s, const char *format, int own_time, int stack_time)
 		char name[64];
 		memset(name, 0, sizeof name);
 		strcpy(name, ((Actor *)ACTOR_AT(e))->name);
-		crt_fprintf(f, (const char *)STR(0x4d062c, "ID:%s Team:%s PlayTime:%d Kill:%d Dea..."), name, k_teams[team], own_time ? SC->players[e].timePlayed : stack_time,
+		crt_fprintf(f, AP(const char, STR(0x4d062c, "ID:%s Team:%s PlayTime:%d Kill:%d Dea...")), name, k_teams[team], own_time ? SC->players[e].timePlayed : stack_time,
 		            SC->players[e].kills, SC->players[e].deaths);
 	}
 	fclose(f);
@@ -1429,7 +1429,7 @@ static void local_spawn(u8 *s)
 	if (SC->recording == 1)
 		SC->sendFlags[SC->localPlayer][1] = 1;
 	SC->playing = 1;
-	notice_printCentre((Scene *)s, (const char *)STR(0x4d0618, "PREPARE THE BATTLE"));
+	notice_printCentre((Scene *)s, AP(const char, STR(0x4d0618, "PREPARE THE BATTLE")));
 	SC->startCountdown = 3.0f;   /* 3 */
 	SC->startCountdownShown = -1;
 	scene_updateRanking((Scene *)s);
@@ -1530,7 +1530,7 @@ static void muzzle_camera(u8 *s, const u8 *t)
 		v = item->sets[0].muzzle[act->variantLoaded];
 		bone = arms->weaponJoints[0][act->lowDetail];
 	}
-	m = (const float *)((u8 *)act->armsModel.entries + bone * 100 + 0xc);
+	m = (const float *)(AP(u8, act->armsModel.entries) + bone * 100 + 0xc);
 	if (slot == 4) {
 		P[0] = mrow(m, v, 4, 1, 8, 2, 0, 0, 12);
 		P[1] = mrow(m, v, 5, 1, 1, 0, 9, 2, 13);
@@ -1631,13 +1631,13 @@ static void chat_keys(u8 *s)
 		return;
 	SC->chatMode = 0;
 	match_endTyping();
-	const char *typed = (const char *)OBJ(g_keptChat);
+	const char *typed = AP(const char, OBJ(g_keptChat));
 	(void)me;
 	if (strlen(typed) != 0) {
 		int code = mode == 1 ? chat_matchCheatCode(s, SC->localPlayer, typed) : -1;
 		if (code >= 0) {
 			msg_cheatUsed(s, SC->localPlayer, code);
-			scenePath_openStub(s, (void *)SC->localPlayer, (const void *)RELOC(code));
+			scenePath_openStub(s, AP(void, SC->localPlayer), AP(const void, RELOC(code)));
 		} else {
 			int r = chat_applyMacro(s, typed, line);
 			if (r == 0)
@@ -1672,7 +1672,7 @@ void THISCALL (match_frame)(u8 *s)
 	                       time reads the sender's slot before it is ever written, as the original does */
 	u8 packet[0x130];
 	if (g_writeMatchLog != 0 && g_launchedForNetGame != 0) {
-		write_log(s, (const char *)(SC->rankCount > 1 ? STR(0x4d0658, "GameTitle %s\nMapNo %d\nFragLimit %d\nTi...") : STR(0x4d069c, "GameTitle %s\nMapNo %d\nFragLimit %d\nTi...")), 0, *(volatile int *)&from);
+		write_log(s, AP(const char, (SC->rankCount > 1 ? STR(0x4d0658, "GameTitle %s\nMapNo %d\nFragLimit %d\nTi...") : STR(0x4d069c, "GameTitle %s\nMapNo %d\nFragLimit %d\nTi..."))), 0, *(volatile int *)&from);
 		g_writeMatchLog = 0;
 		g_matchLogWritten = 1;
 	}
@@ -1752,7 +1752,7 @@ void THISCALL (match_frame)(u8 *s)
 	/* joining: the network's slot for the local player */
 	if (SC->localPlayer < 0 && net_hasSlot()) {
 #ifdef AXIS_NATIVE
-		fix_catalogueLoad(stage, g_catalogueFile);   /* (the KYRIE parts added: fixes/kyrie.c) */
+		fix_catalogueLoad(stage, AP(const char, g_catalogueFile));   /* (the KYRIE parts added: fixes/kyrie.c) */
 #else
 		SITE_THISCALL(0x498dd8, catalogue_loadComponents, u32, void *, const char *)(stage, g_catalogueFile);   /* catalogue_loadComponents */
 #endif
@@ -1969,18 +1969,18 @@ void THISCALL (match_frame)(u8 *s)
 		SC->startCountdown = (float)v;
 		if (!(v >= 0)) {
 			SC->startCountdown = 0.0f;
-			notice_printCentre((Scene *)s, (const char *)STR(0x4d0610, "FIGHT!"));
+			notice_printCentre((Scene *)s, AP(const char, STR(0x4d0610, "FIGHT!")));
 			sound_playVolume(0x17, 100);
 		} else {
 			int n = ftol(v);
 			if (SC->startCountdownShown != n) {
 				SC->startCountdownShown = n;
 				if (n == 0)
-					notice_printCentre((Scene *)s, (const char *)STR(0x4d05f8, "HANA!"));
+					notice_printCentre((Scene *)s, AP(const char, STR(0x4d05f8, "HANA!")));
 				else if (n == 1)
-					notice_printCentre((Scene *)s, (const char *)STR(0x4d0600, "DOOL!"));
+					notice_printCentre((Scene *)s, AP(const char, STR(0x4d0600, "DOOL!")));
 				else if (n == 2)
-					notice_printCentre((Scene *)s, (const char *)STR(0x4d0608, "SET!"));
+					notice_printCentre((Scene *)s, AP(const char, STR(0x4d0608, "SET!")));
 				sound_playVolume(9, 100);
 			}
 		}
@@ -1990,7 +1990,7 @@ void THISCALL (match_frame)(u8 *s)
 		int a = SC->players[me].grade;
 		if (a != SC->players[me].levelShown) {
 			SC->players[me].levelShown = a;
-			notice_printCentre((Scene *)s, (const char *)STR(0x4d05ec, "LEVEL UP!"));
+			notice_printCentre((Scene *)s, AP(const char, STR(0x4d05ec, "LEVEL UP!")));
 			sound_playVolume(0x18, 100);
 		}
 	}
@@ -2050,7 +2050,7 @@ void THISCALL (match_frame)(u8 *s)
 	/* the round's end */
 	if (SC->endTime > 0) {
 #ifdef AXIS_NATIVE
-		fix_catalogueLoad(stage, g_catalogueFile);   /* (the KYRIE parts added: fixes/kyrie.c) */
+		fix_catalogueLoad(stage, AP(const char, g_catalogueFile));   /* (the KYRIE parts added: fixes/kyrie.c) */
 #else
 		SITE_THISCALL(0x49a54f, catalogue_loadComponents, u32, void *, const char *)(stage, g_catalogueFile);   /* catalogue_loadComponents */
 #endif
@@ -2321,7 +2321,7 @@ void THISCALL (match_frame)(u8 *s)
 		SC->quitDelay = (float)v;
 		if (!(v > 0)) {
 			if (g_matchLogWritten == 0 && g_launchedForNetGame != 0)
-				write_log(s, (const char *)(g_matchEndedByServer == 1 || (g_matchEndedByUser == 1 && SC->rankCount <= 1) ? STR(0x4d069c, "GameTitle %s\nMapNo %d\nFragLimit %d\nTi...") : STR(0x4d05a8, "GameTitle %s\nMapNo %d\nFragLimit %d\nTi...")),
+				write_log(s, AP(const char, (g_matchEndedByServer == 1 || (g_matchEndedByUser == 1 && SC->rankCount <= 1) ? STR(0x4d069c, "GameTitle %s\nMapNo %d\nFragLimit %d\nTi...") : STR(0x4d05a8, "GameTitle %s\nMapNo %d\nFragLimit %d\nTi..."))),
 				          1, 0);
 			replay_closeRecording(sc);
 			music_stop();

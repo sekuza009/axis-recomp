@@ -21,7 +21,7 @@ static void merge(const Received *g)
 		for (int i = 0; i < g_serverPingCount; i++) {
 			if ((*(int *)&((u32 *)g_serverPinged)[i]) != 1)   /* not new */
 				continue;
-			const u8 *s = (const u8 *)(RELOC(g->base) + i * g->stride);
+			const u8 *s = AP(const u8, (RELOC(g->base) + i * g->stride));
 			int ping = g_serverPing[i];
 			if (ping > 0) {
 				int k = g_gameCount;
@@ -94,7 +94,7 @@ void (arenaList_rebuild)(void)
 	g_gameCount = n;
 	g_listAnswered = n;
 	for (int i = 0; i < g_gameCount; i++) {
-		const SessionDesc *s = (const SessionDesc *)net_getSession(i);
+		const SessionDesc *s = AP(const SessionDesc, net_getSession(i));
 		SessionEntry *e = &g_sessionList[i];
 		memset(e->name, 0, 32);
 		strcpy(e->name, s->name);

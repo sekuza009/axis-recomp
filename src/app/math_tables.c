@@ -8,7 +8,7 @@
 #define TAN_TABLE (g_tanTable)
 #define RAND_TABLE (g_randTable)
 #define TAN10_TABLE (g_tan10Table)
-#define TABLE_FILE ((const char *)STR(0x4c575c, "MATHFUNC.TBL"))
+#define TABLE_FILE (AP(const char, STR(0x4c575c, "MATHFUNC.TBL")))
 
 
 
@@ -26,9 +26,9 @@ u32 (math_makeMathFunctionTableFile)(void)
 	}
 	for (int i = 0; i < 4096; i++)
 		RAND_TABLE[i] = crt_rand();
-	void *f = crt_fopen(TABLE_FILE, (const char *)STR(0x4b2ab0, "wb"));
+	void *f = crt_fopen(TABLE_FILE, AP(const char, STR(0x4b2ab0, "wb")));
 	if (!f)
-		sys_errorTerminate((const char *)STR(0x4c576c, "can't open file MATHFFUNC.TBL in make..."));
+		sys_errorTerminate(AP(const char, STR(0x4c576c, "can't open file MATHFFUNC.TBL in make...")));
 	crt_fwrite(SIN_TABLE, 4, 3600, f);
 	crt_fwrite(COS_TABLE, 4, 3600, f);
 	crt_fwrite(TAN_TABLE, 4, 3600, f);
@@ -40,12 +40,12 @@ u32 (math_makeMathFunctionTableFile)(void)
    tangents of 85, 75 .. -85 degrees. Returns what the original leaves in eax (the loop counter, -95) */
 int (math_initMathFunction)(void)
 {
-	void *f = crt_fopen(TABLE_FILE, (const char *)STR(0x4ad170, "rb"));
+	void *f = crt_fopen(TABLE_FILE, AP(const char, STR(0x4ad170, "rb")));
 	if (!f)
 		math_makeMathFunctionTableFile();   /* math_makeMathFunctionTableFile */
-	f = crt_fopen(TABLE_FILE, (const char *)STR(0x4ad170, "rb"));
+	f = crt_fopen(TABLE_FILE, AP(const char, STR(0x4ad170, "rb")));
 	if (!f)
-		sys_errorTerminate((const char *)STR(0x4c5728, "can't open file MATHFUNC.TBL in initM..."));
+		sys_errorTerminate(AP(const char, STR(0x4c5728, "can't open file MATHFUNC.TBL in initM...")));
 	crt_fread(SIN_TABLE, 4, 3600, f);
 	crt_fread(COS_TABLE, 4, 3600, f);
 	crt_fread(TAN_TABLE, 4, 3600, f);

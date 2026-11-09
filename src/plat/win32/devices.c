@@ -54,7 +54,7 @@ long plat_soundCreateBuffer(void *ds, void *desc, void **buffer)
 		*buffer = HOST_PRIMARY;
 		return 0;
 	}
-	HostBuf *b = host_wrap(HS->create(HU, (const void *)d[4], d[2]), d[2]);
+	HostBuf *b = host_wrap(HS->create(HU, AP(const void, d[4]), d[2]), d[2]);
 	*buffer = b;
 	return b ? 0 : (long)0x80004005;   /* E_FAIL */
 }

@@ -45,7 +45,7 @@ void (loading_drawScreen)(int mode, int unused, const char *text)
 	if (mode == -1) {
 		BITS(g_loadScroll) = 0;
 		strcpy(g_loadText, text);
-		g_loadTexture = tex_getIdByName(g_textures, (const char *)STR(0x4c533c, "Iftex/Cylinder"), 0, 0, 0, 0, 0, 0, 0);
+		g_loadTexture = tex_getIdByName(AP(void, g_textures), AP(const char, STR(0x4c533c, "Iftex/Cylinder")), 0, 0, 0, 0, 0, 0, 0);
 		BITS(g_loadFade) = 0;
 		do
 			fade_frame(1);
@@ -64,8 +64,8 @@ void (loading_drawScreen)(int mode, int unused, const char *text)
 static void cylinder_vertex(int angle, u32 z)
 {
 	u32 v[3] = { 0, 0x43c80000, z };   /* (0, 400, z) */
-	Vec3_rotateAxis((float *)RELOC(v), 0, angle);
-	glVertex3fv((const float *)RELOC(v));
+	Vec3_rotateAxis(AP(float, RELOC(v)), 0, angle);
+	glVertex3fv(AP(const float, RELOC(v)));
 }
 
 /* one line of the loading screen's text at row (16 pixels a row) */
@@ -88,7 +88,7 @@ void (loading_draw)(u32 scroll)
 	int texture = g_loadTexture;
 	tex_bind(g_textures->banks[texture / 512], texture % 512);
 	glColor4f(0.5f, 0.5f, 1.0f, 0.5f);
-	float far = f32(fadd_m(fld_m((const float *)&scroll), (const float *)ADDR(k_10f)));   /* scroll + 10 */
+	float far = f32(fadd_m(fld_m((const float *)&scroll), AP(const float, ADDR(k_10f))));   /* scroll + 10 */
 	for (int angle = 0, j = 0; angle < 0xfd20; angle += 0xe10, j++) {
 		glBegin(GL_QUADS);
 		float s0 = f32(fmul_m((long double)j, k_0_0555556f));        /* j / 18 */
@@ -110,26 +110,26 @@ void (loading_draw)(u32 scroll)
 	int row = 2;
 	int mode = *(int *)((*(u8 * *)&g_loadGame) + 8);
 	if (mode == 1 || mode == 3) {
-		sprintf(line, (const char *)STR(0x4c5330, "TITLE: %s"), g_gameTitle);
+		sprintf(line, AP(const char, STR(0x4c5330, "TITLE: %s")), g_gameTitle);
 		info_line(row, line);
 		row = 4;
 	}
 	if (((Scene *)(*(u8 * *)&g_loadGame))->awaitingHostRound == 1)
-		sprintf(line, (const char *)STR(0x4c531c, "ZONE: ON RECEIVING"));
+		sprintf(line, AP(const char, STR(0x4c531c, "ZONE: ON RECEIVING")));
 	else
-		sprintf(line, (const char *)STR(0x4c5310, "ZONE: %s"), (const char *)(OBJ(g_mapNames) + g_mapIndex * 32));
+		sprintf(line, AP(const char, STR(0x4c5310, "ZONE: %s")), AP(const char, (OBJ(g_mapNames) + g_mapIndex * 32)));
 	info_line(row, line);
 	row += 2;
 	if (((Scene *)(*(u8 * *)&g_loadGame))->awaitingHostRound == 1)
-		sprintf(line, (const char *)STR(0x4c52f8, "PLAY TYPE: ON RECEIVING"));
+		sprintf(line, AP(const char, STR(0x4c52f8, "PLAY TYPE: ON RECEIVING")));
 	else
-		sprintf(line, (const char *)STR(0x4c52e8, "PLAY TYPE: %s"), (const char *)(STR(0x4c7030, "DEATH MATCH") + ((Scene *)(*(u8 * *)&g_loadGame))->gameMode * 64));
+		sprintf(line, AP(const char, STR(0x4c52e8, "PLAY TYPE: %s")), AP(const char, (STR(0x4c7030, "DEATH MATCH") + ((Scene *)(*(u8 * *)&g_loadGame))->gameMode * 64)));
 	info_line(row, line);
 	row += 2;
-	sprintf(line, (const char *)STR(0x4c52d8, "FRAG LIMIT: %d"), g_fragLimit);
+	sprintf(line, AP(const char, STR(0x4c52d8, "FRAG LIMIT: %d")), g_fragLimit);
 	info_line(row, line);
 	row += 2;
-	sprintf(line, (const char *)STR(0x4c52c8, "TIME LIMIT: %d"), g_timeLimit);
+	sprintf(line, AP(const char, STR(0x4c52c8, "TIME LIMIT: %d")), g_timeLimit);
 	info_line(row, line);
 	text_setColor(0.5f, 0.5f, 0.5f, 1.0f);
 	text_drawSized(0x96, row * 16 + 0x76, (const char *)g_loadStatusText, 0x10);
@@ -142,11 +142,11 @@ static int texture_named(const char *name)
 {
 	char copy[64];
 	strcpy(copy, name);
-	return tex_getIdByName(g_textures, copy, 0, 0, 0, 0, 0, 0, 0);
+	return tex_getIdByName(AP(void, g_textures), copy, 0, 0, 0, 0, 0, 0, 0);
 }
 
 /* ---- the menus' textures, loaded with the loading screen moved on a step (g_loadStep) between them ---- */
-#define T(addr) texture_named((const char *)RELOC(addr))
+#define T(addr) texture_named(AP(const char, RELOC(addr)))
 
 static void next_step(void)
 {
@@ -208,8 +208,8 @@ void (menu_loadTextures)(void)
    then the camera and menu defaults. Returns 1 (0 on a failure) */
 int (app_startupLoad)(void *instance)
 {
-	memset((void *)OBJ(g_unusedStartupTable), 0, 0x400);
-	memset((void *)OBJ(g_keySeen), 0, 0x400);
+	memset(AP(void, OBJ(g_unusedStartupTable)), 0, 0x400);
+	memset(AP(void, OBJ(g_keySeen)), 0, 0x400);
 	g_roomConnected = 0;
 	net_clearServerSettings();
 	reg_readServerSettings();
@@ -230,8 +230,8 @@ int (app_startupLoad)(void *instance)
 	g_convertHangul = 1;
 	g_leavingForMatch = 0;
 	if (!g_directInputMade) {
-		if (!input_createDirectInput(g_mainWindow, instance)) {
-			MessageBoxA(g_mainWindow, (const char *)MSG(112, "DIRECT INPUT INIT FAILED"), (const char *)MSG(101, "ERROR"), 0);
+		if (!input_createDirectInput(AP(void, g_mainWindow), instance)) {
+			MessageBoxA(AP(void, g_mainWindow), AP(const char, MSG(112, "DIRECT INPUT INIT FAILED")), AP(const char, MSG(101, "ERROR")), 0);
 			return 0;
 		}
 		g_directInputMade = 1;
@@ -239,11 +239,11 @@ int (app_startupLoad)(void *instance)
 	if (!g_launchedForNetGame) {
 		if (!app_checkFile_profeng() || !app_checkFile_profkor() || !app_checkFile_skirmish() || !app_checkFile_axisgame()
 		    || !app_checkFile_game()) {
-			sys_messageBox((const char *)STR(0x4b04b0, "Run AxisPlay.exe"));
+			sys_messageBox(AP(const char, STR(0x4b04b0, "Run AxisPlay.exe")));
 			return 0;
 		}
 	}
-	if (!sound_init(g_mainWindow))
+	if (!sound_init(AP(void, g_mainWindow)))
 		g_soundOn = 0;
 	else {
 		g_soundOn = 1;
@@ -255,37 +255,37 @@ int (app_startupLoad)(void *instance)
 	input_clearKeyTable2();
 	(*(u32 *)&g_viewAngle) = 0x42340000;   /* 45 */
 	if (!cd_findDrive()) {
-		MessageBoxA(NULL, (const char *)STR(0x4b2528, "Please insert Axis CD in your CD-ROM ..."), (const char *)STR(0x4b2554, "Warning"), 0);
+		MessageBoxA(NULL, AP(const char, STR(0x4b2528, "Please insert Axis CD in your CD-ROM ...")), AP(const char, STR(0x4b2554, "Warning")), 0);
 		return 0;
 	}
-	const char *dir = (const char *)STR(0x4b1304, ".");
+	const char *dir = AP(const char, STR(0x4b1304, "."));
 	u32 linear = g_cfgLinearFilter, mipmaps = g_cfgMipmaps;
-	tex_initBy((void *)OBJ(g_texture64x64), dir, 0x28, 0, 0x40, 0x40, linear, mipmaps);
+	tex_initBy(AP(void, OBJ(g_texture64x64)), dir, 0x28, 0, 0x40, 0x40, linear, mipmaps);
 	linear = g_cfgLinearFilter, mipmaps = g_cfgMipmaps;
-	tex_initBy((void *)OBJ(g_texture128x64), dir, 0x28, 0, 0x80, 0x40, linear, mipmaps);
+	tex_initBy(AP(void, OBJ(g_texture128x64)), dir, 0x28, 0, 0x80, 0x40, linear, mipmaps);
 	linear = g_cfgLinearFilter, mipmaps = g_cfgMipmaps;
-	tex_initBy((void *)OBJ(g_texture256x64), dir, 0x28, 0, 0x100, 0x40, linear, mipmaps);
+	tex_initBy(AP(void, OBJ(g_texture256x64)), dir, 0x28, 0, 0x100, 0x40, linear, mipmaps);
 	linear = g_cfgLinearFilter, mipmaps = g_cfgMipmaps;
-	tex_initBy((void *)OBJ(g_texture128x128), dir, 0x28, 0, 0x80, 0x80, linear, mipmaps);
+	tex_initBy(AP(void, OBJ(g_texture128x128)), dir, 0x28, 0, 0x80, 0x80, linear, mipmaps);
 	linear = g_cfgLinearFilter, mipmaps = g_cfgMipmaps;
-	tex_initBy((void *)OBJ(g_texture256x128), dir, 0x50, 0, 0x100, 0x80, linear, mipmaps);
+	tex_initBy(AP(void, OBJ(g_texture256x128)), dir, 0x50, 0, 0x100, 0x80, linear, mipmaps);
 	linear = g_cfgLinearFilter, mipmaps = g_cfgMipmaps;
-	tex_initBy((void *)OBJ(g_texture256x256), dir, 0x28, 0, 0x100, 0x100, linear, mipmaps);
-	TextureManager_setBanks((void *)ADDR(g_textureManager), (void *)OBJ(g_texture64x64), (void *)OBJ(g_texture128x64), (void *)OBJ(g_texture256x64), (void *)OBJ(g_texture128x128),
-	                (void *)OBJ(g_texture256x128), (void *)OBJ(g_texture256x256));
-	g_textures = (TextureManager *)ADDR(g_textureManager);
-	pen_init((const char *)STR(0x4b2514, "Interface\\PenFont"));
-	g_fontAscii = texture_named((const char *)STR(0x4b24c4, "iftex/english8"));
-	g_fontAsciiLarge = texture_named((const char *)STR(0x4b24b4, "iftex/english16"));
-	g_fontHanCho = texture_named((const char *)STR(0x4b24a4, "iftex/han_cho"));
-	g_fontHanJungJong = texture_named((const char *)STR(0x4b2490, "iftex/han_jung_jong"));
+	tex_initBy(AP(void, OBJ(g_texture256x256)), dir, 0x28, 0, 0x100, 0x100, linear, mipmaps);
+	TextureManager_setBanks(AP(void, ADDR(g_textureManager)), AP(void, OBJ(g_texture64x64)), AP(void, OBJ(g_texture128x64)), AP(void, OBJ(g_texture256x64)), AP(void, OBJ(g_texture128x128)),
+	                AP(void, OBJ(g_texture256x128)), AP(void, OBJ(g_texture256x256)));
+	g_textures = AREF(AP(TextureManager, ADDR(g_textureManager)));
+	pen_init(AP(const char, STR(0x4b2514, "Interface\\PenFont")));
+	g_fontAscii = texture_named(AP(const char, STR(0x4b24c4, "iftex/english8")));
+	g_fontAsciiLarge = texture_named(AP(const char, STR(0x4b24b4, "iftex/english16")));
+	g_fontHanCho = texture_named(AP(const char, STR(0x4b24a4, "iftex/han_cho")));
+	g_fontHanJungJong = texture_named(AP(const char, STR(0x4b2490, "iftex/han_jung_jong")));
 	shapeDat_initBy();
 	skelDat_initBy();
 	void *scene = operator_new(0x2343acb);
 	(*(void **)&g_scene) = scene ? Console_ctor(scene) : NULL;
-	sound_initSoundTable((const char *)STR(0x4b2504, "Data/Sound.dat"), 0x64);
+	sound_initSoundTable(AP(const char, STR(0x4b2504, "Data/Sound.dat")), 0x64);
 	char logo[64];
-	strcpy(logo, (const char *)STR(0x4b24f0, "iftex/axis_title"));
+	strcpy(logo, AP(const char, STR(0x4b24f0, "iftex/axis_title")));
 	(*(u32 *)&g_menuEyeY) = 0;
 	(*(u32 *)&g_menuEyeX) = 0;
 	(*(u32 *)&g_menuEyeZ) = 0x43fa0000;   /* 500 */
@@ -293,7 +293,7 @@ int (app_startupLoad)(void *instance)
 	(*(u32 *)&g_menuCameraLookY) = 0;
 	(*(u32 *)&g_menuCameraLookZ) = 0x43c80000;   /* 400 */
 	g_fpsFrameCount = 0;
-	g_logoTexture = tex_getIdByName(g_textures, logo, 0, 0, 0, 0, 0, 0, 0);
+	g_logoTexture = tex_getIdByName(AP(void, g_textures), logo, 0, 0, 0, 0, 0, 0, 0);
 	set_colour_bits(g_textColour, 0, 0x3f800000, 0, 0x3f800000);
 	set_colour_bits(g_clearColour, 0, 0, 0, 0x3f800000);
 	int width = g_screenW, height = g_screenH;
@@ -326,13 +326,13 @@ int (app_startupLoad)(void *instance)
 static void next_stage(u8 *g, int stage, u32 line)
 {
 	GS->loadStage = stage;
-	strcpy(GS->loadLines[GS->loadLineCount++], (const char *)RELOC(line));
+	strcpy(GS->loadLines[GS->loadLineCount++], AP(const char, RELOC(line)));
 }
 
 /* a game mode (+8) with no next stage: a fatal message */
 static void no_next(u8 *g)
 {
-	sys_fatalErrorN((char *)OBJ(g_logConsole), (const char *)STR(0x4c5060, "next submode not defined(W%d:P%d:S%d)..."), GS->sessionMode, GS->matchState,
+	sys_fatalErrorN(AP(char, OBJ(g_logConsole)), AP(const char, STR(0x4c5060, "next submode not defined(W%d:P%d:S%d)...")), GS->sessionMode, GS->matchState,
 	                                                             GS->loadStage);
 }
 
@@ -347,7 +347,7 @@ static void keep_alive(u8 *g)
 /* the map's file name (mapName with .bfd) */
 static char *bfd_name(u8 *g, char *out)
 {
-	sprintf(out, (const char *)STR(0x4c5190, "%s.bfd"), GS->mapName);
+	sprintf(out, AP(const char, STR(0x4c5190, "%s.bfd")), GS->mapName);
 	return out;
 }
 
@@ -367,7 +367,7 @@ u32 THISCALL (game_processLoadingMode)(u8 *g)
 		(*(u8 * *)&g_loadGame) = g;
 		g_loadStatusText[0] = 0;
 		GS->loadLineCount = 1;
-		strcpy(GS->loadLines[0], (const char *)STR(0x4c52b0, "START LOADING PROCESS"));
+		strcpy(GS->loadLines[0], AP(const char, STR(0x4c52b0, "START LOADING PROCESS")));
 		GS->loadStage = 0;
 		GS->unused233cc2c = 0;
 	}
@@ -378,24 +378,24 @@ u32 THISCALL (game_processLoadingMode)(u8 *g)
 		keep_alive(g);
 		music_stop();
 		if (GS->sessionMode == 3) {
-			sprintf(path, (const char *)STR(0x4c52a4, "AutoPlay/%s"), GS->replayFiles[GS->replayIndex]);
-			void *f = GS->replayFile = crt_fopen(path, (const char *)STR(0x4ad170, "rb"));
+			sprintf(path, AP(const char, STR(0x4c52a4, "AutoPlay/%s")), GS->replayFiles[GS->replayIndex]);
+			void *f = AP(void, GS->replayFile = AREF(crt_fopen(path, AP(const char, STR(0x4ad170, "rb")))));
 			if (!f)
-				sys_fatalError((char *)OBJ(g_logConsole), (const char *)STR(0x4c5278, "can't open file %s - processAutoPlayM..."), (int)path);
-			fread_scrambled(&GS->replayVersion, 4, 1, GS->replayFile);
+				sys_fatalError(AP(char, OBJ(g_logConsole)), AP(const char, STR(0x4c5278, "can't open file %s - processAutoPlayM...")), (int)AV(path));
+			fread_scrambled(&GS->replayVersion, 4, 1, AP(void, GS->replayFile));
 			if (GS->replayVersion != 0x1201)
-				sys_fatalError((char *)OBJ(g_logConsole), (const char *)STR(0x4c5234, "incorrect file version, remove the fi..."), (int)path);
-			fread_scrambled((void *)ADDR(g_matchMode), 4, 1, GS->replayFile);
-			fread_scrambled((void *)ADDR(g_mapIndex), 4, 1, GS->replayFile);
-			fread_scrambled((void *)OBJ(g_gameTitle), 1, 0x20, GS->replayFile);
-			fread_scrambled((void *)ADDR(g_mapRotation), 4, 1, GS->replayFile);
-			fread_scrambled((void *)ADDR(g_chosenGameMode), 4, 1, GS->replayFile);
-			fread_scrambled((void *)ADDR(g_fragLimit), 4, 1, GS->replayFile);
-			fread_scrambled((void *)ADDR(g_timeLimit), 4, 1, GS->replayFile);
+				sys_fatalError(AP(char, OBJ(g_logConsole)), AP(const char, STR(0x4c5234, "incorrect file version, remove the fi...")), (int)AV(path));
+			fread_scrambled(AP(void, ADDR(g_matchMode)), 4, 1, AP(void, GS->replayFile));
+			fread_scrambled(AP(void, ADDR(g_mapIndex)), 4, 1, AP(void, GS->replayFile));
+			fread_scrambled(AP(void, OBJ(g_gameTitle)), 1, 0x20, AP(void, GS->replayFile));
+			fread_scrambled(AP(void, ADDR(g_mapRotation)), 4, 1, AP(void, GS->replayFile));
+			fread_scrambled(AP(void, ADDR(g_chosenGameMode)), 4, 1, AP(void, GS->replayFile));
+			fread_scrambled(AP(void, ADDR(g_fragLimit)), 4, 1, AP(void, GS->replayFile));
+			fread_scrambled(AP(void, ADDR(g_timeLimit)), 4, 1, AP(void, GS->replayFile));
 			game_setGameTypeFlags((Stage *)STAGE(g), g_chosenGameMode);
 		}
 		(*(u32 *)&g_logHook) = FN(loading_drawScreen);
-		log_message((int)STAGE(g), -1, 0, (const char *)STR(0x4c521c, ".start loading process"));
+		log_message((int)AV(STAGE(g)), -1, 0, AP(const char, STR(0x4c521c, ".start loading process")));
 		stage_reset(STAGE(g));
 		mode = GS->sessionMode;
 		if (mode == 3)
@@ -407,7 +407,7 @@ u32 THISCALL (game_processLoadingMode)(u8 *g)
 		GS->unused233cc2c = 0;
 		break;
 	case 1: {
-		log_message((int)STAGE(g), 1, 0, (const char *)STR(0x4c51f4, ".load auto-play file"));
+		log_message((int)AV(STAGE(g)), 1, 0, AP(const char, STR(0x4c51f4, ".load auto-play file")));
 		g_mapMissing = 0;
 		const char *map = g_mapNames + g_mapIndex * 0x20;
 		if (!map[0]) {
@@ -424,7 +424,7 @@ u32 THISCALL (game_processLoadingMode)(u8 *g)
 		break;
 	}
 	case 2:
-		log_message((int)STAGE(g), 1, 0, (const char *)STR(0x4c51c0, ".receiving stage play information"));
+		log_message((int)AV(STAGE(g)), 1, 0, AP(const char, STR(0x4c51c0, ".receiving stage play information")));
 		keep_alive(g);
 		if (GS->awaitingHostRound == 0) {
 			scene_setMapName((Scene *)g, g_mapNames + g_mapIndex * 0x20);
@@ -460,12 +460,12 @@ u32 THISCALL (game_processLoadingMode)(u8 *g)
 			stop = 1;
 		break;
 	case 3:
-		log_message((int)STAGE(g), 1, 0, (const char *)STR(0x4c5198, ".load zone information"));
+		log_message((int)AV(STAGE(g)), 1, 0, AP(const char, STR(0x4c5198, ".load zone information")));
 		keep_alive(g);
 		if (!map_loadGroundInfoFrom(STAGE(g), bfd_name(g, path)))
-			sys_fatalErrorN((char *)OBJ(g_logConsole), (const char *)STR(0x4c4598, "file damaged!"));
+			sys_fatalErrorN(AP(char, OBJ(g_logConsole)), AP(const char, STR(0x4c4598, "file damaged!")));
 		if (g_mapIndex != GS->mapNumber)
-			sys_fatalErrorN((char *)OBJ(g_logConsole), (const char *)STR(0x4c4598, "file damaged!"));
+			sys_fatalErrorN(AP(char, OBJ(g_logConsole)), AP(const char, STR(0x4c4598, "file damaged!")));
 		mode = GS->sessionMode;
 		if (mode == 0 || mode == 1 || mode == 3)
 			next_stage(g, 4, STR(0x4c5180, ".LOAD OBJECT"));   /* .LOAD OBJECT */
@@ -474,7 +474,7 @@ u32 THISCALL (game_processLoadingMode)(u8 *g)
 		GS->unused233cc2c = 0;
 		break;
 	case 4:
-		log_message((int)STAGE(g), 1, 0, (const char *)STR(0x4c5164, ".load obstacle information"));
+		log_message((int)AV(STAGE(g)), 1, 0, AP(const char, STR(0x4c5164, ".load obstacle information")));
 		keep_alive(g);
 		map_loadObjectInfoFrom(STAGE(g), bfd_name(g, path), 0);
 		mode = GS->sessionMode;
@@ -485,7 +485,7 @@ u32 THISCALL (game_processLoadingMode)(u8 *g)
 		GS->unused233cc2c = 0;
 		break;
 	case 5:
-		log_message((int)STAGE(g), 1, 0, (const char *)STR(0x4c512c, ".analyze collision information"));
+		log_message((int)AV(STAGE(g)), 1, 0, AP(const char, STR(0x4c512c, ".analyze collision information")));
 		keep_alive(g);
 		collision_initVolume(STAGE(g), 0x469c4000, 0x469c4000, 0x469c4000, 0x43fa0000, 0x10, 3);   /* cells of 20000 each way, margin 500, split at 16 items, depth 3 */
 		mode = GS->sessionMode;
@@ -496,9 +496,9 @@ u32 THISCALL (game_processLoadingMode)(u8 *g)
 		GS->unused233cc2c = 0;
 		break;
 	case 6:
-		log_message((int)STAGE(g), 1, 0, (const char *)STR(0x4c5104, ".analyze battle field"));
+		log_message((int)AV(STAGE(g)), 1, 0, AP(const char, STR(0x4c5104, ".analyze battle field")));
 		keep_alive(g);
-		sprintf(name, (const char *)STR(0x4c50e4, "Texture/Crosshair/Crosshair%d"), g_crosshairSetting);
+		sprintf(name, AP(const char, STR(0x4c50e4, "Texture/Crosshair/Crosshair%d")), g_crosshairSetting);
 		GS->crosshairTexture = tex_getIdByName((*(void **)&g_textures), name, 0, 0, 0, 0, 0, 0, 0);
 		map_loadPlayInfoFrom(STAGE(g), bfd_name(g, path));
 		mode = GS->sessionMode;
@@ -510,10 +510,10 @@ u32 THISCALL (game_processLoadingMode)(u8 *g)
 		break;
 	case 7:
 		keep_alive(g);
-		log_message((int)STAGE(g), 1, 0, (const char *)STR(0x4c50c4, ".transmit mission objectives"));
+		log_message((int)AV(STAGE(g)), 1, 0, AP(const char, STR(0x4c50c4, ".transmit mission objectives")));
 		map_loadMissionInfoFrom(STAGE(g), bfd_name(g, path));
 		if (GS->sessionMode == 0) {
-			log_message((int)STAGE(g), 0, 0, (const char *)STR(0x4c50b4, "load actor info"));
+			log_message((int)AV(STAGE(g)), 0, 0, AP(const char, STR(0x4c50b4, "load actor info")));
 			map_loadActorInfoFrom(STAGE(g), bfd_name(g, path));
 		}
 		mode = GS->sessionMode;
@@ -524,7 +524,7 @@ u32 THISCALL (game_processLoadingMode)(u8 *g)
 		GS->unused233cc2c = 0;
 		break;
 	case 8:
-		log_message((int)STAGE(g), -2, 0, (const char *)STR(0x4c5048, ".end loading process"));
+		log_message((int)AV(STAGE(g)), -2, 0, AP(const char, STR(0x4c5048, ".end loading process")));
 		keep_alive(g);
 		music_playMatch((Scene *)g);
 		GS->matchDrawing = 1;

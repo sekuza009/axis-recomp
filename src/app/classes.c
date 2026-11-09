@@ -68,7 +68,7 @@ void THISCALL (Vec3_setNoReturn)(int *p, int a, int b, int c)
 int THISCALL (TextureManager_reset)(void *self)
 {
 	TextureManager_clear(self);
-	((TextureManager *)RELOC(self))->count = 0;
+	(AP(TextureManager, RELOC(self)))->count = 0;
 	return 0;
 }
 
@@ -77,8 +77,8 @@ static void free_owned(void *self)
 {
 	BlockOwner *bo = (BlockOwner *)self;
 	if (bo->ownsBlock == 1) {
-		operator_delete(bo->block);
-		bo->block = NULL;
+		operator_delete(AP(void, bo->block));
+		bo->block = AREF(NULL);
 		bo->ownsBlock = 0;
 	}
 }
@@ -100,14 +100,14 @@ float (view_farPlane)(void) { return g_viewFar; }
 /* ---- setters ---- */
 void (armc_showPartsPage)(void) { g_armcMode = 1; g_armcUnusedFlag = 0; }   /* the ARM CENTER's parts page */
 void (armc_showColourPage)(void) { g_armcMode = 3; g_armcColourSlot = 5; }        /* its colour page */
-void (ptx_startBitReader)(const u8 *data) { g_bitStream = data; g_ptxBitPos = 0; g_ptxLastDc = 0; }
+void (ptx_startBitReader)(const u8 *data) { g_bitStream = AREF(data); g_ptxBitPos = 0; g_ptxLastDc = 0; }
 int (menuCamera_setMove)(int v) { g_menuCameraMove = v; return v; }
 int (music_setVolumeSetting)(int v) { g_musicVolumeSetting = v; return v; }
 
 /* three-float vectors at 0xa0e7a8 ..: zero or a unit axis (bits of 1.0) */
 static void set3(u32 addr, u32 x, u32 y, u32 z)
 {
-	u32 *p = (u32 *)RELOC(addr);
+	u32 *p = AP(u32, RELOC(addr));
 	p[0] = x;
 	p[1] = y;
 	p[2] = z;
@@ -133,33 +133,33 @@ u32 THISCALL (Texture_dtor)(u32 *self)
 	u32 r = self[0x42];
 	self[0] = VT(Texture);
 	if ((int)r >= 0) {
-		r = CRT_CALL(operator_delete, u32, void *)((void *)RELOC(self[0x43]));   /* operator delete, its eax kept */
+		r = CRT_CALL(operator_delete, u32, void *)(AP(void, RELOC(self[0x43])));   /* operator delete, its eax kept */
 		self[0x42] = 0;
 	}
 	if (self[0x44] != 0)
-		r = fclose((void *)RELOC(self[0x44]));
+		r = fclose(AP(void, RELOC(self[0x44])));
 	return r;
 }
 DELETING(Texture, Texture_dtor)
 /* the six global Texture objects' (the game's class Texture: our TextureBank) destructors at exit */
-u32 (static_destroyTex64x64)(void) { return Texture_dtor((u32 *)OBJ(g_texture64x64)); }
-u32 (static_destroyTex128x64)(void) { return Texture_dtor((u32 *)OBJ(g_texture128x64)); }
-u32 (static_destroyTex256x64)(void) { return Texture_dtor((u32 *)OBJ(g_texture256x64)); }
-u32 (static_destroyTex128x128)(void) { return Texture_dtor((u32 *)OBJ(g_texture128x128)); }
-u32 (static_destroyTex256x128)(void) { return Texture_dtor((u32 *)OBJ(g_texture256x128)); }
-u32 (static_destroyTex256x256)(void) { return Texture_dtor((u32 *)OBJ(g_texture256x256)); }
+u32 (static_destroyTex64x64)(void) { return Texture_dtor(AP(u32, OBJ(g_texture64x64))); }
+u32 (static_destroyTex128x64)(void) { return Texture_dtor(AP(u32, OBJ(g_texture128x64))); }
+u32 (static_destroyTex256x64)(void) { return Texture_dtor(AP(u32, OBJ(g_texture256x64))); }
+u32 (static_destroyTex128x128)(void) { return Texture_dtor(AP(u32, OBJ(g_texture128x128))); }
+u32 (static_destroyTex256x128)(void) { return Texture_dtor(AP(u32, OBJ(g_texture256x128))); }
+u32 (static_destroyTex256x256)(void) { return Texture_dtor(AP(u32, OBJ(g_texture256x256))); }
 
 /* TimeSync (vtable 0x4aa46c) */
 void *THISCALL (TimeSync_ctor)(u32 *self) { self[0] = VT(TimeSync); TimeSync_clear(self); return self; }
 void THISCALL (TimeSync_dtor)(u32 *self) { self[0] = VT(TimeSync); }
 DELETING(TimeSync, TimeSync_dtor)
-void (static_endTimeSync)(void) { TimeSync_dtor((u32 *)OBJ(g_loadTimer)); }
+void (static_endTimeSync)(void) { TimeSync_dtor(AP(u32, OBJ(g_loadTimer))); }
 
 /* the game's class TextureManager (vtable 0x4a9570; the global one at g_textureManager): our TextureManager */
-int (TextureManager_ctor)(void) { g_textureManager = STR(0x4a9570, "P\263B"); return TextureManager_clear((void *)ADDR(g_textureManager)); }
+int (TextureManager_ctor)(void) { g_textureManager = STR(0x4a9570, "P\263B"); return TextureManager_clear(AP(void, ADDR(g_textureManager))); }
 int THISCALL (TextureManager_dtor)(u32 *self) { self[0] = STR(0x4a9570, "P\263B"); return TextureManager_reset(self); }
 DELETING(TextureManager, TextureManager_dtor)
-void (static_endTextureManager)(void) { TextureManager_dtor((u32 *)ADDR(g_textureManager)); }
+void (static_endTextureManager)(void) { TextureManager_dtor(AP(u32, ADDR(g_textureManager))); }
 
 /* the game's class Scene (vtable 0x4aa258): our ScenePath (Stage.scenePath), not our Scene - that one is the game's
    class Console (Console_dtor). The class functions here keep the game's class names. */
@@ -189,7 +189,7 @@ int THISCALL (SkeletonManager_dtor)(u32 *self) { self[0] = VT(SkeletonManager); 
 DELETING(SkeletonManager, SkeletonManager_dtor)
 
 /* BMPRGBFile (vtable 0x4a96f8): BMPRGBFile_dtor  closes its file */
-void THISCALL (BMPRGBFile_dtor)(u32 *self) { self[0] = VT(BMPRGBFile); if (self[1]) fclose((void *)RELOC(self[1])); }
+void THISCALL (BMPRGBFile_dtor)(u32 *self) { self[0] = VT(BMPRGBFile); if (self[1]) fclose(AP(void, RELOC(self[1]))); }
 DELETING(BMPRGBFile, BMPRGBFile_dtor)
 
 /* ErrorLog (vtable 0x4aa2a0): the class-name records */
@@ -199,7 +199,7 @@ void (static_endSoundLog)(void) { ErrorLog_dtor(g_logSound); }
 void *THISCALL (ErrorLog_ctor)(u32 *self, const char *name, Cleanup cleanupHook)
 {
 	self[0] = VT(ErrorLog);
-	self[1] = (u32)name;
+	self[1] = AV(name);
 	g_errorCleanupHook = cleanupHook;
 	return self;
 }
@@ -231,7 +231,7 @@ static int release_all(u8 *self, int stride, Release release)
 	ShapeManager *mg = (ShapeManager *)self;
 	if (mg->count > 0) {
 		for (int i = 0; i < mg->count; i++)
-			release(mg->items + i * stride);
+			release(AP(void, mg->items + i * stride));
 		mg->count = 0;
 	}
 	int r = mg->dataUsed;
@@ -304,21 +304,21 @@ u32 THISCALL (Stage_dtor)(u8 *self)
 void *THISCALL (image_initBy)(u8 *image, const char *path)
 {
 	BmpFile *bmp = (BmpFile *)image;
-#define fatal(text) sys_fatalErrorN((char *)OBJ(g_logBMPRGBFile), (const char *)RELOC(text))
+#define fatal(text) sys_fatalErrorN(AP(char, OBJ(g_logBMPRGBFile)), AP(const char, RELOC(text)))
 	if (bmp->file)
-		fclose(bmp->file);
-	void *f = bmp->file = crt_fopen(path, (const char *)STR(0x4ad170, "rb"));
+		fclose(AP(void, bmp->file));
+	void *f = AP(void, bmp->file = AREF(crt_fopen(path, AP(const char, STR(0x4ad170, "rb")))));
 	if (!f)
 		return 0;
 	if (crt_fread(&bmp->type, 0xe, 1, f) < 1)   /* (the BITMAPFILEHEADER) */
 		fatal(STR(0x4c5948, "can't read header-initBy()"));
-	if (crt_fread(&bmp->infoSize, 0x28, 1, bmp->file) < 1)   /* (the BITMAPINFOHEADER) */
+	if (crt_fread(&bmp->infoSize, 0x28, 1, AP(void, bmp->file)) < 1)   /* (the BITMAPINFOHEADER) */
 		fatal(STR(0x4c592c, "can't read info-initBy()"));
 	if (bmp->bitCount != 24 || bmp->compression != 0)
 		fatal(STR(0x4c5908, "non-RGB format BMP file-initBy()"));
 	bmp->width = ((u32)bmp->bmpWidth);
 	bmp->height = ((u32)bmp->bmpHeight);
-	return bmp->file;
+	return AP(void, bmp->file);
 #undef fatal
 }
 
@@ -328,14 +328,14 @@ void *THISCALL (image_tryOpen)(u8 *image, const char *path)
 {
 	BmpFile *bmp = (BmpFile *)image;
 	if (bmp->file)
-		fclose(bmp->file);
-	void *f = bmp->file = crt_fopen(path, (const char *)STR(0x4ad170, "rb"));
-	if (!f || crt_fread(&bmp->type, 0xe, 1, f) < 1 || crt_fread(&bmp->infoSize, 0x28, 1, bmp->file) < 1
+		fclose(AP(void, bmp->file));
+	void *f = AP(void, bmp->file = AREF(crt_fopen(path, AP(const char, STR(0x4ad170, "rb")))));
+	if (!f || crt_fread(&bmp->type, 0xe, 1, f) < 1 || crt_fread(&bmp->infoSize, 0x28, 1, AP(void, bmp->file)) < 1
 	    || bmp->bitCount != 24 || bmp->compression != 0)
 		return 0;
 	bmp->width = ((u32)bmp->bmpWidth);
 	bmp->height = ((u32)bmp->bmpHeight);
-	return bmp->file;
+	return AP(void, bmp->file);
 }
 
 /* 0x4734d0: player p's flag loaded: Save\<its name>.BMP (its player record at
@@ -349,7 +349,7 @@ int THISCALL (playerRecord_loadFlag)(Stage *stage, int p)
 	image.vtable = VT(BMPRGBFile);   /* (its vtable) */
 	BITS(image.file) = 0;      /* (no file yet) */
 	char path[0x100];
-	sprintf(path, (const char *)STR(0x4c74e8, "Save\\%s.BMP"), ((u8 *)record) + 4);
+	sprintf(path, AP(const char, STR(0x4c74e8, "Save\\%s.BMP")), ((u8 *)record) + 4);
 	int ok = 0;
 	if (image_tryOpen((u8 *)&image, path)) {
 		if (image.width >= 23 && image.height >= 15) {
@@ -408,7 +408,7 @@ void THISCALL (image_copyTo)(u8 *image, u8 *dst, int dw, int dh, int depth, int 
                              int topDown)
 {
 	BmpFile *bmp = (BmpFile *)image;
-	void *f = bmp->file;
+	void *f = AP(void, bmp->file);
 	int iw = bmp->width, ih = bmp->height;
 	if (sx < 0) {
 		dx -= sx;
@@ -445,7 +445,7 @@ void THISCALL (image_copyTo)(u8 *image, u8 *dst, int dw, int dh, int depth, int 
 	if (w <= 0 || h <= 0)
 		return;
 	if (w > 0x400)
-		sys_fatalErrorN((char *)OBJ(g_logBMPRGBFile), (const char *)STR(0x4c5984, "temporary imageWidthA exceeds _SIZE_O..."));
+		sys_fatalErrorN(AP(char, OBJ(g_logBMPRGBFile)), AP(const char, STR(0x4c5984, "temporary imageWidthA exceeds _SIZE_O...")));
 	crt_fseek(f, bmp->dataOffset + ((bmp->height - sy - h) * bmp->width + sx) * 3, 0);
 	u8 row[0xc00];
 	int first = topDown ? dy : h - 1 + dy, step = topDown ? dw : -dw;
@@ -466,7 +466,7 @@ void THISCALL (image_copyTo)(u8 *image, u8 *dst, int dw, int dh, int depth, int 
 				p4[k * 4 + 3] = 0xff;
 			}
 		else
-			sys_fatalErrorN((char *)OBJ(g_logBMPRGBFile), (const char *)STR(0x4c5964, "invalid bufferDepthA-copyTo()"));
+			sys_fatalErrorN(AP(char, OBJ(g_logBMPRGBFile)), AP(const char, STR(0x4c5964, "invalid bufferDepthA-copyTo()")));
 		crt_fseek(f, (bmp->width - w) * 3, 1);
 		p3 += step * 3;
 		p4 += step * 4;
@@ -549,13 +549,13 @@ u8 *THISCALL (Console_ctor)(u8 *g)
 	stage_build(s, STR(0x4c45a8, "Stage"), STR(0x4b1784, "Map"), STR(0x4c45b0, "Texture"), STR(0x4c45b8, "Shape"),
 	                                                                                  STR(0x4c45c0, "Skeleton"), STR(0x4c45cc, "Actor"), STR(0x4c45d4, "Bullet"), STR(0x4c45dc, "Effect"), STR(0x4c45e4, "Scene"));   /* stage_build */
 #ifdef AXIS_NATIVE
-	if (!fix_catalogueLoad(s, (const char *)STR(0x4b4418, "Data/Component.dat")))   /* catalogue_loadComponents, the KYRIE parts added (fixes/kyrie.c) */
+	if (!fix_catalogueLoad(s, AP(const char, STR(0x4b4418, "Data/Component.dat"))))   /* catalogue_loadComponents, the KYRIE parts added (fixes/kyrie.c) */
 #else
-	if (!SITE_THISCALL(0x460920, catalogue_loadComponents, int, void *, const char *)(s, (const char *)STR(0x4b4418, "Data/Component.dat")))   /* catalogue_loadComponents (the patch DLL adds the KYRIE parts here) */
+	if (!SITE_THISCALL(0x460920, catalogue_loadComponents, int, void *, const char *)(s, AP(const char, STR(0x4b4418, "Data/Component.dat"))))   /* catalogue_loadComponents (the patch DLL adds the KYRIE parts here) */
 #endif
-		sys_fatalErrorN((char *)OBJ(g_logConsole), (const char *)STR(0x4c4598, "file damaged!"));
-	if (!catalogue_loadItemInfoFrom(s, (const char *)STR(0x4c4588, "Data/Item.dat")))   /* catalogue_loadItemInfoFrom */
-		sys_fatalErrorN((char *)OBJ(g_logConsole), (const char *)STR(0x4c4598, "file damaged!"));
+		sys_fatalErrorN(AP(char, OBJ(g_logConsole)), AP(const char, STR(0x4c4598, "file damaged!")));
+	if (!catalogue_loadItemInfoFrom(s, AP(const char, STR(0x4c4588, "Data/Item.dat"))))   /* catalogue_loadItemInfoFrom */
+		sys_fatalErrorN(AP(char, OBJ(g_logConsole)), AP(const char, STR(0x4c4598, "file damaged!")));
 	memcpy(GS->cameraPresets, k_cameraPresets, sizeof k_cameraPresets);
 	GS->cameraMode = 1;
 	stage_setCockpitActor((Stage *)s, -1);
@@ -569,7 +569,7 @@ u8 *THISCALL (Console_ctor)(u8 *g)
 	GS->typeTablePerRow[5] = 0x18;
 	for (int k = 0; k < 30; k++)
 		GS->helpLines[k][0] = 0;
-	void *f = crt_fopen((const char *)STR(0x4c457c, "Help.txt"), (const char *)STR(0x4ad5e0, "rt"));
+	void *f = crt_fopen(AP(const char, STR(0x4c457c, "Help.txt")), AP(const char, STR(0x4ad5e0, "rt")));
 	if (f) {
 #define crt_fgets(line, n, f) CRT_CALL(fgets, char *, char *, int, void *)(line, n, f)
 		if (crt_fgets(GS->helpLines[0], 0x3f, f))
@@ -606,7 +606,7 @@ static void zero_dwords(u8 *at, int n)
 void THISCALL (scene_startSession)(u8 *g, u32 client, int mode)
 {
 	if (!cd_findDrive())
-		sys_fatalErrorN((char *)OBJ(g_logConsole), g_insertCdMessage);
+		sys_fatalErrorN(AP(char, OBJ(g_logConsole)), AP(const char, g_insertCdMessage));
 	GS->client = client;
 	GS->sessionMode = mode;
 	GS->renderMode = 0;
@@ -637,10 +637,10 @@ void THISCALL (scene_startSession)(u8 *g, u32 client, int mode)
 		game_setGameTypeFlags((Stage *)s, 0);
 	}
 	GS->playing = GS->unused233ca00 = 0;
-	memcpy(GS->cameraPos, (const void *)ADDR(g_vecOrigin), 12);
+	memcpy(GS->cameraPos, AP(const void, ADDR(g_vecOrigin)), 12);
 	for (int k = 0; k < 3; k++)
-		GS->cameraDir[k] = f32(-fld_m((const float *)ADDR(g_vecUnitZ) + k));
-	memcpy(GS->cameraUp, (const void *)OBJ(g_vecUnitY), 12);
+		GS->cameraDir[k] = f32(-fld_m(AP(const float, ADDR(g_vecUnitZ)) + k));
+	memcpy(GS->cameraUp, AP(const void, OBJ(g_vecUnitY)), 12);
 	(*(int *)&GS->cameraAngle[0]) = (*(int *)&GS->cameraAngle[1]) = 0;
 	GS->matchState = GS->sessionMode == 2 ? 3 : GS->sessionMode == 3 ? 1 : 2;
 	GS->stateFrames = GS->wholeSeconds = (*(int *)&GS->secondFraction) = 0;

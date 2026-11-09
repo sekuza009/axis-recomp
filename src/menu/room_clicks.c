@@ -62,7 +62,7 @@ void (gameListJoinBox_clicks)(void)
 		g_joinTimedOut = 0;
 		dplay_leaveSession();
 		g_joinConnecting = 0;
-		KillTimer(g_mainWindow, 0x378);
+		KillTimer(AP(void, g_mainWindow), 0x378);
 	}
 }
 
@@ -200,7 +200,7 @@ u32 (roomLogin_clicks)(void)
 		if (g_textFieldOpen) {
 			g_textFieldOpen = 0;
 			input_resetKeys();
-			input_initKeyboard(g_mainWindow);   /* input_initKeyboard */
+			input_initKeyboard(AP(void, g_mainWindow));   /* input_initKeyboard */
 		}
 		sound_playMenu(0);
 		menuCamera_setMove(4);
@@ -228,7 +228,7 @@ u32 (room_pageClicks)(void)
 	if (g_frameOpening)
 		return g_frameOpening;
 	if (g_mouseClick) {
-		const Outline *buttons = (const Outline *)OBJ(g_roomOutlines);
+		const Outline *buttons = AP(const Outline, OBJ(g_roomOutlines));
 		for (int i = 0; i < 6; i++) {
 			if (point_in_outline(g_mouseX, g_mouseY, buttons[i]) != 1)
 				continue;
@@ -257,11 +257,11 @@ u32 (room_pageClicks)(void)
 static void load_map_preview(u32 selected)
 {
 	char path[0x80], copy[0x40];
-	const char *name = (const char *)(OBJ(g_mapNames) + (signed char)GAME_VAR(u8, selected) * 32);
+	const char *name = AP(const char, (OBJ(g_mapNames) + (signed char)GAME_VAR(u8, selected) * 32));
 	memset(path, 0, sizeof path);
 	strcpy(path, g_stageDir);   /* the maps' folder */
 	strcat(path, name);
-	strcat(path, (const char *)STR(0x4ad564, "/"));
+	strcat(path, AP(const char, STR(0x4ad564, "/")));
 	strcat(path, name);
 	strcpy(copy, path);
 	g_mapPreviewTexture = tex_getIdByName((*(void **)&g_textures), copy, 0, 0, 0, 0, 0, 0, 0);
@@ -277,8 +277,8 @@ static u32 typing_end(void)
 {
 	if (!g_textFieldOpen)
 		return 0;
-	DestroyWindow(g_hEditField);   /* DestroyWindow */
-	SetFocus(g_mainWindow);   /* SetFocus */
+	DestroyWindow(AP(void, g_hEditField));   /* DestroyWindow */
+	SetFocus(AP(void, g_mainWindow));   /* SetFocus */
 	return menu_closeInputLine(1);   /* menu_closeInputLine */
 }
 
@@ -295,8 +295,8 @@ u32 (newIdForm_endTyping)(void)
 	for (int k = 0; k < 4; k++) {
 		if (GAME_VAR(int, fields[k].editing) != 1)
 			continue;
-		memset((void *)RELOC(fields[k].field), 0, fields[k].size);
-		strcpy((char *)RELOC(fields[k].field), typed);
+		memset(AP(void, RELOC(fields[k].field)), 0, fields[k].size);
+		strcpy(AP(char, RELOC(fields[k].field)), typed);
 		return k == 3 ? strlen(typed) + 1 : 0;
 	}
 	return r;
@@ -308,7 +308,7 @@ u32 (newIdForm_endTyping)(void)
    Returns the step (or the message's eax) */
 u32 (room_hostingStep)(void)
 {
-	const u8 *room = (const u8 *)OBJ(g_roomRecName);
+	const u8 *room = AP(const u8, OBJ(g_roomRecName));
 	u32 answer = (*(u32 *)&g_hostAnswer);
 	if (answer == 2)
 		return 2;
@@ -324,7 +324,7 @@ u32 (room_hostingStep)(void)
 			room[0x24], room[0x25], 0);   /* dplay_host: host */
 		g_mapIndex = (signed char)room[0x20];
 		g_chosenGameMode = (signed char)room[0x23];
-		memcpy((void *)OBJ(g_gameTitle), room, 32);
+		memcpy(AP(void, OBJ(g_gameTitle)), room, 32);
 		g_mapRotation = (signed char)room[0x22];
 		g_fragLimit = room[0x24];
 		g_timeLimit = room[0x25];
@@ -369,10 +369,10 @@ u32 (room_joinAnswer)(void)
 		return 0;
 	u32 row = (*(u32 *)&g_joinRow);
 	SessionEntry *game = &g_sessionList[row];
-	game->guid = ((const SessionDesc *)g_receivedSession)->guid;
+	game->guid = (AP(const SessionDesc, g_receivedSession))->guid;
 	g_roomRecFragLimit = game->fragLimit;
 	g_roomRecTimeLimit = game->timeLimit;
-	int r = dplay_join(0, (int)game->guid, (void *)OBJ(g_ladderId), 0);   /* dplay_join */
+	int r = dplay_join(0, (int)game->guid, AP(void, OBJ(g_ladderId)), 0);   /* dplay_join */
 	if (r != 0x1f4) {
 		static const u8 message[5] = { 0x43, 0x42, 0x42, 0x44, 0x45 };
 		if ((u32)(r - 0x1f5) <= 4)
@@ -391,7 +391,7 @@ u32 (room_joinAnswer)(void)
 	g_sessionFound = 0;
 	g_joinConnecting = 0;
 	g_mapIndex = game->map;
-	memcpy((void *)OBJ(g_gameTitle), game->name, 32);
+	memcpy(AP(void, OBJ(g_gameTitle)), game->name, 32);
 	g_mapRotation = game->rotation;
 	g_chosenGameMode = game->gameMode;
 	g_fragLimit = game->fragLimit;
@@ -433,16 +433,16 @@ u32 (newIdForm_check)(void)
    1 when sent */
 int (account_sendChange)(void)
 {
-	if (strcmp((const char *)ADDR(g_ladderPassword), g_accountOldPassword) || strcmp(g_accountPassword, g_accountPasswordRepeat))
+	if (strcmp(AP(const char, ADDR(g_ladderPassword)), g_accountOldPassword) || strcmp(g_accountPassword, g_accountPasswordRepeat))
 		return 0;
 	static const u32 fields[4] = { OBJ(g_accountOldPassword), OBJ(g_accountPassword), OBJ(g_accountPasswordRepeat), OBJ(g_accountEmail) };
 	for (int i = 0; i < 4; i++)
-		if (account_hasBadChar((const char *)RELOC(fields[i])) == 1) {   /* account_hasBadChar */
+		if (account_hasBadChar(AP(const char, RELOC(fields[i]))) == 1) {   /* account_hasBadChar */
 			menu_showMessage(0x81);
 			g_roomLoginDue = 0;
 			return 0;
 		}
-	AccountForm *out = (AccountForm *)g_netAccountBuffer;
+	AccountForm *out = AP(AccountForm, g_netAccountBuffer);
 	strcpy(out->name, g_accountName);
 	strcpy(out->password, g_accountPassword);
 	strcpy(out->email, g_accountEmail);
@@ -476,7 +476,7 @@ u32 (ranking_page)(void)
 			g_rankingRequestPending = 0;
 			return 3;
 		}
-		int *out = g_netRankingBuffer;
+		int *out = AP(int, g_netRankingBuffer);
 		if (column < 3)
 			out[0] = code[column];
 		int page = g_rankingPage;
@@ -509,7 +509,7 @@ u32 (ranking_page)(void)
 			g_rankingPrevSort = g_rankingSort;
 			g_rankingPrevPage = g_rankingPage;
 		}
-		long double blink = fld_m((const float *)ADDR(g_listBlinkClock)) - fmul_m(fld_m((const float *)ADDR(g_frameTime)), (const float *)ADDR(g_listBlinkRate));
+		long double blink = fld_m(AP(const float, ADDR(g_listBlinkClock))) - fmul_m(fld_m(AP(const float, ADDR(g_frameTime))), AP(const float, ADDR(g_listBlinkRate)));
 		g_listBlinkClock = f32(blink);
 		if (!(blink >= 0))
 			g_listBlinkClock = 1000.0f;
@@ -536,10 +536,10 @@ u32 (login_send)(void)
 		g_roomLoginDue = 0;
 		return r;
 	}
-	memset((void *)OBJ(g_ladderId), 0, 30 + 12);
+	memset(AP(void, OBJ(g_ladderId)), 0, 30 + 12);
 	strcpy(g_ladderId, name);
-	strcpy((char *)ADDR(g_ladderPassword), password);
-	AccountPacket *account = g_accountPacket;
+	strcpy(AP(char, ADDR(g_ladderPassword)), password);
+	AccountPacket *account = AP(AccountPacket, g_accountPacket);
 	memset(account->name, 0, 30);
 	memset(account->password, 0, 12);
 	strcpy(account->name, name);
@@ -618,7 +618,7 @@ u32 (room_settingsClicks)(void)
 	if (!g_mouseClick)
 		return 0;
 	u32 button = ((u32)roomSettings_hitTest(g_mouseX, g_mouseY));   /* roomSettings_hitTest */
-	u8 *players = (u8 *)ADDR(g_roomMaxPlayers), *type = (u8 *)ADDR(g_roomGameMode), *frags = (u8 *)ADDR(g_roomFragLimit), *time = (u8 *)ADDR(g_roomTimeLimit);
+	u8 *players = AP(u8, ADDR(g_roomMaxPlayers)), *type = AP(u8, ADDR(g_roomGameMode)), *frags = AP(u8, ADDR(g_roomFragLimit)), *time = AP(u8, ADDR(g_roomTimeLimit));
 	u32 r;
 	switch (button) {
 	case 0:
@@ -698,12 +698,12 @@ u32 (roomSettings_keys)(void)
 			return r;
 		}
 		g_editingRoomName = 0;
-		memset((void *)OBJ(g_roomSettingsName), 0, 32);
+		memset(AP(void, OBJ(g_roomSettingsName)), 0, 32);
 		strcpy(g_roomSettingsName, line);
 		return strlen(line) + 1;
 	}
 	if (g_editingRoomPassword) {   /* the password */
-		GameSettings *rs = (GameSettings *)OBJ(g_roomSettingsName);
+		GameSettings *rs = AP(GameSettings, OBJ(g_roomSettingsName));
 		memset(rs->password, 0, 8);
 		g_editingRoomPassword = 0;
 		g_inputLineHidden = 0;
@@ -751,7 +751,7 @@ static u32 map_preview_box(const int *panel, u32 rotation, u32 reload)
 		Color4_set(g_rectColour, 0.0f, 0.0f, 0.0f, 0.4f);
 		menu_drawRect(X0, Y0, X1, Y1, 1);
 		Color4_set(g_textColour, 1.0f, 1.0f, 0.0f, 1.0f);
-		text_drawCentredLines16(X0, panel[0] + 0x88, X1, (const char *)STR(0x4ad56c, "CUSTOM"));
+		text_drawCentredLines16(X0, panel[0] + 0x88, X1, AP(const char, STR(0x4ad56c, "CUSTOM")));
 	} else {
 		glEnable(GL_TEXTURE_2D);
 		int texture = g_mapPreviewTexture;
@@ -779,8 +779,8 @@ static u32 map_preview_box(const int *panel, u32 rotation, u32 reload)
 
 /* 0x43bde0: the game room's (panel g_roomFormTop, map rotation g_roomRotation, room_loadMapPreview); arena_drawMapPreview: the arena screen's
    (g_newArenaFormTop, g_newArenaRotation, arena_loadMapPreview) */
-u32 (room_drawMapPreview)(void) { return map_preview_box((const int *)ADDR(g_roomFormTop), ADDR(g_roomRotation), FN(room_loadMapPreview)); }
-u32 (arena_drawMapPreview)(void) { return map_preview_box((const int *)ADDR(g_newArenaFormTop), ADDR(g_newArenaRotation), FN(arena_loadMapPreview)); }
+u32 (room_drawMapPreview)(void) { return map_preview_box(AP(const int, ADDR(g_roomFormTop)), ADDR(g_roomRotation), FN(room_loadMapPreview)); }
+u32 (arena_drawMapPreview)(void) { return map_preview_box(AP(const int, ADDR(g_newArenaFormTop)), ADDR(g_newArenaRotation), FN(arena_loadMapPreview)); }
 
 /* 0x43e7b0: the account page (room page 0; the room camera arrived (g_roomCameraMode 2), not page 99): with a message box only its
    frame; else the page (account_takeRank when g_accountRankDue, then account_drawPanel) and, once a field's typing has ended, the typed
@@ -809,10 +809,10 @@ u32 (account_page)(void)
 			continue;
 		if (g_textFieldOpen)
 			return r;
-		memset((void *)RELOC(fields[k].field), 0, fields[k].size);
+		memset(AP(void, RELOC(fields[k].field)), 0, fields[k].size);
 		GAME_VAR(int, fields[k].editing) = 0;
 		g_inputLineHidden = 0;
-		strcpy((char *)RELOC(fields[k].field), g_inputLine);
+		strcpy(AP(char, RELOC(fields[k].field)), g_inputLine);
 		u32 step = (*(u32 *)&g_fieldStep);
 		u32 next = step == 0xa ? fields[k].back : step == 0x14 ? fields[k].on : 0;
 		if (!next)
