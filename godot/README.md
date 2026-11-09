@@ -122,3 +122,7 @@ SHA-512 checked). The export: build/godot_export/ - AxisGodot.exe (Godot's 32-bi
 the extension DLL and axis.dll; `install` copies it to <Axis>/Godot. Exported, game.tscn is the main scene
 (run/main_scene.template), axis.dll is loaded from beside the exe and the game's folder is the exe's own when it
 holds initdata, else the one above it. --game-dir and the check options still apply.
+
+2026-11-09: game.tscn is the main scene (the editor's Play runs the game; the replay is started by name,
+res://main.tscn). To work in the editor: open godot/project/project.godot (Godot 4.7.2 32-bit,
+C:/Users/Alexander/Tools/godot/editor); bin/ must hold the extension DLL and axis.dll (built as above).
