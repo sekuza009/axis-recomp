@@ -16,7 +16,7 @@
    only access to 0x76d224 in the original). Returns GetCurrentDirectoryA's answer */
 u32 (app_readCurrentDirectory)(void)
 {
-	return GetCurrentDirectoryA(0x105, (char *)(OBJ(g_messages) + 0x1f400));
+	return FILE_CURRENT_DIRECTORY(0x105, (char *)(OBJ(g_messages) + 0x1f400));
 }
 
 /* 0x46c580: a message box over the active window (title, text); MessageBox's answer */

@@ -151,3 +151,12 @@ most of them OpenGL (recorded for the host, glrec.c). The rest, by group, with t
   plat/posix/time.c is the Linux / macOS version (CLOCK_MONOTONIC in nanoseconds - the game clock shifts it to its
   2 MHz as it does Windows' counter - nanosleep, localtime_r / gmtime_r into SYSTEMTIME's fields), compile-checked
   for x86 Linux and x86-64 macOS (zig cc). Checked in Godot: start-up, menus, a skirmish at 120 fps, the ending.
+- 2026-11-09, stage 3 second pass, files: plat.h FILE_OPEN_READ / FILE_READ / FILE_CLOSE / FILE_DELETE /
+  FILE_CURRENT_DIRECTORY at the game's direct file calls (the sounds' WAVs, the deletions, the current directory);
+  master expands them to the original calls (objcmp: 0 differ), plat/win32/files.c makes them through the slots
+  (checked in Godot: the same counts, the match's sounds playing). plat/posix/files.c is the Linux / macOS side:
+  plat_path (backslashes, and each part of a path found without regard to case), those calls, and the C runtime's
+  path functions for a POSIX binding of the game's runtime entries (plat_fopen, plat_mkdir, plat_chdir, and
+  _findfirst / _findnext / _findclose with Windows' wildcards, "." and "..", NTFS's order and VC6's _finddata_t).
+  tools/plat_tests/run_posix.sh runs its 18 checks on real Linux (static 32- and 64-bit programs in WSL): all pass.
+  (Binding the runtime entries to them is part of the Linux loader, with the other platforms.)

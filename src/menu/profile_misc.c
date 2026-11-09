@@ -1,6 +1,7 @@
 /* profile_misc.c: pieces of the pilot profile screen (210): its pages and clicks, profiles made, named and deleted,
    the stat bars and the pilot grid, the save files' byte scrambling and the name checks. */
 #include "../game.h"
+#include "../plat/plat.h"
 #include <string.h>
 #include "key_repeat.h"
 
@@ -451,8 +452,8 @@ u32 (profile_deleteChosen)(void)
 		memset(path, 0, sizeof path);
 		strcpy(path, records[chosen].name);
 		strcat(path, (const char *)STR(0x4b2afc, ".axs"));
-		if (!((int)DeleteFileA(path)))   /* DeleteFileA */
-			DeleteFileA(path);
+		if (!((int)FILE_DELETE(path)))   /* DeleteFileA */
+			FILE_DELETE(path);
 		crt_chdir((const char *)STR(0x4b2a80, ".."));   /* chdir("..") */
 	}
 	int count = g_profileCount - 1, last = chosen;
