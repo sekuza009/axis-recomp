@@ -405,12 +405,33 @@ void GLEmu::plain(int kind, const uint32_t *a) {
 	}
 }
 
+bool GLEmu::load_header(const uint8_t *b, size_t n, std::string &error) {
+	if (n < 12 || memcmp(b, "AXGLREC1", 8)) { error = "not an AXGLREC1 header"; return false; }
+	uint32_t count;
+	memcpy(&count, b + 8, 4);
+	size_t o = 12;
+	plainNames.clear(); plainWords.clear(); plainKind.clear();
+	for (uint32_t i = 0; i < count; i++) {
+		if (o + 8 > n) { error = "a short header"; return false; }
+		uint32_t w, l;
+		memcpy(&w, b + o, 4);
+		memcpy(&l, b + o + 4, 4);
+		if (o + 8 + l > n) { error = "a short header"; return false; }
+		std::string name((const char *)b + o + 8, l);
+		o += 8 + l;
+		plainNames.push_back(name);
+		plainWords.push_back((int)w);
+		int kind = P_UNKNOWN;
+		for (const auto &k : k_names) if (name == k.name) kind = k.kind;
+		plainKind.push_back(kind);
+	}
+	frames.clear();
+	restart();
+	return true;
+}
+
 void GLEmu::run_frame(int i) {
-	verts.clear();
-	cmds.clear();
 	const Frame &fr = frames[i];
-	fbW = fr.w > 0 ? fr.w : 1;
-	fbH = fr.h > 0 ? fr.h : 1;
 	data.resize(fr.words);
 	{
 		FILE *f = fopen(path.c_str(), "rb");
@@ -421,8 +442,16 @@ void GLEmu::run_frame(int i) {
 		}
 		fclose(f);
 	}
+	run_words(data.data(), fr.words, fr.w, fr.h);
+}
+
+void GLEmu::run_words(const uint32_t *words, size_t n, int width, int height) {
+	verts.clear();
+	cmds.clear();
+	fbW = width > 0 ? width : 1;
+	fbH = height > 0 ? height : 1;
 	if (viewport[2] == 0) { viewport[2] = fbW; viewport[3] = fbH; }   // (a new context's viewport: the window)
-	const uint32_t *p = data.data(), *end = p + fr.words;
+	const uint32_t *p = words, *end = p + n;
 	while (p < end) {
 		const uint32_t h = *p++, op = h & 0xffff, words = h >> 16;
 		if (op < plainKind.size()) {

@@ -5,6 +5,7 @@
 #include <godot_cpp/godot.hpp>
 
 #include "axis_replay.h"
+#include "axis_game.h"
 
 using namespace godot;
 
@@ -12,6 +13,7 @@ static void initialize(ModuleInitializationLevel p_level) {
 	if (p_level != MODULE_INITIALIZATION_LEVEL_SCENE)
 		return;
 	GDREGISTER_CLASS(AxisReplay);
+	GDREGISTER_CLASS(AxisGame);
 }
 
 static void uninitialize(ModuleInitializationLevel p_level) {

@@ -151,10 +151,19 @@ void AxisReplay::_process(double p_delta) {
 bool AxisReplay::step() {
 	if (!loaded || current >= emu.frame_count()) return false;
 	emu.run_frame(current);
+	int w, h;
+	emu.frame_size(current, w, h);
+	submit(w, h);
+	current++;
+	return true;
+}
+
+void AxisReplay::submit(int w, int h) {
 	Pending p;
 	p.verts = emu.verts;
 	p.cmds = emu.cmds;
-	emu.frame_size(current, p.w, p.h);
+	p.w = w;
+	p.h = h;
 	for (const auto &kv : emu.textures) {   // (only the textures changed since last handed over)
 		auto it = sentVersions.find(kv.first);
 		if (it == sentVersions.end() || it->second != kv.second.version) {
@@ -173,9 +182,7 @@ bool AxisReplay::step() {
 			}
 		pending = std::move(p);
 	}
-	current++;
 	RenderingServer::get_singleton()->call_on_render_thread(callable_mp(this, &AxisReplay::_render));
-	return true;
 }
 
 void AxisReplay::_set_texture_rid(const RID &p_rid) {

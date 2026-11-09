@@ -35,8 +35,8 @@ public:
 
 protected:
 	static void _bind_methods();
+	void submit(int w, int h);   // emu's current frame to the render thread
 
-private:
 	GLEmu emu;
 	bool loaded = false, playing = false;
 	double fps = 60, accumulated = 0;

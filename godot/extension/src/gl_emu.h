@@ -69,6 +69,9 @@ public:
 	void frame_size(int i, int &w, int &h) const { w = frames[i].w; h = frames[i].h; }
 	// one frame's commands into verts / cmds (frames in order: the state carries over; restart() to go back)
 	void run_frame(int i);
+	// live (the game in-process, axis_api.h): the header from axis_stream_header(), then each frame's words
+	bool load_header(const uint8_t *p, size_t n, std::string &error);
+	void run_words(const uint32_t *words, size_t n, int width, int height);
 	void restart();
 
 	std::vector<EmuVertex> verts;
