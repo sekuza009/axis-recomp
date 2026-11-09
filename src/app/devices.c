@@ -75,7 +75,7 @@ void (sound_releaseDirectSound)(void)
 static long read_keys(void)
 {
 	long r = IN_READ(AP(void, g_keyboard), 0x100, g_keyState);
-	if (r == (long)DIERR_INPUTLOST)
+	if ((int)r == (int)DIERR_INPUTLOST)
 		input_reacquireKeyboard();
 	return r;
 }
@@ -130,7 +130,7 @@ int (input_readMouse)(void)
 		goto clear;
 	if (g_mouse) {
 		long r = IN_READ(AP(void, g_mouse), 0x10, state);
-		if (r == (long)DIERR_INPUTLOST_MOUSE) {
+		if ((int)r == (int)DIERR_INPUTLOST_MOUSE) {
 			if (IN_ACQUIRE(AP(void, g_mouse)) < 0)
 				goto clear;
 			r = IN_READ(AP(void, g_mouse), 0x10, state);

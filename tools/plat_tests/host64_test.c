@@ -53,8 +53,8 @@ int main(int argc, char **argv)
 	c.input = 1;
 	c.nogl = 1;
 	c.message = on_message;
-	c.screen_w = 1920;
-	c.screen_h = 1080;
+	c.screen_w = getenv("AXIS_TEST_W") ? atoi(getenv("AXIS_TEST_W")) : 3840;
+	c.screen_h = getenv("AXIS_TEST_H") ? atoi(getenv("AXIS_TEST_H")) : 2160;
 	axis_host(&c);
 	if (!axis_load()) {
 		printf("axis_load failed (see standalone64.log)\n");

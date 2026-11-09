@@ -79,7 +79,7 @@ void *THISCALL (tex_getItemFileBy)(TextureBank *bank, const char *name)
 		sys_fatalError(AP(char, OBJ(g_logTexture)), AP(const char, STR(0x4b3f80, "can't find item(%s) - getItemFileBy()")), (int)AV(name));
 		return 0;
 	}
-	crt_fseek(AP(void, bank->file), GAME_VAR(long, bank->index + i * 0x44 + 0x40), 0);   /* (the index entry's offset, after its 0x40-byte name) */
+	crt_fseek(AP(void, bank->file), GAME_VAR(i32, bank->index + i * 0x44 + 0x40), 0);   /* (the index entry's offset, after its 0x40-byte name) */
 	return AP(void, bank->file);
 }
 
@@ -341,8 +341,12 @@ int THISCALL (tex_getIdBy)(u8 *tm, const char *name, u32 flags, u32 h1, u32 s1, 
 	   otherwise copy them into the frame. The frame then holds only the name and is as deep as the original's (0x50
 	   with the saved registers): tex_textureFileExist reads a short file's size words from stack it never wrote,
 	   and a deeper frame gave those reads other values now and then */
+#ifdef AXIS_64   /* (the arguments are in registers here: the six copied into an array) */
+	const u32 colour[6] = { h1, s1, v1, h2, s2, v2 };
+#else
 	const volatile u32 *colour = &h1;
 	(void)s1, (void)v1, (void)h2, (void)s2, (void)v2;
+#endif
 	char key[0x40];
 	strcpy(key, name);
 	path_normalize(key);

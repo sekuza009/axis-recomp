@@ -195,8 +195,12 @@ static u32 h_GetAsyncKeyState(int vk) { return g_hostFocus ? (u16)key_state(vk) 
 static short h_GetKeyState(int vk) { return key_state(vk); }
 static void *h_SetFocus(void *w) { (void)w; return hostwin_main(); }
 
+extern void *(*g_platNewHandle)(void);   /* src/plat/posix/system.c */
 static void host_install(void)
 {
+#ifndef _WIN32
+	g_platNewHandle = host64_handle;
+#endif
 	g_platHostUser = g_host.user;
 	g_platHostMessage = g_host.message;
 	g_platHostLaunch = g_host.launch;

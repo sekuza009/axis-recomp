@@ -39,7 +39,7 @@ static u32 host_wrap(void *h, u32 bytes)
 }
 #define HS g_platSound
 #define HU g_platSoundUser
-#define E_FAIL_ ((long)0x80004005)
+#define E_FAIL_ ((long)(i32)0x80004005)   /* (negative as a long too: the game tests < 0) */
 
 long plat_soundCreate(APTR(void) *device) { *device = HOST_DEVICE; return HS ? 0 : E_FAIL_; }
 long plat_soundSetWindow(void *ds, void *window) { (void)ds; (void)window; return 0; }
@@ -177,7 +177,7 @@ long plat_inputRelease(void *object) { (void)object; return 0; }
 
 /* network: not yet in the 64-bit build (DirectPlay's records still to be translated between the game's 32-bit layout and
    axisnet's own) - every operation fails, as with no DirectPlay installed */
-#define DPERR_ ((long)0x80004005)
+#define DPERR_ ((long)(i32)0x80004005)
 long plat_netCreate(APTR(void) *out) { *out = 0; return DPERR_; }
 long plat_netLobbyCreate(APTR(void) *out) { *out = 0; return DPERR_; }
 long plat_netRelease(void *o) { (void)o; return 0; }

@@ -48,7 +48,17 @@ typedef uint64_t u64;
 #define AXIS_64 1
 extern unsigned char *g_arena;
 static inline void *arena_ptr(u32 v) { return v ? (void *)(g_arena + v) : (void *)0; }
-static inline u32 arena_ref(const void *p) { return p ? (u32)((const unsigned char *)p - g_arena) : 0; }
+/* (a pointer from outside the arena made an address - memory the game should not keep: reported, standalone/arena.c) */
+void arena_bad(const void *p, const void *caller);
+static inline u32 arena_ref(const void *p)
+{
+	if (!p)
+		return 0;
+	uintptr_t o = (uintptr_t)((const unsigned char *)p - g_arena);
+	if (o >> 32)
+		arena_bad(p, __builtin_return_address(0));
+	return (u32)o;
+}
 #define APTR(T) u32
 /* (either takes a pointer as well, passed on as it is: AP(T, p) a plain cast, AV(v) of a number the number) */
 #define AP(T, v) ((T *)__builtin_choose_expr(__builtin_classify_type(v) == 5, (void *)(uintptr_t)(v),                                              arena_ptr((u32)(uintptr_t)(v))))
