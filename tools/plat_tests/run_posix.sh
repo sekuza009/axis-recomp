@@ -4,13 +4,14 @@
 set -e
 cd "$(dirname "$0")"
 OUT=../../build/plat_tests; mkdir -p "$OUT"
-for t in posix_files_test posix_registry_test posix_system_test posix_net_test; do
-	python -m ziglang cc -target x86-linux-musl -static -O2 -Wall -o "$OUT/${t}_32" $t.c
-	python -m ziglang cc -target x86_64-linux-musl -static -O2 -Wall -o "$OUT/${t}_64" $t.c
+for t in posix_files_test posix_registry_test posix_system_test posix_net_test posix_directplay_test; do
+	EXTRA=; [ $t = posix_directplay_test ] && EXTRA="../../src/plat/posix/net.c ../../src/plat/posix/registry.c -Wno-unused-function -Wno-pointer-sign -Wno-format"
+	python -m ziglang cc -target x86-linux-musl -static -O2 -Wall -DAXIS_PORTABLE -o "$OUT/${t}_32" $t.c $EXTRA
+	python -m ziglang cc -target x86_64-linux-musl -static -O2 -Wall -DAXIS_PORTABLE -o "$OUT/${t}_64" $t.c $EXTRA
 done
 L=$(cd "$OUT" && pwd -W | sed 's#^\([A-Za-z]\):#/mnt/host/\L\1#')
 DISTRO=${WSL_DISTRO:-docker-desktop}
-for t in posix_files_test posix_registry_test posix_system_test posix_net_test; do
+for t in posix_files_test posix_registry_test posix_system_test posix_net_test posix_directplay_test; do
 	for b in 32 64; do
 		echo "== $t ($b-bit)"
 		wsl.exe -d "$DISTRO" -- sh -c "cp '$L/${t}_$b' /tmp/ && /tmp/${t}_$b" | tr -d '\0'

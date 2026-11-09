@@ -13,7 +13,7 @@ static void check(int ok, const char *what)
 }
 
 extern int WINAPI g_socket(int, int, int) __asm__("_plat_socket");
-extern int WINAPI g_connect(int, const void *, int) __asm__("_plat_connect");
+#define g_connect net_connect_win
 extern int WINAPI g_send(uint32_t, const void *, int, int) __asm__("_plat_send");
 extern int WINAPI g_recv(uint32_t, void *, int, int) __asm__("_plat_recv");
 extern int WINAPI g_closesocket(uint32_t) __asm__("_plat_closesocket");
@@ -34,7 +34,7 @@ extern int WINAPI g_GlobalUnlock(void *) __asm__("_plat_GlobalUnlock");
 extern void *WINAPI g_GlobalHandle(const void *) __asm__("_plat_GlobalHandle");
 extern void *WINAPI g_GlobalFree(void *) __asm__("_plat_GlobalFree");
 extern void *WINAPI g_IcmpCreateFile(void) __asm__("_plat_IcmpCreateFile");
-extern uint32_t WINAPI g_IcmpSendEcho(void *, uint32_t, const void *, uint16_t, void *, void *, uint32_t, uint32_t) __asm__("_plat_IcmpSendEcho");
+#define g_IcmpSendEcho net_icmp_echo
 
 static void *g_events[2];
 static uint32_t WINAPI setter(void *p)   /* (the ping thread's shape: stdcall, one argument) */

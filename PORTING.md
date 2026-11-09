@@ -188,3 +188,15 @@ most of them OpenGL (recorded for the host, glrec.c). The rest, by group, with t
   ICMP ping over an unprivileged ICMP socket, else a raw one, else none; the GlobalAlloc family. tools/plat_tests'
   22 checks (a TCP exchange with Windows' layouts, name lookup, events and a thread, the blocks, a ping) pass on
   Linux, 32- and 64-bit; it compiles for x86-64 and arm64 macOS. Left: DirectPlay itself (the NET_ operations).
+- 2026-11-09, stage 3 second pass, DirectPlay: the multiplayer sessions keep axisnet's own DirectPlay replacement
+  (proven on Windows, and the protocol of the DServer relay and of Windows players) rather than new netcode. Its
+  network part moved to axisnet_dp.c (axisnet_recomp.c includes it where it stood; Windows checked with the two-copy
+  session: joined by IP, a team match, chat). plat/posix/directplay.c builds that same code on POSIX with
+  plat/posix/win32_compat.h (Winsock names on BSD sockets, critical sections and joinable threads on pthreads, the
+  game's own events from net.c, GetPrivateProfileString for axisnet.ini, the registry as the settings file) and gives
+  it to the game as on Windows: CoCreateInstance(CLSID_DirectPlay / Lobby), connect and the ping through axisnet's
+  hooks. Three Windows / POSIX differences fixed for POSIX only: select's first argument (Windows ignores it),
+  a refused non-blocking connect (writable on POSIX: SO_ERROR checked), and the hub's port free again at once
+  (SO_REUSEADDR, which on Windows would mean something else). Not on POSIX: UPnP and the clipboard (logged).
+  tools/plat_tests/posix_directplay_test.c plays a session between two processes on Linux - host, find, join, the
+  players, a message and its answer, the join and leave seen - and passes, 32- and 64-bit (170 checks in all).
