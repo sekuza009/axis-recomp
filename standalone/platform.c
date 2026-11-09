@@ -287,8 +287,10 @@ void platform_playMovie(void *owner, const char *file, int w, int h)
 	e = mciSendCommandA(dev, MCI_PLAY, 0, (DWORD_PTR)&play);
 	MOVIE_LOG("ending movie: MCI play answer %d", (int)e);
 	MOVIE_LOG("ending movie: in the foreground %d", GetForegroundWindow() == win);
+	MOVIE_LOG("ending movie: Esc held at the start %d", (GetAsyncKeyState(VK_ESCAPE) & 0x8000) != 0);
 	DWORD start = GetTickCount();
 	int quit = 0, played = 0, why = 0;
+	int escUp = 0;   /* (Esc skips on a press that starts during the movie: one held or stuck from before does not) */
 	WPARAM quitCode = 0;
 	while (!e) {
 		MSG msg;
@@ -302,9 +304,12 @@ void platform_playMovie(void *owner, const char *file, int w, int h)
 			DispatchMessageA(&msg);
 		}
 		if (GetAsyncKeyState(VK_ESCAPE) & 0x8000) {
-			why = 1;
-			break;
-		}
+			if (escUp) {
+				why = 1;
+				break;
+			}
+		} else
+			escUp = 1;
 		MCI_STATUS_PARMS status = { 0 };
 		status.dwItem = MCI_STATUS_MODE;
 		if (mciSendCommandA(dev, MCI_STATUS, MCI_STATUS_ITEM, (DWORD_PTR)&status)) {
