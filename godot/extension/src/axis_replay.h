@@ -82,7 +82,8 @@ public:
 	// the sky (picture mode 2): its triangles in the game's camera space, whichever viewpoint of its own each part was
 	// drawn from (sky.c) - the same on screen - in the game's order, for remaster_view.gd's sky viewport
 	TypedArray<ArrayMesh> build_sky_meshes();
-	Color get_clear_colour() const;   // the frame's first colour clear (what shows through a see-through sky)
+	Color get_clear_colour() const;
+	void redraw() { submit(emu.width(), emu.height()); }   // (the frame again: after a picture mode's change)   // the frame's first colour clear (what shows through a see-through sky)
 	bool sky_in_godot() const { return pictureMode == 2 && mapViewport; }
 	void draw_deferred(const RID &p_color, const RID &p_depth, const Vector2i &p_size);   // (AxisMapEffect, render thread)
 	Projection get_camera_projection() const;

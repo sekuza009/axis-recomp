@@ -4,6 +4,8 @@ extends Control
 ##   [--quit-after N]   (frames: the game's own, counted from its first)
 
 var game: AxisGame
+var mode_shot_frame := -1   # (--shot-modes)
+var mode_shot_prefix := ""
 var remaster: RemasterView   # the remaster's camera and its check (remaster_view.gd)
 var record_path := ""
 var camera_report: FileAccess
@@ -64,6 +66,11 @@ func _ready() -> void:
 		elif a == "--picture":   # the picture: 0 the original, 1 the original lighting, 2 the remaster (Ctrl+F12 cycles)
 			i += 1
 			$Game.picture_mode = int(args[i])
+		elif a == "--shot-modes":   # frame:prefix - at that frame the game held and its frame shot in each picture mode
+			i += 1
+			var parts: PackedStringArray = args[i].split(":", true, 1)
+			mode_shot_frame = int(parts[0])
+			mode_shot_prefix = parts[1]
 		elif a == "--tags":   # the tag view on (Ctrl+F9 toggles it)
 			$Game.tag_view = true
 		elif a == "--overlay":   # the camera check's overlay on (Ctrl+F10 toggles it)
@@ -136,6 +143,10 @@ func _process(_delta: float) -> void:
 	if game == null or not game.is_running():
 		return
 	var f := game.get_game_frames()
+	if mode_shot_frame >= 0 and f >= mode_shot_frame:
+		mode_shot_frame = -1
+		shoot_modes()
+		return
 	if remaster:
 		remaster.update(game.get_game_size())
 		if camera_report and f >= next_report:
@@ -205,3 +216,19 @@ func refit_now(frame: Vector2i) -> void:
 	var ci := view.get_canvas_item()
 	RenderingServer.canvas_item_clear(ci)
 	RenderingServer.canvas_item_add_texture_rect(ci, r, view.texture.get_rid())
+
+## (a check: --shot-modes) the game held at one frame, that frame drawn and shot in each picture mode, then quit
+func shoot_modes() -> void:
+	game.set_hold(true)
+	for m in 3:
+		game.picture_mode = m
+		for _k in 4:
+			remaster.update(game.get_game_size())
+			game.redraw()
+			await get_tree().process_frame
+		var img := get_viewport().get_texture().get_image()
+		if img:
+			img.save_png("%s_m%d.png" % [mode_shot_prefix, m])
+			print("AxisGame: picture mode ", m, " saved")
+	game.stop_recording()
+	get_tree().quit()

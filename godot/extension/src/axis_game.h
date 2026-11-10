@@ -29,6 +29,9 @@ public:
 	static int s_message(void *user, const char *title, const char *text);   // (the game's message boxes: OS.alert)
 	static int s_launch(void *user, const char *program, const char *arguments);   // (AxisGL.exe: the game restarted)
 	bool restartRequested = false;
+	bool hold = false;   // (a check: the game not stepped - its frame drawn again in each picture mode)
+	void set_hold(bool v) { hold = v; }
+	bool get_hold() const { return hold; }
 	bool start_recording(const String &p_path);   // the game's drawing to an AXGLREC1 file (main.tscn replays it)
 	void stop_recording();
 	void set_music_near_end(double s) { musicNearEnd = s; }   // (a check: each track started s seconds before its end)   // (the frame log: game steps that took long, and the frames drawn in them)

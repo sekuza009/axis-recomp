@@ -220,6 +220,24 @@ Abyss round (all three modes) and live (mode 2: 120 fps; one 162 ms frame in the
   original's. StarField's remaster is flatter and brighter than the original: its rocks' contrast is in the models'
   own vertex colours, which the game multiplies with its light - only the lit result reaches Godot.
 
+## Every map checked (2026-11-10)
+
+`python tools/map_lights.py` lists every map's lighting from its file. Each map was then played in the Godot build
+(`AXIS_MAP_INDEX=<n>`: the skirmish round on map n, 64-bit build only; game.gd `--shot-modes frame:prefix` holds the
+game at that frame and shoots it in each picture mode - AxisGame.set_hold, AxisReplay.redraw; scratchpad
+sess5/map_survey.sh drives all 32, survey_sheet.py makes the contact sheets).
+
+- Original lighting (mode 1) looks as the original on all 31 maps that load.
+- HeadQuarters (22 .. 24 are hidden in every menu: TubbyLand, Cube, HeadQuarters) crashes the game library when it
+  loads - in AxisSDL too, so not the remaster: the map was probably left unfinished.
+- The remaster (mode 2): close on Midgard, Centropolis, Titanforge, Gigantic-Core, Asgard, Abyss, Metropolis,
+  Netsphere, Musfelheim, GreenField, Pyromid, Garuda, Sanctuary, FinalLab, colosseumII, BlastPit, TubbyLand; too bright
+  or washed on Catacomb, Bootcamp, Cube, IllusionCity and Valhalla's floor (many overlapping white lights - Godot adds
+  them without the game's clamp at full white); the painted colours lost on jotunheim, colosseum, CrimsonField,
+  StarField, Hive, Bloodbath. The game multiplies each model's own vertex colours (its base colours, the art) with its
+  light, and only the lit result reaches Godot: Godot's lit surfaces have the texture alone as their colour. The fix is
+  the base colours sent from the game (the 64-bit build) for Godot's albedo.
+
 ## Building (Windows, zig as the compiler)
 
 **Since 2026-11-09 64-bit only**: the extension `arch=x86_64` against `Tools/godot/godot-cpp64` (SConstruct's default),

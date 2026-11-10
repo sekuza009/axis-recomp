@@ -122,6 +122,8 @@ void AxisGame::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("take_frame_events"), &AxisGame::take_frame_events);
 	ClassDB::bind_method(D_METHOD("set_music_near_end", "seconds"), &AxisGame::set_music_near_end);
 	ClassDB::bind_method(D_METHOD("start_recording", "path"), &AxisGame::start_recording);
+	ClassDB::bind_method(D_METHOD("set_hold", "hold"), &AxisGame::set_hold);
+	ClassDB::bind_method(D_METHOD("get_hold"), &AxisGame::get_hold);
 	ClassDB::bind_method(D_METHOD("stop_recording"), &AxisGame::stop_recording);
 }
 
@@ -431,7 +433,7 @@ void AxisGame::_input(const Ref<InputEvent> &p_event) {
 
 void AxisGame::_process(double p_delta) {
 	(void)p_delta;
-	if (!running) return;
+	if (!running || hold) return;
 	const bool focused = get_window() && get_window()->has_focus();
 	if (!focused) release_all();
 	else {   // (the modifiers' releases from Windows' own key state: Godot sends a Shift's press but not its release)
