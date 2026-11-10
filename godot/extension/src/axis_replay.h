@@ -62,6 +62,11 @@ public:
 	int pictureMode = 0;
 	bool mapViewport = false;   // (remaster_view.gd's viewport and its effect are there)
 	float originalLight = 0.6f;
+	// what Godot draws in picture modes 1 and 2, by kind (1 << tag, src/render/draw_tags.h): the ground, map objects,
+	// actors and items by default (the actors' view pass, over a cleared depth buffer, and the effects stay the game's)
+	int godotKinds = (1 << 2) | (1 << 3) | (1 << 4) | (1 << 8);
+	void set_godot_kinds(int v) { godotKinds = v; }
+	int get_godot_kinds() const { return godotKinds; }
 	void set_picture_mode(int v) { pictureMode = v < 0 ? 0 : v > 2 ? 2 : v; }
 	int get_picture_mode() const { return pictureMode; }
 	void set_map_viewport(bool v) { mapViewport = v; }
@@ -117,6 +122,7 @@ protected:
 		Look look;
 		bool tagView = false;
 		bool composite = false;   // drawn later, into Godot's map (draw_deferred)
+		int kinds = 0;            // (godotKinds then)
 	};
 	std::mutex mutex;
 	Pending pending;

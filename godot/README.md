@@ -149,6 +149,18 @@ vertex colours); its dynamic lights - the mechs' glow, the explosions - light th
 at once in the recorded match). `AXIS_LIGHT_LIST=1` (main.tscn, at a --shot) prints the frame's lights;
 `AXIS_LIGHT_TEST=<energy>` adds a white light at the camera (a check that Godot's lights reach the map).
 
+## Godot draws the mechs and items (step 5)
+
+`godot_kinds` (AxisReplay / AxisGame, "Remaster picture"; flags by tag) says which kinds Godot draws in picture modes
+1 and 2: by default the ground, map objects, actors (the mechs) and items. The actors come through each frame already
+posed and animated (the game's own skinning), so they are rebuilt in the world like the map (build_map_mesh: one mesh
+of every chosen kind, by material) and the game colours its own surfaces of those kinds from Godot's picture - their
+occlusion exactly the game's, their light Godot's, their shadows cast on the arena by the Sun. Normals are smoothed
+where faces within 60 degrees share a position (the mechs' curved armour; a box's edges stay sharp). What stays the
+game's: the actors' view pass (the first-person weapon, drawn over a cleared depth buffer), bullets, particles and the
+see-through and additive parts. Checked on the recorded skirmish (mode 1: the mech as the original's) and live (mode 2,
+120 fps, no long frames in the match).
+
 ## Building (Windows, zig as the compiler)
 
 **Since 2026-11-09 64-bit only**: the extension `arch=x86_64` against `Tools/godot/godot-cpp64` (SConstruct's default),

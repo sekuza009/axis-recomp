@@ -240,9 +240,12 @@ void AxisReplay::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_original_light", "amount"), &AxisReplay::set_original_light);
 	ClassDB::bind_method(D_METHOD("get_original_light"), &AxisReplay::get_original_light);
 	ClassDB::bind_method(D_METHOD("build_map_mesh"), &AxisReplay::build_map_mesh);
+	ClassDB::bind_method(D_METHOD("set_godot_kinds", "mask"), &AxisReplay::set_godot_kinds);
+	ClassDB::bind_method(D_METHOD("get_godot_kinds"), &AxisReplay::get_godot_kinds);
 	ADD_GROUP("Remaster picture", "");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "picture_mode", PROPERTY_HINT_ENUM, "Original,Original lighting,Remaster"), "set_picture_mode", "get_picture_mode");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "original_light", PROPERTY_HINT_RANGE, "0,1.5,0.01"), "set_original_light", "get_original_light");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "godot_kinds", PROPERTY_HINT_FLAGS, "Other,Sky,Ground,Map objects,Actors,Actor view,Bullets,Particles,Items,Markers,HUD"), "set_godot_kinds", "get_godot_kinds");
 	ADD_GROUP("Remaster view", "");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "tag_view"), "set_tag_view", "get_tag_view");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "overlay"), "set_overlay", "get_overlay");
@@ -324,6 +327,7 @@ void AxisReplay::submit(int w, int h) {
 	p.look = look;
 	p.tagView = tagView;
 	p.composite = pictureMode > 0 && mapViewport && emu.hasCamera;
+	p.kinds = godotKinds;
 	for (const auto &kv : emu.textures) {   // (only the textures changed since last handed over)
 		auto it = sentVersions.find(kv.first);
 		if (it == sentVersions.end() || it->second != kv.second.version) {
@@ -639,7 +643,7 @@ void AxisReplay::draw_cmds(const Pending &p, const RID &gColor, const RID &gDept
 		// the map's solid surfaces (the view volume's meshes, drawn in perspective): Godot's colour now, the game's depth.
 		// Its see-through parts (queued as triangles, depth-sorted and drawn already projected: glows, beams) stay the
 		// game's own - over the sky they need what is behind them
-		const bool fromGodot = comp && c.kind == EmuCmd::BATCH && (c.batch.tag == 2 || c.batch.tag == 3) && c.batch.persp &&
+		const bool fromGodot = comp && c.kind == EmuCmd::BATCH && (p.kinds & (1 << c.batch.tag)) && c.batch.persp &&
 		                       (!c.batch.pipe.blend || (c.batch.pipe.src == 0x302 && c.batch.pipe.dst == 0x303));
 		if (c.kind == EmuCmd::CLEAR) {
 			if (dl >= 0) rd->draw_list_end();
@@ -1002,13 +1006,13 @@ Ref<ArrayMesh> AxisReplay::build_map_mesh() {
 			if (r.is_valid() && kv.second->get_texture_rd_rid() != r) kv.second->set_texture_rd_rid(r);
 		}
 	}
-	// the batches of the ground and map objects, by material
+	// the batches of the kinds Godot draws (godotKinds: the ground, map objects, actors, items), by material
 	struct Surface { PackedVector3Array v, n; PackedVector2Array uv; PackedColorArray col; uint32_t texture, env; int blend, cull; };
 	std::unordered_map<uint64_t, Surface> surfaces;
 	std::vector<uint64_t> order;
 	for (const EmuCmd &c : emu.cmds) {
 		const EmuBatch &b = c.batch;
-		if (c.kind != EmuCmd::BATCH || (b.tag != 2 && b.tag != 3) || b.pipe.prim != 0 || b.scissor[2] <= 0 || b.count < 3 || !b.persp) continue;
+		if (c.kind != EmuCmd::BATCH || !(godotKinds & (1 << b.tag)) || b.pipe.prim != 0 || b.scissor[2] <= 0 || b.count < 3 || !b.persp) continue;
 		if (b.pipe.blend && !(b.pipe.src == 0x302 && b.pipe.dst == 0x303)) continue;   // (additive and others: the game's own)
 		const int blendClass = b.pipe.blend ? 1 : 0;   // (alpha-blended solid meshes: a cutout - their clear texels let through)
 		// the game's culling: GL's front faces (counter-clockwise unless glFrontFace(GL_CW)) turned to Godot's (clockwise),
@@ -1052,6 +1056,28 @@ Ref<ArrayMesh> AxisReplay::build_map_mesh() {
 			      " cull " + String::num_int64(b.pipe.cull) + " fog " + String::num_int64(b.fog) + "]";
 		}
 		UtilityFunctions::print("map batches:", st);
+	}
+	// smooth normals: each vertex's the sum of the faces that share its position and lie within 60 degrees of its own
+	// face (the mechs' curved armour shaded smoothly under Godot's lights; a box's edges kept sharp)
+	for (uint64_t key : order) {
+		Surface &s = surfaces[key];
+		const int64_t n = s.v.size();
+		std::unordered_map<uint64_t, std::vector<int64_t>> at;
+		auto cell = [](const Vector3 &p) {
+			const int64_t x = (int64_t)Math::round(p.x * 8.0f), y = (int64_t)Math::round(p.y * 8.0f), z = (int64_t)Math::round(p.z * 8.0f);
+			return (uint64_t)(x * 73856093) ^ (uint64_t)(y * 19349663) ^ (uint64_t)(z * 83492791);
+		};
+		for (int64_t i = 0; i < n; i++) at[cell(s.v[i])].push_back(i);
+		PackedVector3Array smooth;
+		smooth.resize(n);
+		for (int64_t i = 0; i < n; i++) {
+			const Vector3 f = s.n[i];
+			Vector3 sum;
+			for (int64_t j : at[cell(s.v[i])])
+				if (s.v[j].distance_squared_to(s.v[i]) < 0.02f && s.n[j].dot(f) > 0.5f) sum += s.n[j];
+			smooth.set(i, sum.length_squared() > 0 ? sum.normalized() : f);
+		}
+		s.n = smooth;
 	}
 	for (uint64_t key : order) {
 		Surface &s = surfaces[key];
