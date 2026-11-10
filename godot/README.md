@@ -96,7 +96,11 @@ project directly - no large-address-aware copy needed. It needs:
   (`AxisGodot.x86_64`).
 Saves and settings on Linux go to the user folder (`~/.local/share/axis`, laid over the game folder, which is never
 written; `~/.config/axis/registry.txt` for the registry's values) - src/plat/posix/files.c. Checked in WSL (musl,
-headless): the library loaded with dlopen and run; the Godot build itself still needs a real Linux desktop.
+headless): the library loaded with dlopen and run. **Run on a Linux desktop (2026-11-09):** the export under WSLg
+(Ubuntu 24.04; `tools/plat_tests/run_wslg.sh`) - the launcher (its first-time flow: the server dialog, the render
+mode message, Video Setup, settings in registry.txt), Play into the game, keyboard, mouse (captured), sound, a login;
+the saves and axis.cfg written to ~/.local/share/axis, the Windows game folder untouched. There Vulkan is Mesa's
+software renderer and message boxes fall back to xmessage without zenity / kdialog.
 
 ## Checked
 
