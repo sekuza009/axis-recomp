@@ -4,6 +4,18 @@
 #ifndef X87_H
 #define X87_H
 
+#if !defined(__i386__) && !defined(__x86_64__)
+/* (no x87 - arm64, Apple Silicon: the C library's, in long double - there the 64-bit double, which is the precision
+   the game sets the x87 to anyway: 53 bits, src/app/win32.c axis_frame) */
+#include <math.h>
+static inline long double x87_fsin(long double x) { return sinl(x); }
+static inline long double x87_fcos(long double x) { return cosl(x); }
+static inline long double x87_fsqrt(long double x) { return sqrtl(x); }
+static inline long double x87_fabs(long double x) { return fabsl(x); }
+static inline long double x87_fchs(long double x) { return copysignl(x, -copysignl(1.0L, x)); }
+static inline long double x87_fptan(long double x) { return tanl(x); }
+static inline long double x87_fpatan(long double y, long double x) { return atan2l(y, x); }
+#else
 static inline long double x87_fsin(long double x) { __asm__("fsin" : "+t"(x)); return x; }
 static inline long double x87_fcos(long double x) { __asm__("fcos" : "+t"(x)); return x; }
 static inline long double x87_fsqrt(long double x) { __asm__("fsqrt" : "+t"(x)); return x; }
@@ -20,5 +32,6 @@ static inline long double x87_fpatan(long double y, long double x)
 	__asm__("fpatan" : "=t"(r) : "0"(x), "u"(y) : "st(1)");
 	return r;
 }
+#endif
 
 #endif

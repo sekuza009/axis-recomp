@@ -191,6 +191,15 @@ static inline float f32(long double x)
 /* x87 arithmetic with a float operand straight from memory (flds / fmuls / fadds ... dword [m]), where the original
    does that and a NaN can reach it: a signalling NaN taken from memory this way meets a quiet NaN differently from
    one loaded into a register first. x op *m, or *m op x for the reversed ones. */
+#if !defined(__i386__) && !defined(__x86_64__)   /* (no x87 - arm64: the plain arithmetic, in long double) */
+static inline long double fld_m(const float *m) { return *m; }
+static inline long double fmul_m(long double x, const float *m) { return x * *m; }
+static inline long double fadd_m(long double x, const float *m) { return x + *m; }
+static inline long double fsub_m(long double x, const float *m) { return x - *m; }
+static inline long double fsubr_m(long double x, const float *m) { return *m - x; }
+static inline long double fdiv_m(long double x, const float *m) { return x / *m; }
+static inline long double fdivr_m(long double x, const float *m) { return *m / x; }
+#else
 static inline long double fld_m(const float *m) { long double x; __asm__("flds %1" : "=t"(x) : "m"(*m)); return x; }
 static inline long double fmul_m(long double x, const float *m) { __asm__("fmuls %1" : "+t"(x) : "m"(*m)); return x; }
 static inline long double fadd_m(long double x, const float *m) { __asm__("fadds %1" : "+t"(x) : "m"(*m)); return x; }
@@ -198,6 +207,7 @@ static inline long double fsub_m(long double x, const float *m) { __asm__("fsubs
 static inline long double fsubr_m(long double x, const float *m) { __asm__("fsubrs %1" : "+t"(x) : "m"(*m)); return x; }
 static inline long double fdiv_m(long double x, const float *m) { __asm__("fdivs %1" : "+t"(x) : "m"(*m)); return x; }
 static inline long double fdivr_m(long double x, const float *m) { __asm__("fdivrs %1" : "+t"(x) : "m"(*m)); return x; }
+#endif
 /* the common two-instruction forms, a and b both floats in memory: flds a, then fmuls / fadds / fsubs / fdivs b (the
    result on the FPU, unrounded; f32() rounds it to a float) */
 #define FMUL(a, b) fmul_m(fld_m(&(a)), &(b))

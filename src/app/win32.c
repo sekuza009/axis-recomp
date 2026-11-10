@@ -885,17 +885,23 @@ unsigned axis_frame(void)
 		return 0;
 	/* (the x87 control word the game's maths needs - 53-bit precision, standalone/main.c - for the frame; a host may
 	   run with its own) */
+#if defined(__i386__) || defined(__x86_64__)
 	unsigned short was, cw = 0x027f;
 	__asm__ volatile("fnstcw %0" : "=m"(was));
 	__asm__ volatile("fldcw %0" : : "m"(cw));
+#define CW_RESTORE() __asm__ volatile("fldcw %0" : : "m"(was))
+#else   /* (no x87: arm64's doubles are the 53 bits already) */
+#define CW_RESTORE() ((void)0)
+#endif
 	PLAT_PUMP();   /* (a host without the window: its posted messages, timers and socket events, as the loop's messages) */
 	if (!g_gameRunning) {   /* (a message ended the game) */
-		__asm__ volatile("fldcw %0" : : "m"(was));
+		CW_RESTORE();
 		return 0;
 	}
 	editField_readTyping();
 	app_frame();
-	__asm__ volatile("fldcw %0" : : "m"(was));
+	CW_RESTORE();
+#undef CW_RESTORE
 	return g_gameRunning != 0;
 }
 /* a key and a typed character for the open text field (its hidden EDIT control, as Windows would send them) */
