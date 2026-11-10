@@ -162,6 +162,20 @@ void main() {
 )";
 struct PostPush { float a[4], b[4], c[4]; int32_t d[4]; };
 
+// how Godot draws a batch, or -1 for the game's own: 0 a solid surface, 1 a cutout (an alpha-blended solid mesh), then
+// the effects (with effects only: picture mode 2, no sky in the frame) - 2 alpha-blended, 3 additive (source alpha), 4
+// additive (one). Solid surfaces are the chosen kinds' meshes drawn in perspective; effects are those kinds' blended
+// batches, also the see-through ones drawn already projected (depth-sorted triangles, billboards)
+int godot_class(const EmuBatch &b, int kinds, bool effects) {
+	if (b.pipe.prim != 0 || b.scissor[2] <= 0 || b.count < 3 || !(kinds & (1 << b.tag))) return -1;
+	const bool mix = b.pipe.src == 0x302 && b.pipe.dst == 0x303;
+	if (b.persp && (!b.pipe.blend || mix)) return b.pipe.blend ? 1 : 0;
+	if (!effects || !b.pipe.blend) return -1;
+	if (mix) return 2;
+	if (b.pipe.dst == 1) return b.pipe.src == 0x302 ? 3 : b.pipe.src == 1 ? 4 : -1;
+	return -1;
+}
+
 // the map's materials (Godot spatial shaders): the game's texture environment (0 modulate, 1 replace, 2 decal), its
 // colours in the game's gamma (2.2) taken to Godot's linear light
 const char *k_map_common = R"(
@@ -239,7 +253,7 @@ void AxisReplay::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_map_viewport"), &AxisReplay::get_map_viewport);
 	ClassDB::bind_method(D_METHOD("set_original_light", "amount"), &AxisReplay::set_original_light);
 	ClassDB::bind_method(D_METHOD("get_original_light"), &AxisReplay::get_original_light);
-	ClassDB::bind_method(D_METHOD("build_map_mesh"), &AxisReplay::build_map_mesh);
+	ClassDB::bind_method(D_METHOD("build_map_meshes"), &AxisReplay::build_map_meshes);
 	ClassDB::bind_method(D_METHOD("set_godot_kinds", "mask"), &AxisReplay::set_godot_kinds);
 	ClassDB::bind_method(D_METHOD("get_godot_kinds"), &AxisReplay::get_godot_kinds);
 	ADD_GROUP("Remaster picture", "");
@@ -328,6 +342,7 @@ void AxisReplay::submit(int w, int h) {
 	p.tagView = tagView;
 	p.composite = pictureMode > 0 && mapViewport && emu.hasCamera;
 	p.kinds = godotKinds;
+	p.effects = frame_effects();
 	for (const auto &kv : emu.textures) {   // (only the textures changed since last handed over)
 		auto it = sentVersions.find(kv.first);
 		if (it == sentVersions.end() || it->second != kv.second.version) {
@@ -643,8 +658,7 @@ void AxisReplay::draw_cmds(const Pending &p, const RID &gColor, const RID &gDept
 		// the map's solid surfaces (the view volume's meshes, drawn in perspective): Godot's colour now, the game's depth.
 		// Its see-through parts (queued as triangles, depth-sorted and drawn already projected: glows, beams) stay the
 		// game's own - over the sky they need what is behind them
-		const bool fromGodot = comp && c.kind == EmuCmd::BATCH && (p.kinds & (1 << c.batch.tag)) && c.batch.persp &&
-		                       (!c.batch.pipe.blend || (c.batch.pipe.src == 0x302 && c.batch.pipe.dst == 0x303));
+		const bool fromGodot = comp && c.kind == EmuCmd::BATCH && godot_class(c.batch, p.kinds, p.effects) >= 0;
 		if (c.kind == EmuCmd::CLEAR) {
 			if (dl >= 0) rd->draw_list_end();
 			BitField<RenderingDevice::DrawFlags> flags = 0;
@@ -658,7 +672,7 @@ void AxisReplay::draw_cmds(const Pending &p, const RID &gColor, const RID &gDept
 		const EmuBatch &b = c.batch;
 		if (b.count == 0 || b.scissor[2] <= 0 || b.scissor[3] <= 0) continue;
 		if (dl < 0) dl = rd->draw_list_begin(framebuffer);
-		if (fromGodot) {   // (unblended: Godot's colour replaces, as a solid surface)
+		if (fromGodot) {   // (unblended: Godot's colour replaces - its picture has the blending done already)
 			EmuPipe gp = b.pipe;
 			gp.blend = 0;
 			rd->draw_list_bind_render_pipeline(dl, pipeline_for(gp));
@@ -960,17 +974,28 @@ void AxisReplay::set_original_light(float v) {
 		if (kv.second.is_valid()) kv.second->set_shader_parameter("original_light", v);
 }
 
-Ref<ShaderMaterial> AxisReplay::map_material(uint32_t texture, uint32_t env, int blendClass, int cull) {
-	const int lit = pictureMode == 2 ? 1 : 0;
-	const uint64_t key = (uint64_t)texture | (uint64_t)(env & 0xffff) << 32 | (uint64_t)blendClass << 48 | (uint64_t)lit << 52 | (uint64_t)cull << 56;
+bool AxisReplay::frame_effects() const {
+	if (pictureMode != 2) return false;
+	for (const EmuCmd &c : emu.cmds)
+		if (c.kind == EmuCmd::BATCH && c.batch.tag == 1 && c.batch.count) return false;   // (the sky: Godot has none yet)
+	return true;
+}
+
+Ref<ShaderMaterial> AxisReplay::map_material(uint32_t texture, uint32_t env, int blendClass, int cull, int priority) {
+	const int lit = pictureMode == 2 && blendClass < 2 ? 1 : 0;   // (effects are unlit: they give light, not take it)
+	const uint64_t key = (uint64_t)texture | (uint64_t)(env & 0xffff) << 32 | (uint64_t)blendClass << 48 | (uint64_t)lit << 51 |
+	                     (uint64_t)cull << 52 | (uint64_t)(priority + 128) << 54;
 	auto it = mapMaterials.find(key);
 	if (it != mapMaterials.end()) return it->second;
 	Ref<Shader> &sh = mapShaders[lit][blendClass][cull];
 	if (sh.is_null()) {
-		static const char *blend[3] = { "", "", "" };   // (0 opaque, 1 a cutout: both in Godot's opaque pass)
+		static const char *blend[5] = { "", "", ", blend_mix, depth_draw_never", ", blend_add, depth_draw_never", ", blend_add, depth_draw_never" };
 		static const char *culls[4] = { "cull_disabled", "cull_back", "cull_front", "cull_disabled" };
 		String code = String("shader_type spatial;\nrender_mode ") + culls[cull] + (lit ? "" : ", unshaded") + blend[blendClass] + ";\n" + k_map_common;
-		if (!lit)
+		if (blendClass >= 2)   // (an effect: the game's colour as it is, blended by Godot in the game's order)
+			code += String("void fragment() {\n\tvec4 o = game_colour(COLOR, UV);\n\tALBEDO = pow(o.rgb, vec3(2.2));\n\tALPHA = ") +
+			        (blendClass == 4 ? "1.0" : "o.a") + ";\n}\n";
+		else if (!lit)
 			code += String("void fragment() {\n\tvec4 o = game_colour(COLOR, UV);\n\tALBEDO = pow(o.rgb, vec3(2.2));\n") + (blendClass ? "\tALPHA = o.a;\n\tALPHA_SCISSOR_THRESHOLD = 0.5;\n" : "") + "}\n";
 		else   // (lit by Godot: the texture as the surface, the game's own lighting kept as a glow of original_light)
 			code += String("void fragment() {\n\tvec4 t = texture_only(UV);\n\tvec4 o = game_colour(COLOR, UV);\n\tALBEDO = pow(t.rgb, vec3(2.2));\n"
@@ -984,6 +1009,7 @@ Ref<ShaderMaterial> AxisReplay::map_material(uint32_t texture, uint32_t env, int
 	m->set_shader_parameter("env", env == 0x1E01 ? 1 : env == 0x2101 ? 2 : 0);
 	m->set_shader_parameter("textured", texture != 0);
 	m->set_shader_parameter("original_light", originalLight);
+	m->set_render_priority(priority);
 	if (texture) {
 		Ref<Texture2DRD> &t = texShown[texture - 1];
 		if (t.is_null()) t.instantiate();
@@ -993,11 +1019,11 @@ Ref<ShaderMaterial> AxisReplay::map_material(uint32_t texture, uint32_t env, int
 	return m;
 }
 
-Ref<ArrayMesh> AxisReplay::build_map_mesh() {
+TypedArray<ArrayMesh> AxisReplay::build_map_meshes() {
+	TypedArray<ArrayMesh> meshes;
 	Ref<ArrayMesh> mesh;
-	mesh.instantiate();
 	const Unproject u = unprojector(emu);
-	if (!u.ok) return mesh;
+	if (!u.ok) return meshes;
 	{	// the textures' RD textures as they are now (uploaded on the render thread)
 		std::lock_guard<std::mutex> lock(texMutex);
 		for (auto &kv : texShown) {
@@ -1007,19 +1033,28 @@ Ref<ArrayMesh> AxisReplay::build_map_mesh() {
 		}
 	}
 	// the batches of the kinds Godot draws (godotKinds: the ground, map objects, actors, items), by material
-	struct Surface { PackedVector3Array v, n; PackedVector2Array uv; PackedColorArray col; uint32_t texture, env; int blend, cull; };
+	struct Surface { PackedVector3Array v, n; PackedVector2Array uv; PackedColorArray col; uint32_t texture, env; int blend, cull, run; };
+	const bool effects = frame_effects();
+	int runs = 0;
+	uint64_t lastEffect = ~0ull;
 	std::unordered_map<uint64_t, Surface> surfaces;
 	std::vector<uint64_t> order;
 	for (const EmuCmd &c : emu.cmds) {
 		const EmuBatch &b = c.batch;
-		if (c.kind != EmuCmd::BATCH || !(godotKinds & (1 << b.tag)) || b.pipe.prim != 0 || b.scissor[2] <= 0 || b.count < 3 || !b.persp) continue;
-		if (b.pipe.blend && !(b.pipe.src == 0x302 && b.pipe.dst == 0x303)) continue;   // (additive and others: the game's own)
-		const int blendClass = b.pipe.blend ? 1 : 0;   // (alpha-blended solid meshes: a cutout - their clear texels let through)
+		if (c.kind != EmuCmd::BATCH) continue;
+		const int blendClass = godot_class(b, godotKinds, effects);
+		if (blendClass < 0) continue;
 		// the game's culling: GL's front faces (counter-clockwise unless glFrontFace(GL_CW)) turned to Godot's (clockwise),
 		// its culled face kept (0 none, 1 back, 2 front)
 		const int cull = !b.pipe.cull ? 0 : b.pipe.cullFace == 0x404 ? 2 : b.pipe.cullFace == 0x405 ? 1 : 3;
 		const bool turn = b.pipe.frontFace == 0x901;
-		const uint64_t key = (uint64_t)b.texture | (uint64_t)(b.env & 0xffff) << 32 | (uint64_t)blendClass << 48 | (uint64_t)cull << 56;
+		uint64_t key = (uint64_t)b.texture | (uint64_t)(b.env & 0xffff) << 32 | (uint64_t)blendClass << 48 | (uint64_t)cull << 56;
+		int run = 0;
+		if (blendClass >= 2) {   // (effects: a surface per run of one material, in the game's order - it sorts them back to front)
+			if (key != lastEffect) { runs++; lastEffect = key; }
+			run = runs;
+			key = (uint64_t)run << 40 ^ key ^ (1ull << 63);
+		}
 		auto it = surfaces.find(key);
 		if (it == surfaces.end()) {
 			it = surfaces.emplace(key, Surface()).first;
@@ -1027,6 +1062,7 @@ Ref<ArrayMesh> AxisReplay::build_map_mesh() {
 			it->second.env = b.env;
 			it->second.blend = blendClass;
 			it->second.cull = cull;
+			it->second.run = run;
 			order.push_back(key);
 		}
 		Surface &s = it->second;
@@ -1061,6 +1097,7 @@ Ref<ArrayMesh> AxisReplay::build_map_mesh() {
 	// face (the mechs' curved armour shaded smoothly under Godot's lights; a box's edges kept sharp)
 	for (uint64_t key : order) {
 		Surface &s = surfaces[key];
+		if (s.blend >= 2) continue;   // (effects are unlit)
 		const int64_t n = s.v.size();
 		std::unordered_map<uint64_t, std::vector<int64_t>> at;
 		auto cell = [](const Vector3 &p) {
@@ -1087,10 +1124,16 @@ Ref<ArrayMesh> AxisReplay::build_map_mesh() {
 		arrays[Mesh::ARRAY_NORMAL] = s.n;
 		arrays[Mesh::ARRAY_TEX_UV] = s.uv;
 		arrays[Mesh::ARRAY_COLOR] = s.col;
+		if (mesh.is_null() || mesh->get_surface_count() >= 256) {
+			mesh.instantiate();
+			meshes.push_back(mesh);
+		}
 		mesh->add_surface_from_arrays(Mesh::PRIMITIVE_TRIANGLES, arrays);
-		mesh->surface_set_material(mesh->get_surface_count() - 1, map_material(s.texture, s.env, s.blend, s.cull));
+		// (effects drawn in the game's order: Godot's render priority, -128 .. 127, by run)
+		const int priority = s.run <= 0 ? 0 : runs <= 255 ? -128 + s.run : -128 + (int)((int64_t)s.run * 255 / (runs + 1));
+		mesh->surface_set_material(mesh->get_surface_count() - 1, map_material(s.texture, s.env, s.blend, s.cull, priority));
 	}
-	return mesh;
+	return meshes;
 }
 
 void AxisReplay::free_all() {

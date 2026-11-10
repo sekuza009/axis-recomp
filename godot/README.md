@@ -161,6 +161,23 @@ game's: the actors' view pass (the first-person weapon, drawn over a cleared dep
 see-through and additive parts. Checked on the recorded skirmish (mode 1: the mech as the original's) and live (mode 2,
 120 fps, no long frames in the match).
 
+## Godot draws the effects (step 6)
+
+In the remaster picture (mode 2) Godot also draws the effects: bullets, particles and explosions, and the see-through
+and additive parts of the map, mechs and items (the depth-sorted triangles and billboards the game draws already
+projected - unprojected with the frame's camera like the rest). `godot_class()` (axis_replay.cpp) decides for each batch:
+a solid surface, a cutout, or an effect - alpha-blended, additive with source alpha, additive with one - or the game's
+own. Effects are unlit (they give light: step 4's lights), blended by Godot without writing depth, and kept in the
+game's back-to-front order: a surface per run of one material, in the game's order, its render priority (-128 .. 127)
+by run. The frame's geometry is split over meshes of at most 256 surfaces (Godot's limit: `build_map_meshes()`). The
+game colours its own batches of those kinds from Godot's picture, which has the blending done already.
+
+Not in mode 1: Godot blends in linear light, the game in its gamma, so glows come out a little brighter - mode 1 keeps
+the game's own effects to look as the original. Not in a frame that draws the sky: Godot does not draw the sky yet
+(sky.c draws it from several viewpoints of its own), and an effect over it needs what is behind it; such frames keep
+the game's effects. The skirmish arena has no sky. Checked on the recorded skirmish's explosion frames and live (mode 2:
+120 fps, no long frames in the match).
+
 ## Building (Windows, zig as the compiler)
 
 **Since 2026-11-09 64-bit only**: the extension `arch=x86_64` against `Tools/godot/godot-cpp64` (SConstruct's default),

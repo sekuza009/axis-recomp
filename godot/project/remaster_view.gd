@@ -9,7 +9,7 @@ class_name RemasterView
 ##   drew them, in pixels.
 ## The picture (step 3; AxisReplay.picture_mode, Ctrl+F12 in game, --picture N): in modes 1 (the original lighting)
 ## and 2 (the remaster) the map is drawn by Godot - a second viewport with the same camera, the map rebuilt each frame
-## from the game's own batches (AxisReplay.build_map_mesh) under remaster_world.tscn (its environment and light, to be
+## from the game's own batches (AxisReplay.build_map_meshes) under remaster_world.tscn (its environment and light, to be
 ## edited in the editor), and the game's frame drawn into it by AxisMapEffect (its actors, effects and HUD over Godot's
 ## map, hidden behind it by its depth).
 
@@ -26,7 +26,8 @@ var shown: TextureRect
 var info := {}
 var map_sub: SubViewport     # Godot's map (picture modes 1 and 2)
 var map_cam: Camera3D
-var map_mesh: MeshInstance3D
+var map_mesh: MeshInstance3D       # (the first of map_meshes)
+var map_meshes: Array[MeshInstance3D] = []
 ## Godot's map world in metres: the game's units (its near plane is 100, its far a million) scaled by this - Godot's
 ## clustered point lights and shadows are made for scenes of metres
 const WORLD_SCALE := 0.01
@@ -80,6 +81,7 @@ func setup(p_replay: AxisReplay, p_view: TextureRect) -> void:
 	map_mesh = MeshInstance3D.new()
 	map_sub.add_child(map_mesh)
 	map_mesh.scale = Vector3.ONE * WORLD_SCALE
+	map_meshes.append(map_mesh)
 	replay.set_map_viewport(true)
 
 ## the Camera3D set from the game's matrices (false: no camera this frame - the menus)
@@ -114,7 +116,14 @@ func update(frame: Vector2i) -> void:
 	var map_on := replay != null and replay.picture_mode > 0 and apply_camera(frame, map_cam, map_sub, WORLD_SCALE)
 	map_sub.render_target_update_mode = SubViewport.UPDATE_ALWAYS if map_on else SubViewport.UPDATE_DISABLED
 	if map_on:
-		map_mesh.mesh = replay.build_map_mesh()
+		var built: Array = replay.build_map_meshes()
+		while map_meshes.size() < built.size():
+			var mi := MeshInstance3D.new()
+			map_sub.add_child(mi)
+			mi.scale = Vector3.ONE * WORLD_SCALE
+			map_meshes.append(mi)
+		for i in map_meshes.size():
+			map_meshes[i].mesh = built[i] if i < built.size() else null
 		world.apply_lights(replay.get_lights(), WORLD_SCALE)
 	var on := replay != null and replay.overlay and apply_camera(frame)
 	shown.visible = on

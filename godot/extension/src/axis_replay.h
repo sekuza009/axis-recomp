@@ -64,7 +64,8 @@ public:
 	float originalLight = 0.6f;
 	// what Godot draws in picture modes 1 and 2, by kind (1 << tag, src/render/draw_tags.h): the ground, map objects,
 	// actors and items by default (the actors' view pass, over a cleared depth buffer, and the effects stay the game's)
-	int godotKinds = (1 << 2) | (1 << 3) | (1 << 4) | (1 << 8);
+	int godotKinds = (1 << 2) | (1 << 3) | (1 << 4) | (1 << 6) | (1 << 7) | (1 << 8);
+	bool frame_effects() const;   // (picture mode 2 and no sky in the frame: Godot draws the see-through and additive parts too)
 	void set_godot_kinds(int v) { godotKinds = v; }
 	int get_godot_kinds() const { return godotKinds; }
 	void set_picture_mode(int v) { pictureMode = v < 0 ? 0 : v > 2 ? 2 : v; }
@@ -73,7 +74,9 @@ public:
 	bool get_map_viewport() const { return mapViewport; }
 	void set_original_light(float v);
 	float get_original_light() const { return originalLight; }
-	Ref<ArrayMesh> build_map_mesh();   // this frame's map (the ground and map objects) as a Godot mesh, in the world
+	// this frame's world of the kinds Godot draws, in the world's space: meshes of at most 256 surfaces each (Godot's
+	// limit; the effects are a surface per run, to keep the game's order)
+	TypedArray<ArrayMesh> build_map_meshes();
 	void draw_deferred(const RID &p_color, const RID &p_depth, const Vector2i &p_size);   // (AxisMapEffect, render thread)
 	Projection get_camera_projection() const;
 	Transform3D get_camera_view() const;
@@ -123,6 +126,7 @@ protected:
 		bool tagView = false;
 		bool composite = false;   // drawn later, into Godot's map (draw_deferred)
 		int kinds = 0;            // (godotKinds then)
+		bool effects = false;     // (frame_effects() then)
 	};
 	std::mutex mutex;
 	Pending pending;
@@ -151,8 +155,8 @@ protected:
 	std::unordered_map<uint32_t, RID> texRids;   // (render thread -> main thread)
 	std::unordered_map<uint32_t, Ref<Texture2DRD>> texShown;
 	std::unordered_map<uint64_t, Ref<ShaderMaterial>> mapMaterials;
-	Ref<Shader> mapShaders[2][3][4];   // [original lighting / remaster][opaque / alpha / additive][the culling]
-	Ref<ShaderMaterial> map_material(uint32_t texture, uint32_t env, int blendClass, int cull);
+	Ref<Shader> mapShaders[2][5][4];   // [original lighting / remaster][the class: godot_class()][the culling]
+	Ref<ShaderMaterial> map_material(uint32_t texture, uint32_t env, int blendClass, int cull, int priority = 0);
 	// the look's passes (compute): the world copied, bloom (a bright pass, a chain of half sizes down, blurred back
 	// up), then the composite written back into the frame
 	RID postBloomShader, postCompShader, postSampler, postScene;
