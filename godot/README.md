@@ -241,6 +241,13 @@ sess5/map_survey.sh drives all 32, survey_sheet.py makes the contact sheets).
   light, and only the lit result reaches Godot: Godot's lit surfaces have the texture alone as their colour. The fix is
   the base colours sent from the game (the 64-bit build) for Godot's albedo.
 
+## The picture mode kept (2026-11-10)
+
+The picture mode (Ctrl+F12) and the remaster look (Ctrl+F11) are kept between sessions in `user://remaster.cfg`
+(Windows: %APPDATA%/Godot/app_userdata/Axis (Godot)/remaster.cfg; game.gd), read at start and written when either
+changes - not on a check run (`--picture`, `--shot-modes`, `--no-look` set them for that run alone). Without the file
+the game starts in the original picture, as before.
+
 ## The remaster lit as the game lights it (the default since 2026-11-10)
 
 Relighting the map with Godot's lights from the game's kept missing: the models' base colours (the game multiplies its

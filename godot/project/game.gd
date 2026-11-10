@@ -20,9 +20,23 @@ var frame_log: FileAccess = null   # (--frame-log <file>: game steps that took l
 var scene_motion := 0   # (motion events the scene itself saw: a check apart from AxisGame)
 var scene_rel := Vector2()
 var no_game := false
+## the picture mode (Ctrl+F12) and the remaster look (Ctrl+F11) kept between sessions in this file - not on a check run
+## (--picture, --shot-modes, --no-look: those set them for the run alone)
+const SETTINGS := "user://remaster.cfg"
+var remember := true
+var saved_picture := -1
+var saved_look := true
 
 func _ready() -> void:
 	var args := OS.get_cmdline_user_args()
+	var cfg := ConfigFile.new()
+	if cfg.load(SETTINGS) == OK:
+		$Game.picture_mode = clampi(int(cfg.get_value("picture", "mode", $Game.picture_mode)), 0, 2)
+		$Game.look_enabled = bool(cfg.get_value("picture", "look", $Game.look_enabled))
+		print("remaster settings: picture ", $Game.picture_mode, ", look ", $Game.look_enabled)
+	remember = args.find("--picture") < 0 and args.find("--shot-modes") < 0 and args.find("--no-look") < 0
+	saved_picture = $Game.picture_mode
+	saved_look = $Game.look_enabled
 	var dir := AxisFiles.game_dir()   # (--game-dir is read again below, for the other arguments' sake)
 	var lib := AxisFiles.library_path()
 	var i := 0
@@ -130,6 +144,13 @@ func _input(e: InputEvent) -> void:
 		scene_rel += e.relative
 
 func _process(_delta: float) -> void:
+	if remember and game and (game.picture_mode != saved_picture or game.look_enabled != saved_look):
+		saved_picture = game.picture_mode
+		saved_look = game.look_enabled
+		var cfg := ConfigFile.new()
+		cfg.set_value("picture", "mode", saved_picture)
+		cfg.set_value("picture", "look", saved_look)
+		cfg.save(SETTINGS)
 	if no_game and input_log:
 		input_t += _delta
 		if input_t >= 1.0:
