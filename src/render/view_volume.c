@@ -3,12 +3,21 @@
    space in the original's order; with flag 1 an entry is dropped again when all its points are outside the same clip
    plane; a full list sets its overflow flag. */
 #include "../game.h"
+#include "draw_tags.h"
 #include <string.h>
 
 #define FIELD(type, obj, offset) GAME_VAR(type, AP(u8, RELOC(obj)) + (offset))
 #define VV ((ViewVolume *)vv)   /* the view volume (vv in each function) by its fields (src/scene.fields) */
 
 typedef long double X;
+
+#ifdef AXIS_64
+/* (the remaster's tags: draw_tags.h - the kind each queued record was queued under, by list and index) */
+#define TAGS_MAX 65536
+static unsigned char s_entryTag[TAGS_MAX], s_triTag[TAGS_MAX], s_quadTag[TAGS_MAX], s_segTag[TAGS_MAX];
+static void tag_record(unsigned char *t, int n) { if ((unsigned)n < TAGS_MAX) t[n] = (unsigned char)g_drawSource; }
+static int tag_of(const unsigned char *t, long n) { return (unsigned long)n < TAGS_MAX ? t[n] : DRAWTAG_OTHER; }
+#endif
 
 /* a clip-space point's outcodes: per axis, below -w (1) or at least w (0x10), x in the low byte, y the next, z the
    next (fcom: an ordered >=) */
@@ -38,6 +47,9 @@ static float *next_record(u8 *vv, int countAt, int full, int size)
 	}
 	float *r = (float *)(AP(u8, FIELD(APTR(u8), vv, countAt - 4)) + n * size);
 	FIELD(int, vv, countAt) = n + 1;
+#ifdef AXIS_64
+	tag_record(countAt == 0x908c ? s_segTag : s_quadTag, n);   /* (the lines' list, or the quads') */
+#endif
 	return r;
 }
 
@@ -166,6 +178,9 @@ int THISCALL (ViewVolume_addTriangle)(u8 *vv, int id, const u32 *info6, const u3
 	}
 	float *rec = AP(float, (VV->triangles + n * 0x60));
 	VV->triangleCount = n + 1;
+#ifdef AXIS_64
+	tag_record(s_triTag, n);
+#endif
 	if (!rec)
 		return n + 1;
 	const float *V = VV->clip, *p1 = P + 3, *p2 = P + 6;
@@ -324,6 +339,9 @@ void THISCALL (ViewVolume_queueModel)(u8 *view, u8 *model, u32 *colours, const f
 			return;
 		}
 		u32 *e = AP(u32, (vw->entries + vw->entryCount++ * 0x1c));
+#ifdef AXIS_64
+		tag_record(s_entryTag, vw->entryCount - 1);
+#endif
 		if (!e)
 			return;
 		if (vw->materialHeads[list] == 0) {
@@ -661,6 +679,10 @@ void THISCALL (ViewVolume_draw)(u8 *vv, int mode, float b)
 	load_matrices(&VV->projection[0], &VV->modelview[0]);
 	fog_set(fog, range);
 	VV->colourMost = 0;
+	DRAW_CAMERA(&VV->projection[0], &VV->modelview[0]);
+#ifdef AXIS_64
+	const int source = g_drawSource;   /* (transparent meshes queue triangles as they draw: under their own kind) */
+#endif
 
 	for (int i = 0; i < VV->materialCount; i++) {
 		int id = VV->materialOrder[i];
@@ -668,6 +690,10 @@ void THISCALL (ViewVolume_draw)(u8 *vv, int mode, float b)
 		if (id > 0 && mode != 2)
 			bind(vv, id - 1);
 		do {
+#ifdef AXIS_64
+			g_drawSource = tag_of(s_entryTag, ((const u8 *)it - AP(const u8, VV->entries)) / 0x1c);
+			DRAW_TAG(g_drawSource);
+#endif
 			VV->meshesDrawn++;
 			const u8 *mesh = AP(const u8, RELOC(it[0]));
 			const u32 *col = item_colours(vv, it, mesh);
@@ -683,6 +709,9 @@ void THISCALL (ViewVolume_draw)(u8 *vv, int mode, float b)
 			glDisable(GL_TEXTURE_2D);
 	}
 
+#ifdef AXIS_64
+	g_drawSource = source;
+#endif
 	/* the queued triangles of kind 1, each under its own matrix (matrix) */
 	load_matrices(&VV->projection[0], &VV->modelview[0]);
 	fog_set(fog, range);
@@ -695,6 +724,9 @@ void THISCALL (ViewVolume_draw)(u8 *vv, int mode, float b)
 		const u32 *r = AP(const u32, (VV->triangles + i * 0x60));
 		if (r[0x17] != 1)
 			continue;
+#ifdef AXIS_64
+		DRAW_TAG(tag_of(s_triTag, i));
+#endif
 		glPushMatrix();
 		if (r[0x16])
 			glMultMatrixf(AP(const float, RELOC(r[0x16])));
@@ -718,6 +750,9 @@ void THISCALL (ViewVolume_draw)(u8 *vv, int mode, float b)
 	glColor4ub(0xff, 0xff, 0xff, 0xff);
 	for (int i = 0; i < VV->segmentCount; i++) {
 		const u8 *l = AP(const u8, VV->segments + i * 0x24);
+#ifdef AXIS_64
+		DRAW_TAG(tag_of(s_segTag, i));
+#endif
 		glColor3ub(l[0], l[1], l[2]);
 		glVertex4fv(l + 4);
 		glVertex4fv(l + 0x14);
@@ -776,6 +811,9 @@ void THISCALL (ViewVolume_draw)(u8 *vv, int mode, float b)
 				use_texture(vv, cur, mode);
 				glBegin(4);
 			}
+#ifdef AXIS_64
+			DRAW_TAG(tag_of(s_triTag, ((const u8 *)r - AP(const u8, VV->triangles)) / 0x60));
+#endif
 			triangle(r, cur >= 0, 1);
 			VV->trianglesDrawn++;
 			ia++;
@@ -794,6 +832,9 @@ void THISCALL (ViewVolume_draw)(u8 *vv, int mode, float b)
 				use_texture(vv, cur, mode);
 				glBegin(GL_QUADS);
 			}
+#ifdef AXIS_64
+			DRAW_TAG(tag_of(s_quadTag, ((const u8 *)r - AP(const u8, VV->quads)) / 0x5c));
+#endif
 			billboard(r, cur >= 0);
 			VV->trianglesDrawn += 2;
 			ib++;
@@ -819,6 +860,9 @@ void THISCALL (ViewVolume_draw)(u8 *vv, int mode, float b)
 			use_texture(vv, cur, mode);
 			glBegin(GL_QUADS);
 		}
+#ifdef AXIS_64
+		DRAW_TAG(tag_of(s_quadTag, ((const u8 *)r - AP(const u8, VV->quads)) / 0x5c));
+#endif
 		billboard(r, cur >= 0);
 		VV->trianglesDrawn += 2;
 	}

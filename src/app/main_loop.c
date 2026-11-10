@@ -3,6 +3,7 @@
    end's menus. */
 #include "../game.h"
 #include "../fixes/fixes.h"
+#include "../render/draw_tags.h"
 #include <string.h>
 
 /* 0x4202d0 (app_frame): the frame: the music, the menus' key guard counted down, then app_frameByScreen */
@@ -1223,13 +1224,21 @@ u32 THISCALL (replay_frame)(u8 *s)
 	ViewVolume_reset(view);
 	if (SC->playing == 1 && SC->cameraMode == 2 && SC->watchedPlayer >= 0)
 		SC->players[SC->watchedPlayer].viewMarked = 1;   /* (the followed player seen from inside) */
+	DRAW_TAG(DRAWTAG_SKY);
 	sky_draw((Stage *)stage, view_farPlane());
+	DRAW_SOURCE(DRAWTAG_GROUND);
 	ground_buildDrawLists(stage, view, view_farPlane());
+	DRAW_SOURCE(DRAWTAG_OBJECT);
 	stage_drawObjects((Stage *)stage, view);
+	DRAW_SOURCE(DRAWTAG_ACTOR);
 	stage_drawActors((Stage *)stage, view, -1);
+	DRAW_SOURCE(DRAWTAG_BULLET);
 	stage_drawBullets(stage, view);
+	DRAW_SOURCE(DRAWTAG_PARTICLE);
 	stage_drawParticles((Stage *)stage, view);
+	DRAW_SOURCE(DRAWTAG_ITEM);
 	stage_drawItems(stage, view);
+	DRAW_SOURCE(DRAWTAG_MARKER);
 	if (SC->markLights == 1)
 		for (int i = 0; i < SCENE_STAGE(s)->mapLights.count; i++) {   /* (the map's lights: each a yellow star at its position) */
 			const Factor *r = &SCENE_STAGE(s)->mapLights.records[i];
@@ -1247,9 +1256,11 @@ u32 THISCALL (replay_frame)(u8 *s)
 		stage_setFog((Stage *)stage, st->glFogColour, BITS(st->glFogStart), BITS(st->glFogEnd), BITS(st->glFogDensity));
 		glEnable(GL_FOG);
 	}
+	DRAW_SOURCE(DRAWTAG_OTHER);
 	ViewVolume_draw(view, SC->renderMode, SC->clockFraction);
 	glDisable(GL_FOG);
 	gfx_setMatchProjection(0, 1.0f);
+	DRAW_TAG(DRAWTAG_HUD);
 
 	/* the overlay */
 	if (SC->hudHidden == 0) {
