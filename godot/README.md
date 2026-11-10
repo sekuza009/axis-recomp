@@ -227,9 +227,13 @@ Abyss round (all three modes) and live (mode 2: 120 fps; one 162 ms frame in the
 game at that frame and shoots it in each picture mode - AxisGame.set_hold, AxisReplay.redraw; scratchpad
 sess5/map_survey.sh drives all 32, survey_sheet.py makes the contact sheets).
 
-- Original lighting (mode 1) looks as the original on all 31 maps that load.
-- HeadQuarters (22 .. 24 are hidden in every menu: TubbyLand, Cube, HeadQuarters) crashes the game library when it
-  loads - in AxisSDL too, so not the remaster: the map was probably left unfinished.
+- Original lighting (mode 1) looks as the original on all 32.
+- The hidden maps (22 .. 24, never in a menu's list) are hosted under a special room's name (lobby_states.c
+  special_map): an arena named "Operator Room" plays TubbyLand, "Developer Room" Cube, "JamieSystem" HeadQuarters
+  (each also in capitals, lower case and Korean; with axis.cfg's `set_server customize OFF` - with it ON the rotation
+  starts at Valhalla). HeadQuarters (an office) works hosted so (sess5/host_special.sh: NAME=JamieSystem); as a
+  skirmish round (AXIS_MAP_INDEX=24) it crashes the game library, in AxisSDL too: a skirmish also loads the map's
+  mission and actor sections (loading.c, session modes 0 / 1), which HeadQuarters has not got in usable form.
 - The remaster (mode 2): close on Midgard, Centropolis, Titanforge, Gigantic-Core, Asgard, Abyss, Metropolis,
   Netsphere, Musfelheim, GreenField, Pyromid, Garuda, Sanctuary, FinalLab, colosseumII, BlastPit, TubbyLand; too bright
   or washed on Catacomb, Bootcamp, Cube, IllusionCity and Valhalla's floor (many overlapping white lights - Godot adds

@@ -220,6 +220,8 @@ func refit_now(frame: Vector2i) -> void:
 ## (a check: --shot-modes) the game held at one frame, that frame drawn and shot in each picture mode, then quit
 func shoot_modes() -> void:
 	game.set_hold(true)
+	if remaster:
+		print("AxisGame: at the shot: ", remaster.report(game.get_game_size()))
 	for m in 3:
 		game.picture_mode = m
 		for _k in 4:
