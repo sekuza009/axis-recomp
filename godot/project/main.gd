@@ -9,6 +9,8 @@ var shots := {}        # frame -> path
 var quit_after := -1
 var shot_path := ""    # a shot being taken: playing paused while the render thread catches up
 var shot_wait := 0
+var remaster: RemasterView
+var camera_report: FileAccess
 
 func _ready() -> void:
 	var args := OS.get_cmdline_user_args()
@@ -23,6 +25,13 @@ func _ready() -> void:
 			i += 1
 			var parts: PackedStringArray = args[i].split(":", true, 1)
 			shots[int(parts[0])] = parts[1]
+		elif a == "--tags":   # the tag view
+			$Replay.tag_view = true
+		elif a == "--overlay":   # the camera check's overlay
+			$Replay.overlay = true
+		elif a == "--camera-report":   # the camera check's numbers at each --shot frame into a file
+			i += 1
+			camera_report = FileAccess.open(args[i], FileAccess.WRITE)
 		elif a == "--look":   # the remaster look on (main.tscn holds its settings)
 			$Replay.look_enabled = true
 		elif a == "--no-status":
@@ -42,6 +51,9 @@ func _ready() -> void:
 		$Status.text = replay.get_status()
 		return
 	$View.texture = replay.get_texture()
+	remaster = RemasterView.new()
+	add_child(remaster)
+	remaster.setup(replay, $View)
 	$Status.visible = OS.get_cmdline_user_args().find("--no-status") < 0
 	replay.playing = true
 
@@ -51,6 +63,8 @@ func _process(_delta: float) -> void:
 	if replay == null:
 		return
 	var f := replay.get_frame()
+	if shot_path == "":
+		remaster.update(replay.get_frame_size())
 	$Status.text = "frame %d / %d   %s" % [f, replay.get_frame_count(), replay.get_frame_size()]
 	if shot_path != "":
 		shot_wait -= 1
@@ -67,6 +81,9 @@ func _process(_delta: float) -> void:
 			replay.playing = true
 		return
 	if shots.has(f):
+		if camera_report:
+			camera_report.store_line("frame %d: %s" % [f, remaster.report(replay.get_frame_size())])
+			camera_report.flush()
 		replay.playing = false
 		shot_path = shots[f]
 		shot_wait = 3

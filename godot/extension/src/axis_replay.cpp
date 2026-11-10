@@ -47,6 +47,10 @@ layout(location = 0) in vec4 v_col;
 layout(location = 1) in vec2 v_uv;
 layout(location = 2) in float v_fog;
 layout(location = 0) out vec4 frag;
+// the tag view's colours (src/render/draw_tags.h): other, sky, ground, objects, actors, the actors' view pass, bullets,
+// particles, items, markers, HUD
+const vec3 k_tags[11] = vec3[](vec3(0.5), vec3(0.3, 0.5, 1.0), vec3(0.2, 0.9, 0.2), vec3(1.0, 0.9, 0.1), vec3(1.0, 0.2, 0.2),
+	vec3(1.0, 0.4, 0.8), vec3(1.0, 0.6, 0.0), vec3(0.0, 1.0, 1.0), vec3(0.8, 0.3, 1.0), vec3(1.0), vec3(0.6, 0.6, 0.6));
 void main() {
 	vec4 c = v_col;
 	if ((pc.flags & 1u) != 0u) {
@@ -57,6 +61,10 @@ void main() {
 	}
 	if ((pc.flags & 2u) != 0u)
 		c.rgb = mix(pc.fog_color.rgb, c.rgb, v_fog);
+	if ((pc.flags & 4u) != 0u) {   // the tag view
+		vec3 t = k_tags[min(pc.pad, 10u)];
+		c.rgb = mix(vec3(dot(c.rgb, vec3(0.3, 0.59, 0.11))), t, 0.65);
+	}
 	frag = c;
 }
 )";
@@ -191,6 +199,20 @@ void AxisReplay::_bind_methods() {
 	// the remaster's look (the 3D world only; the HUD and menus stay the original's)
 	ClassDB::bind_method(D_METHOD("set_look_enabled", "enabled"), &AxisReplay::set_look_enabled);
 	ClassDB::bind_method(D_METHOD("get_look_enabled"), &AxisReplay::get_look_enabled);
+	ClassDB::bind_method(D_METHOD("set_tag_view", "on"), &AxisReplay::set_tag_view);
+	ClassDB::bind_method(D_METHOD("get_tag_view"), &AxisReplay::get_tag_view);
+	ClassDB::bind_method(D_METHOD("set_overlay", "on"), &AxisReplay::set_overlay);
+	ClassDB::bind_method(D_METHOD("get_overlay"), &AxisReplay::get_overlay);
+	ClassDB::bind_method(D_METHOD("has_camera"), &AxisReplay::has_camera);
+	ClassDB::bind_method(D_METHOD("get_camera_projection"), &AxisReplay::get_camera_projection);
+	ClassDB::bind_method(D_METHOD("get_camera_view"), &AxisReplay::get_camera_view);
+	ClassDB::bind_method(D_METHOD("get_tag_stats"), &AxisReplay::get_tag_stats);
+	ClassDB::bind_method(D_METHOD("get_camera_viewport"), &AxisReplay::get_camera_viewport);
+	ClassDB::bind_method(D_METHOD("get_world_triangles", "mask"), &AxisReplay::get_world_triangles);
+	ClassDB::bind_method(D_METHOD("get_world_samples", "mask", "count"), &AxisReplay::get_world_samples);
+	ADD_GROUP("Remaster view", "");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "tag_view"), "set_tag_view", "get_tag_view");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "overlay"), "set_overlay", "get_overlay");
 	ADD_GROUP("Remaster look", "");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "look_enabled"), "set_look_enabled", "get_look_enabled");
 #define AXIS_LOOK_BIND(name, range) \
@@ -267,6 +289,7 @@ void AxisReplay::submit(int w, int h) {
 	p.w = w;
 	p.h = h;
 	p.look = look;
+	p.tagView = tagView;
 	for (const auto &kv : emu.textures) {   // (only the textures changed since last handed over)
 		auto it = sentVersions.find(kv.first);
 		if (it == sentVersions.end() || it->second != kv.second.version) {
@@ -557,7 +580,8 @@ void AxisReplay::_render() {
 		}
 		rd->draw_list_bind_uniform_set(dl, set, 1);
 		rd->draw_list_enable_scissor(dl, Rect2(b.scissor[0], b.scissor[1], b.scissor[2], b.scissor[3]));
-		Push push = { b.first, (textured ? 1u : 0u) | (b.fog ? 2u : 0u), b.env, 0, { b.fogColor[0], b.fogColor[1], b.fogColor[2], b.fogColor[3] } };
+		Push push = { b.first, (textured ? 1u : 0u) | (b.fog ? 2u : 0u) | (p.tagView ? 4u : 0u), b.env, b.tag,
+		              { b.fogColor[0], b.fogColor[1], b.fogColor[2], b.fogColor[3] } };
 		rd->draw_list_set_push_constant(dl, bytes(&push, sizeof push), sizeof push);
 		rd->draw_list_draw(dl, false, 1, b.count);
 	}
@@ -676,6 +700,146 @@ void AxisReplay::run_post(const Look &l) {
 		for (size_t i = n - 1; i-- > 0;) pass(postBloomPipe, postSets[n + i], 2, postSizes[i].first, postSizes[i].second);
 	}
 	pass(postCompPipe, postSets.back(), 0, fbW, fbH);
+}
+
+// ---- the remaster's view of the frame ----
+
+namespace {
+Projection gl_matrix(const float *m) {   // (GL's column-major floats: Godot's Projection is columns too)
+	return Projection(Vector4(m[0], m[1], m[2], m[3]), Vector4(m[4], m[5], m[6], m[7]), Vector4(m[8], m[9], m[10], m[11]),
+	                  Vector4(m[12], m[13], m[14], m[15]));
+}
+} // namespace
+
+Projection AxisReplay::get_camera_projection() const {
+	return emu.hasCamera ? gl_matrix(emu.camProjection) : Projection();
+}
+
+// the view matrix (the world into the camera's space, GL's: the camera looking down -z, y up - Godot's convention)
+Transform3D AxisReplay::get_camera_view() const {
+	if (!emu.hasCamera) return Transform3D();
+	const float *m = emu.camView;
+	return Transform3D(Basis(Vector3(m[0], m[1], m[2]), Vector3(m[4], m[5], m[6]), Vector3(m[8], m[9], m[10])), Vector3(m[12], m[13], m[14]));   // (Basis from columns)
+}
+
+Rect2i AxisReplay::get_camera_viewport() const {
+	for (const EmuCmd &c : emu.cmds)
+		if (c.kind == EmuCmd::BATCH && c.batch.persp && c.batch.scissor[2] > 0)
+			return Rect2i(c.batch.scissor[0], c.batch.scissor[1], c.batch.scissor[2], c.batch.scissor[3]);
+	return Rect2i(0, 0, emu.width(), emu.height());
+}
+
+PackedInt32Array AxisReplay::get_tag_stats() const {
+	PackedInt32Array out;
+	out.resize(16);
+	for (const EmuCmd &c : emu.cmds)
+		if (c.kind == EmuCmd::BATCH && c.batch.tag < 16)
+			out.set(c.batch.tag, out[c.batch.tag] + (c.batch.pipe.prim == 0 ? (int32_t)c.batch.count / 3 : 0));
+	return out;
+}
+
+// a 3D batch's vertex back into the world: the viewport unfolded from the clip coordinates gl_emu made, then the
+// camera's projection x view inverted
+namespace {
+// a 4 x 4 column-major matrix inverted in doubles (the far plane is a million units out: floats lose the world)
+bool invert(const double m[16], double o[16]) {
+	double inv[16];
+	inv[0] = m[5] * m[10] * m[15] - m[5] * m[11] * m[14] - m[9] * m[6] * m[15] + m[9] * m[7] * m[14] + m[13] * m[6] * m[11] - m[13] * m[7] * m[10];
+	inv[4] = -m[4] * m[10] * m[15] + m[4] * m[11] * m[14] + m[8] * m[6] * m[15] - m[8] * m[7] * m[14] - m[12] * m[6] * m[11] + m[12] * m[7] * m[10];
+	inv[8] = m[4] * m[9] * m[15] - m[4] * m[11] * m[13] - m[8] * m[5] * m[15] + m[8] * m[7] * m[13] + m[12] * m[5] * m[11] - m[12] * m[7] * m[9];
+	inv[12] = -m[4] * m[9] * m[14] + m[4] * m[10] * m[13] + m[8] * m[5] * m[14] - m[8] * m[6] * m[13] - m[12] * m[5] * m[10] + m[12] * m[6] * m[9];
+	inv[1] = -m[1] * m[10] * m[15] + m[1] * m[11] * m[14] + m[9] * m[2] * m[15] - m[9] * m[3] * m[14] - m[13] * m[2] * m[11] + m[13] * m[3] * m[10];
+	inv[5] = m[0] * m[10] * m[15] - m[0] * m[11] * m[14] - m[8] * m[2] * m[15] + m[8] * m[3] * m[14] + m[12] * m[2] * m[11] - m[12] * m[3] * m[10];
+	inv[9] = -m[0] * m[9] * m[15] + m[0] * m[11] * m[13] + m[8] * m[1] * m[15] - m[8] * m[3] * m[13] - m[12] * m[1] * m[11] + m[12] * m[3] * m[9];
+	inv[13] = m[0] * m[9] * m[14] - m[0] * m[10] * m[13] - m[8] * m[1] * m[14] + m[8] * m[2] * m[13] + m[12] * m[1] * m[10] - m[12] * m[2] * m[9];
+	inv[2] = m[1] * m[6] * m[15] - m[1] * m[7] * m[14] - m[5] * m[2] * m[15] + m[5] * m[3] * m[14] + m[13] * m[2] * m[7] - m[13] * m[3] * m[6];
+	inv[6] = -m[0] * m[6] * m[15] + m[0] * m[7] * m[14] + m[4] * m[2] * m[15] - m[4] * m[3] * m[14] - m[12] * m[2] * m[7] + m[12] * m[3] * m[6];
+	inv[10] = m[0] * m[5] * m[15] - m[0] * m[7] * m[13] - m[4] * m[1] * m[15] + m[4] * m[3] * m[13] + m[12] * m[1] * m[7] - m[12] * m[3] * m[5];
+	inv[14] = -m[0] * m[5] * m[14] + m[0] * m[6] * m[13] + m[4] * m[1] * m[14] - m[4] * m[2] * m[13] - m[12] * m[1] * m[6] + m[12] * m[2] * m[5];
+	inv[3] = -m[1] * m[6] * m[11] + m[1] * m[7] * m[10] + m[5] * m[2] * m[11] - m[5] * m[3] * m[10] - m[9] * m[2] * m[7] + m[9] * m[3] * m[6];
+	inv[7] = m[0] * m[6] * m[11] - m[0] * m[7] * m[10] - m[4] * m[2] * m[11] + m[4] * m[3] * m[10] + m[8] * m[2] * m[7] - m[8] * m[3] * m[6];
+	inv[11] = -m[0] * m[5] * m[11] + m[0] * m[7] * m[9] + m[4] * m[1] * m[11] - m[4] * m[3] * m[9] - m[8] * m[1] * m[7] + m[8] * m[3] * m[5];
+	inv[15] = m[0] * m[5] * m[10] - m[0] * m[6] * m[9] - m[4] * m[1] * m[10] + m[4] * m[2] * m[9] + m[8] * m[1] * m[6] - m[8] * m[2] * m[5];
+	const double det = m[0] * inv[0] + m[1] * inv[4] + m[2] * inv[8] + m[3] * inv[12];
+	if (det == 0) return false;
+	for (int i = 0; i < 16; i++) o[i] = inv[i] / det;
+	return true;
+}
+struct Unproject {
+	double inv[16];
+	double W, H;
+	bool ok = false;
+	Vector3 world(const EmuVertex &v, const EmuBatch &b, Vector2 *screen) const {
+		const double vx = b.scissor[0], vw = b.scissor[2], vh = b.scissor[3], vy = H - b.scissor[1] - vh;
+		const double w = v.pos[3];
+		const double cx = (v.pos[0] - w * ((2 * vx + vw) / W - 1)) * W / vw;
+		const double cy = (-v.pos[1] - w * ((2 * vy + vh) / H - 1)) * H / vh;
+		const double cz = 2.0 * v.pos[2] - w;
+		const double c[4] = { cx, cy, cz, w };
+		double r[4];
+		for (int i = 0; i < 4; i++) r[i] = inv[i] * c[0] + inv[4 + i] * c[1] + inv[8 + i] * c[2] + inv[12 + i] * c[3];
+		if (screen) *screen = Vector2((real_t)((v.pos[0] / w * 0.5 + 0.5) * W), (real_t)((v.pos[1] / w * 0.5 + 0.5) * H));
+		if (r[3] != 0) for (int i = 0; i < 3; i++) r[i] /= r[3];
+		return Vector3((real_t)r[0], (real_t)r[1], (real_t)r[2]);
+	}
+};
+Unproject unprojector(const GLEmu &e) {
+	Unproject u;
+	if (!e.hasCamera) return u;
+	double pv[16];
+	for (int c = 0; c < 4; c++)
+		for (int r = 0; r < 4; r++) {
+			double s = 0;
+			for (int k = 0; k < 4; k++) s += (double)e.camProjection[k * 4 + r] * (double)e.camView[c * 4 + k];
+			pv[c * 4 + r] = s;
+		}
+	if (!invert(pv, u.inv)) return u;
+	u.W = e.width();
+	u.H = e.height();
+	u.ok = true;
+	return u;
+}
+} // namespace
+
+PackedVector3Array AxisReplay::get_world_triangles(int mask) const {
+	PackedVector3Array out;
+	const Unproject u = unprojector(emu);
+	if (!u.ok) return out;
+	for (const EmuCmd &c : emu.cmds) {
+		const EmuBatch &b = c.batch;
+		if (c.kind != EmuCmd::BATCH || !b.persp || b.pipe.prim != 0 || !(mask & (1 << b.tag)) || b.scissor[2] <= 0) continue;
+		for (uint32_t i = 0; i < b.count; i++) out.push_back(u.world(emu.verts[b.first + i], b, nullptr));
+	}
+	return out;
+}
+
+Array AxisReplay::get_world_samples(int mask, int count) const {
+	PackedVector3Array world;
+	PackedVector2Array screen;
+	const Unproject u = unprojector(emu);
+	size_t total = 0;
+	if (u.ok)
+		for (const EmuCmd &c : emu.cmds)
+			if (c.kind == EmuCmd::BATCH && c.batch.persp && (mask & (1 << c.batch.tag)) && c.batch.scissor[2] > 0) total += c.batch.count;
+	const size_t step = count > 0 && total > (size_t)count ? total / (size_t)count : 1;
+	size_t k = 0;
+	if (u.ok)
+		for (const EmuCmd &c : emu.cmds) {
+			const EmuBatch &b = c.batch;
+			if (c.kind != EmuCmd::BATCH || !b.persp || !(mask & (1 << b.tag)) || b.scissor[2] <= 0) continue;
+			for (uint32_t i = 0; i < b.count; i++, k++) {
+				if (k % step) continue;
+				const EmuVertex &v = emu.verts[b.first + i];
+				if (v.pos[3] <= 0) continue;   // (behind the camera)
+				Vector2 s;
+				world.push_back(u.world(v, b, &s));
+				screen.push_back(s);
+			}
+		}
+	Array out;
+	out.push_back(world);
+	out.push_back(screen);
+	return out;
 }
 
 void AxisReplay::free_all() {

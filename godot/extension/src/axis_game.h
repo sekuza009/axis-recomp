@@ -5,6 +5,7 @@
 // message loop).
 #pragma once
 #include "axis_replay.h"
+#include <cstdio>
 #include <godot_cpp/classes/input_event.hpp>
 #include "host_win.h"
 #include "axis_audio.h"
@@ -28,6 +29,8 @@ public:
 	static int s_message(void *user, const char *title, const char *text);   // (the game's message boxes: OS.alert)
 	static int s_launch(void *user, const char *program, const char *arguments);   // (AxisGL.exe: the game restarted)
 	bool restartRequested = false;
+	bool start_recording(const String &p_path);   // the game's drawing to an AXGLREC1 file (main.tscn replays it)
+	void stop_recording();
 	void set_music_near_end(double s) { musicNearEnd = s; }   // (a check: each track started s seconds before its end)   // (the frame log: game steps that took long, and the frames drawn in them)
 	void _process(double p_delta) override;
 	void _input(const Ref<InputEvent> &p_event) override;
@@ -56,6 +59,8 @@ private:
 	String frameEvents;
 	String keyEvents;
 	double musicNearEnd = 0;
+	FILE *record = nullptr;
+	std::vector<unsigned char> streamHeader;
 	int musicLoops = 0;   // (the game's seeks: a track looped)   // (the input log: key events since the last status)
 	bool rawSeen = false;
 	bool cursorMouse = false;   // the movement as the cursor moves (the original's); else raw counts (--raw-mouse)

@@ -93,6 +93,21 @@ unsigned vk_of(Key k) {
 
 } // namespace
 
+bool AxisGame::start_recording(const String &p_path) {
+	stop_recording();
+	if (streamHeader.empty()) return false;
+	record = fopen(p_path.utf8().get_data(), "wb");
+	if (!record) return false;
+	fwrite(streamHeader.data(), 1, streamHeader.size(), record);
+	UtilityFunctions::print("AxisGame: recording the drawing to ", p_path);
+	return true;
+}
+
+void AxisGame::stop_recording() {
+	if (record) fclose(record);
+	record = nullptr;
+}
+
 void AxisGame::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("start", "game_dir", "library", "driver", "raw_mouse"), &AxisGame::start, DEFVAL(false), DEFVAL(false));
 	ClassDB::bind_method(D_METHOD("is_running"), &AxisGame::is_running);
@@ -106,6 +121,8 @@ void AxisGame::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_input_status"), &AxisGame::get_input_status);
 	ClassDB::bind_method(D_METHOD("take_frame_events"), &AxisGame::take_frame_events);
 	ClassDB::bind_method(D_METHOD("set_music_near_end", "seconds"), &AxisGame::set_music_near_end);
+	ClassDB::bind_method(D_METHOD("start_recording", "path"), &AxisGame::start_recording);
+	ClassDB::bind_method(D_METHOD("stop_recording"), &AxisGame::stop_recording);
 }
 
 void AxisGame::on_frame(void *user, const unsigned *words, unsigned count, int width, int height) {
@@ -119,6 +136,11 @@ void AxisGame::on_frame(void *user, const unsigned *words, unsigned count, int w
 		g->feed_audio();
 		g->shownInStep++;
 		g->emit_signal("step_frame_shown", g->gameFrames);
+	}
+	if (g->record) {
+		const uint32_t head[3] = { (uint32_t)width, (uint32_t)height, count };
+		fwrite(head, 4, 3, g->record);
+		fwrite(words, 4, count, g->record);
 	}
 	g->emu.run_words(words, count, width, height);
 	g->submit(width, height);
@@ -293,6 +315,7 @@ bool AxisGame::start(const String &p_game_dir, const String &p_library, bool p_d
 	// the stream's header: which call each op is
 	std::vector<unsigned char> header(api.stream_header(nullptr, 0));
 	api.stream_header(header.data(), (unsigned)header.size());
+	streamHeader = header;
 	std::string err;
 	if (!emu.load_header(header.data(), header.size(), err)) {
 		status = String("AxisGame: ") + err.c_str();
@@ -343,6 +366,14 @@ void AxisGame::release_all() {
 void AxisGame::_input(const Ref<InputEvent> &p_event) {
 	if (!running) return;
 	Ref<InputEventKey> k = p_event;
+	if (k.is_valid() && k->is_ctrl_pressed() && (k->get_physical_keycode() == KEY_F9 || k->get_physical_keycode() == KEY_F10)) {
+		if (k->is_pressed() && !k->is_echo()) {   // Ctrl+F9: the tag view; Ctrl+F10: the camera check's overlay
+			bool &v = k->get_physical_keycode() == KEY_F9 ? tagView : overlay;
+			v = !v;
+			UtilityFunctions::print("AxisGame: ", k->get_physical_keycode() == KEY_F9 ? "the tag view " : "the camera overlay ", v ? "on" : "off");
+		}
+		return;
+	}
 	if (k.is_valid() && k->get_physical_keycode() == KEY_F11 && k->is_ctrl_pressed()) {   // Ctrl+F11: the remaster's look
 		if (k->is_pressed() && !k->is_echo()) {                                            // on / off (not the game's)
 			look.enabled = !look.enabled;

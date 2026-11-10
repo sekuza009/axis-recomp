@@ -34,7 +34,7 @@ const struct { const char *name; Plain kind; } k_names[] = {
 	{ "gluOrtho2D", P_ORTHO2D }, { "gluPerspective", P_PERSPECTIVE },
 };
 enum { OP_COLOR4UBV = 64, OP_FOGFV, OP_LOADMATRIX, OP_MULTMATRIX, OP_TEXCOORD2FV, OP_VERTEX3FV, OP_VERTEX4FV,
-	OP_PIXELSTORE, OP_DRAW, OP_TEXIMAGE, OP_MIPMAPS, OP_TEXPARAMI };
+	OP_PIXELSTORE, OP_DRAW, OP_TEXIMAGE, OP_MIPMAPS, OP_TEXPARAMI, OP_TAG, OP_CAMERA };
 
 float F(uint32_t w) { float f; memcpy(&f, &w, 4); return f; }
 double D(const uint32_t *w) { double d; memcpy(&d, w, 8); return d; }
@@ -202,6 +202,7 @@ void GLEmu::emit(int prim, const EmuVertex *v, int n) {
 	}
 	b.env = envMode;
 	b.fog = fog;
+	b.tag = (uint8_t)curTag;
 	b.persp = mats[1][depth[1]][11] != 0.0f;   // (the projection's w row: -1 for perspective, 0 for glOrtho)
 	memcpy(b.fogColor, fogColor, 16);
 	b.scissor[0] = viewport[0]; b.scissor[1] = fbH - viewport[1] - viewport[3]; b.scissor[2] = viewport[2]; b.scissor[3] = viewport[3];
@@ -213,7 +214,7 @@ void GLEmu::emit(int prim, const EmuVertex *v, int n) {
 	if (!cmds.empty() && cmds.back().kind == EmuCmd::BATCH) {
 		EmuBatch &l = cmds.back().batch;
 		if (l.pipe == b.pipe && l.texture == b.texture && l.minFilter == b.minFilter && l.magFilter == b.magFilter &&
-		    l.wrapS == b.wrapS && l.wrapT == b.wrapT && l.env == b.env && l.fog == b.fog && l.persp == b.persp && (!b.fog || !memcmp(l.fogColor, b.fogColor, 16)) &&
+		    l.wrapS == b.wrapS && l.wrapT == b.wrapT && l.env == b.env && l.fog == b.fog && l.persp == b.persp && l.tag == b.tag && (!b.fog || !memcmp(l.fogColor, b.fogColor, 16)) &&
 		    !memcmp(l.scissor, b.scissor, 16) && l.first + l.count == first) {
 			l.count += (uint32_t)n;
 			return;
@@ -459,6 +460,8 @@ void GLEmu::run_words(const uint32_t *words, size_t n, int width, int height) {
 	fbW = width > 0 ? width : 1;
 	fbH = height > 0 ? height : 1;
 	if (viewport[2] == 0) { viewport[2] = fbW; viewport[3] = fbH; }   // (a new context's viewport: the window)
+	curTag = 0;
+	hasCamera = false;
 	const uint32_t *p = words, *end = p + n;
 	while (p < end) {
 		const uint32_t h = *p++, op = h & 0xffff, words = h >> 16;
@@ -574,6 +577,26 @@ void GLEmu::run_words(const uint32_t *words, size_t n, int width, int height) {
 			t.version++;
 			break;
 		}
+		case OP_TAG: {   // what is drawn from here: the primitives already complete within a glBegin keep the old tag
+			if (beginMode >= 0) {
+				const size_t per = beginMode == 4 ? 3 : beginMode == 7 ? 4 : beginMode == 1 ? 2 : beginMode == 0 ? 1 : 0;
+				if (per && !immediate.empty() && immediate.size() % per == 0) {
+					assemble(beginMode, immediate, nullptr, immediate.size());
+					immediate.clear();
+				}
+			}
+			curTag = (int)p[0];
+			p += 1;
+			break;
+		}
+		case OP_CAMERA:
+			if (!hasCamera) {
+				memcpy(camProjection, p, 64);
+				memcpy(camView, p + 16, 64);
+				hasCamera = true;
+			}
+			p += 32;
+			break;
 		default: unknownOps++; return;   // (an unknown op: the rest of the frame cannot be read)
 		}
 	}

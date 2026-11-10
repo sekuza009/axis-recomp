@@ -4,6 +4,10 @@ extends Control
 ##   [--quit-after N]   (frames: the game's own, counted from its first)
 
 var game: AxisGame
+var remaster: RemasterView   # the remaster's camera and its check (remaster_view.gd)
+var record_path := ""
+var camera_report: FileAccess
+var next_report := 0
 var shots := {}
 var quit_after := -1
 var audio_log: FileAccess = null   # (--audio-log <file>: the sound status every 3 s, flushed each line)
@@ -54,6 +58,16 @@ func _ready() -> void:
 			i += 1
 		elif a == "--gl":
 			pass
+		elif a == "--record":   # the game's drawing to a file (main.tscn replays it)
+			i += 1
+			record_path = args[i]
+		elif a == "--tags":   # the tag view on (Ctrl+F9 toggles it)
+			$Game.tag_view = true
+		elif a == "--overlay":   # the camera check's overlay on (Ctrl+F10 toggles it)
+			$Game.overlay = true
+		elif a == "--camera-report":   # the camera check's numbers every 300 frames into a file
+			i += 1
+			camera_report = FileAccess.open(args[i], FileAccess.WRITE)
 		elif a == "--no-look":   # the original picture (the remaster look off; Ctrl+F11 toggles it in game)
 			$Game.look_enabled = false
 		elif a == "--status":
@@ -91,7 +105,13 @@ func _ready() -> void:
 		await get_tree().process_frame
 	if no_game:   # (a check: only the mouse captured, no game)
 		Input.mouse_mode = Input.MOUSE_MODE_VISIBLE if args.find("--visible") >= 0 else Input.MOUSE_MODE_CAPTURED
-	elif not game.start(dir, lib, args.find("--gl") >= 0, args.find("--raw-mouse") >= 0):   # (--raw-mouse: the device's counts, unscaled)   # (--gl: the game draws with OpenGL too, as before)
+	elif game.start(dir, lib, args.find("--gl") >= 0, args.find("--raw-mouse") >= 0):
+		if record_path != "":
+			game.start_recording(record_path)
+		remaster = RemasterView.new()
+		add_child(remaster)
+		remaster.setup(game, $View)
+	else:   # (--raw-mouse: the device's counts, unscaled)   # (--gl: the game draws with OpenGL too, as before)
 		$Status.text = game.get_status()
 
 func _input(e: InputEvent) -> void:
@@ -113,6 +133,12 @@ func _process(_delta: float) -> void:
 	if game == null or not game.is_running():
 		return
 	var f := game.get_game_frames()
+	if remaster:
+		remaster.update(game.get_game_size())
+		if camera_report and f >= next_report:
+			next_report = f + 300
+			camera_report.store_line("frame %d: %s" % [f, remaster.report(game.get_game_size())])
+			camera_report.flush()
 	if frame_log:
 		var ev: String = game.take_frame_events()
 		if ev != "":
@@ -142,6 +168,7 @@ func _process(_delta: float) -> void:
 			shots.erase(s)
 	if quit_after >= 0 and f >= quit_after:
 		print("AxisGame: quitting after ", f, " frames")
+		game.stop_recording()
 		get_tree().quit()
 
 ## the frame shown as the original shows it: when the window is the game's size (full screen at the desktop's size,

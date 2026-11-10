@@ -76,6 +76,32 @@ DirectX is grey off Windows (it runs DirectX 7's installer, after asking); Insta
 restart after a graphics change passes it, as the original game started AxisGL.exe itself. AxisRC.exe keeps the
 original AxisPlay.exe.
 
+## The remaster's view of the game (steps 1b.1 and 1b.2: tags, camera)
+
+**Tags.** The 64-bit game library says what it draws (src/render/draw_tags.h, portable branch): the kind each pass
+of the match's frame queues under - sky, ground, map objects, actors, the actors' second pass (over a cleared depth
+buffer), bullets, particles, items, markers, HUD - kept by the view volume for every queued record and sent as a tag
+op before the drawing (glrec64.c's OP_TAG). gl_emu puts it in each batch (`EmuBatch::tag`). **Ctrl+F9** in game (or
+`--tags`) is the tag view: each part tinted by its kind (yellow map objects, green ground, red actors, pink actor view,
+orange bullets, cyan particles, purple items, blue sky, grey HUD). On the skirmish arena recorded the whole arena is
+map objects (~600 triangles: no ground layers on that map), the mechs ~2,300, items, particles and the HUD.
+
+**Camera.** Once per view volume drawn the game sends its camera (OP_CAMERA: the projection and view matrices).
+`AxisReplay.get_camera_projection()` / `get_camera_view()` / `get_camera_viewport()` give them as Godot's types; the
+world's points of chosen kinds come back from the frame with `get_world_triangles(mask)` / `get_world_samples(mask, n)`
+(the clip coordinates gl_emu made, the viewport unfolded, projection x view inverted in doubles). remaster_view.gd
+(`RemasterView`) makes a Godot **Camera3D** from them each frame: the view's inverse as its transform, a frustum
+covering the whole frame at the projection's scale with its centre moved by the viewport's (the frame is one row
+taller than the game's viewport: the original's window starts at y -1). **Ctrl+F10** (or `--overlay`): the map's
+ground and objects rebuilt as a Godot mesh from the frame and drawn by Godot's own 3D renderer through that camera,
+a green wireframe over the game's picture. `--camera-report <file>`: the check's numbers (every 300 frames in game, at
+each --shot in the replay) - a sample of ~2,400 world points (map, actors, items) projected by the Camera3D
+(unproject_position) against where the game drew them: on the recorded match mean 0.001 px, 99% within 0.011 px,
+worst 0.56 px (frames 8,400 / 9,000 / 10,200).
+
+`--record <file>` (game.gd): the game's drawing written as an AXGLREC1 file while it plays, for main.tscn to replay
+(the camera and tags included).
+
 ## Building (Windows, zig as the compiler)
 
 **Since 2026-11-09 64-bit only**: the extension `arch=x86_64` against `Tools/godot/godot-cpp64` (SConstruct's default),

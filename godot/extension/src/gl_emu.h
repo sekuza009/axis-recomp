@@ -42,6 +42,7 @@ struct EmuBatch {
 	uint8_t fog = 0;
 	float fogColor[4] = { 0, 0, 0, 0 };
 	int scissor[4] = { 0, 0, 0, 0 };   // the viewport, framebuffer pixels, top-left origin
+	uint8_t tag = 0;           // what it is (src/render/draw_tags.h: the sky, the ground, map objects, actors ...)
 	uint8_t persp = 0;         // drawn with a perspective projection: the 3D world (the remaster's effects apply to it,
 	                           // not to the HUD and menus drawn flat over it)
 };
@@ -75,11 +76,16 @@ public:
 	bool load_header(const uint8_t *p, size_t n, std::string &error);
 	void run_words(const uint32_t *words, size_t n, int width, int height);
 	void restart();
+	int width() const { return fbW; }
+	int height() const { return fbH; }
 
 	std::vector<EmuVertex> verts;
 	std::vector<EmuCmd> cmds;
 	std::unordered_map<uint32_t, EmuTexture> textures;
 	uint32_t unknownOps = 0;
+	// the frame's camera (the first view volume drawn: the world's), GL's column-major matrices; 0 none this frame
+	bool hasCamera = false;
+	float camProjection[16], camView[16];
 
 private:
 	struct Frame { int w, h; long long offset; size_t words; };   // (the words' place in the file)
@@ -105,6 +111,7 @@ private:
 	int fbW, fbH;
 	// glBegin .. glEnd
 	int beginMode = -1;
+	int curTag = 0;   // (the tag ops: what is drawn now)
 	struct ObjVertex { float p[4]; float c[4]; float t[2]; };
 	std::vector<ObjVertex> immediate;
 

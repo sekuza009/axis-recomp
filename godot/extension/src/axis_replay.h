@@ -5,6 +5,8 @@
 #include <godot_cpp/classes/node.hpp>
 #include <godot_cpp/classes/rendering_device.hpp>
 #include <godot_cpp/classes/texture2drd.hpp>
+#include <godot_cpp/variant/projection.hpp>
+#include <godot_cpp/variant/transform3d.hpp>
 
 #include <mutex>
 #include <unordered_map>
@@ -39,6 +41,20 @@ public:
 		float vignette = 0.0f, sharpen = 0.0f;
 	};
 	Look look;
+	// the remaster's view of the frame (src/render/draw_tags.h): tag_view tints each part by what it is; the camera
+	// of the frame (the world's view volume) as Godot's types; the world's points of chosen kinds (1 << tag each)
+	bool tagView = false, overlay = false;
+	void set_tag_view(bool v) { tagView = v; }
+	bool get_tag_view() const { return tagView; }
+	void set_overlay(bool v) { overlay = v; }
+	bool get_overlay() const { return overlay; }
+	bool has_camera() const { return emu.hasCamera; }
+	Projection get_camera_projection() const;
+	Transform3D get_camera_view() const;
+	Rect2i get_camera_viewport() const;       // the world's viewport (framebuffer pixels, top-left origin)
+	PackedInt32Array get_tag_stats() const;   // triangles drawn this frame by tag
+	PackedVector3Array get_world_triangles(int mask) const;   // the 3D batches of those tags, in the world's space
+	Array get_world_samples(int mask, int count) const;        // [world points, where the game drew them (pixels)]
 #define AXIS_LOOK_PROP(name, field) \
 	void set_##name(float v) { look.field = v; } \
 	float get_##name() const { return look.field; }
@@ -77,6 +93,7 @@ protected:
 		int w = 0, h = 0;
 		bool ready = false;
 		Look look;
+		bool tagView = false;
 	};
 	std::mutex mutex;
 	Pending pending;
