@@ -259,6 +259,7 @@ void AxisReplay::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_weapon_mesh_index"), &AxisReplay::get_weapon_mesh_index);
 	ClassDB::bind_method(D_METHOD("get_clear_colour"), &AxisReplay::get_clear_colour);
 	ClassDB::bind_method(D_METHOD("redraw"), &AxisReplay::redraw);
+	ClassDB::bind_method(D_METHOD("dump_batches"), &AxisReplay::dump_batches);
 	ClassDB::bind_method(D_METHOD("set_godot_kinds", "mask"), &AxisReplay::set_godot_kinds);
 	ClassDB::bind_method(D_METHOD("get_godot_kinds"), &AxisReplay::get_godot_kinds);
 	ADD_GROUP("Remaster picture", "");
@@ -1209,6 +1210,35 @@ Ref<ShaderMaterial> AxisReplay::sky_material(const EmuBatch &b, int priority) {
 	}
 	skyMaterials[key] = m;
 	return m;
+}
+
+String AxisReplay::dump_batches() const {
+	String out;
+	int i = 0;
+	for (const EmuCmd &c : emu.cmds) {
+		if (c.kind != EmuCmd::BATCH) continue;
+		const EmuBatch &b = c.batch;
+		int tw = 0, th = 0;
+		auto it = b.texture ? emu.textures.find(b.texture - 1) : emu.textures.end();
+		if (it != emu.textures.end() && !it->second.sizes.empty()) { tw = it->second.sizes[0].first; th = it->second.sizes[0].second; }
+		double s[4] = { 0, 0, 0, 0 };
+		for (uint32_t k = 0; k < b.count; k++)
+			for (int j = 0; j < 4; j++) s[j] += emu.verts[b.first + k].col[j];
+		String first;
+		for (uint32_t k = 0; k < b.count && k < 3; k++)
+			first += String(" (") + String::num(emu.verts[b.first + k].col[0], 3) + "," + String::num(emu.verts[b.first + k].col[1], 3) + "," +
+			         String::num(emu.verts[b.first + k].col[2], 3) + ")";
+		static const int all = getenv("AXIS_DUMP_BATCH") ? atoi(getenv("AXIS_DUMP_BATCH")) : -1;   // (one batch's every colour)
+		if (i == all)
+			for (uint32_t k = 0; k < b.count; k++)
+				first += String(k % 6 == 0 ? "\n  " : " ") + String::num_int64((int)(emu.verts[b.first + k].col[0] * 255 + 0.5f)) + "," +
+				         String::num_int64((int)(emu.verts[b.first + k].col[1] * 255 + 0.5f)) + "," + String::num_int64((int)(emu.verts[b.first + k].col[2] * 255 + 0.5f));
+		const double n = b.count ? (double)b.count : 1.0;
+		out += String::num_int64(i++) + " tex " + String::num_int64(tw) + "x" + String::num_int64(th) + " env " + String::num_int64(b.env, 16) +
+		       " n " + String::num_int64(b.count) + " persp " + String::num_int64(b.persp) + " avg " + String::num(s[0] / n, 3) + "," +
+		       String::num(s[1] / n, 3) + "," + String::num(s[2] / n, 3) + "," + String::num(s[3] / n, 3) + first + String("\n");
+	}
+	return out;
 }
 
 Color AxisReplay::get_clear_colour() const {

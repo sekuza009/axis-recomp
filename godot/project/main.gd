@@ -77,6 +77,9 @@ func _process(_delta: float) -> void:
 				img.save_png(shot_path)
 				print("AxisReplay: frame ", f, " saved to ", shot_path)
 			# (and what the window shows: Godot's display of the texture - colour handling, scaling)
+			if OS.get_environment("AXIS_DUMP_BATCHES") != "":   # (a check: the frame's batches)
+				var df := FileAccess.open(shot_path.get_basename() + "_batches.txt", FileAccess.WRITE)
+				df.store_string(replay.dump_batches())
 			if remaster and remaster.map_sub.render_target_update_mode == SubViewport.UPDATE_ALWAYS:   # (Godot's map alone)
 				var mi := remaster.map_sub.get_texture().get_image()
 				if mi:
