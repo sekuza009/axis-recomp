@@ -61,7 +61,7 @@ jobs:
         run: bash standalone/build64.sh macos
       - name: AxisSDL (universal)
         run: SDL3_MACOS=$PWD/sdl3 bash host/sdl/build.sh macos
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v5
         with:
           name: AxisSDL-macos
           path: |
