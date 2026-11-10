@@ -225,6 +225,13 @@ func _play_game() -> void:
 
 func _to_game() -> void:
 	busy = true
+	if sound.playing:   # (the press's click heard out: the launcher's player goes with its scene, so a copy on the root plays on)
+		var rest := AudioStreamPlayer.new()
+		rest.stream = sound.stream
+		get_tree().root.add_child(rest)
+		rest.play(sound.get_playback_position())
+		rest.finished.connect(rest.queue_free)
+		sound.stop()
 	Input.set_custom_mouse_cursor(null)
 	var win := get_window()
 	win.content_scale_mode = Window.CONTENT_SCALE_MODE_DISABLED
