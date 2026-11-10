@@ -656,13 +656,28 @@ bool launcher_run(const std::string &gameDir) {
 #endif
 	g_installed = !resolve("MathFunc.tbl").empty();
 	if (g_installed) defaults();
-	// the window: AxisPlay's popup (642 x 482 with a 1-pixel border, centred) at the screen's scale
-	float scale = SDL_GetDisplayContentScale(SDL_GetPrimaryDisplay());
+	// the window: AxisPlay's popup (642 x 482 with a 1-pixel border, centred) at the screen's scale - on the main display
+	// (AXISSDL_DISPLAY=<n>: the n-th display instead, as SDL lists them - a check on a machine with several)
+	SDL_DisplayID display = SDL_GetPrimaryDisplay();
+	{
+		int n = 0;
+		SDL_DisplayID *all = SDL_GetDisplays(&n);
+		for (int i = 0; i < n; i++) {
+			SDL_Rect b;
+			SDL_GetDisplayBounds(all[i], &b);
+			SDL_Log("launcher: display %d '%s' at %d,%d %dx%d%s", i, SDL_GetDisplayName(all[i]), b.x, b.y, b.w, b.h,
+			        all[i] == display ? " (main)" : "");
+		}
+		const char *want = SDL_getenv("AXISSDL_DISPLAY");
+		if (want && SDL_atoi(want) >= 0 && SDL_atoi(want) < n) display = all[SDL_atoi(want)];
+		SDL_free(all);
+	}
+	float scale = SDL_GetDisplayContentScale(display);
 	if (scale < 1) scale = 1;
 	g_win = SDL_CreateWindow("Axis Launcher", (int)(W * scale + 0.5f), (int)(H * scale + 0.5f), SDL_WINDOW_BORDERLESS | SDL_WINDOW_HIGH_PIXEL_DENSITY);
 	g_ren = g_win ? SDL_CreateRenderer(g_win, nullptr) : nullptr;
 	if (!g_ren) return false;
-	SDL_SetWindowPosition(g_win, SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED);
+	SDL_SetWindowPosition(g_win, SDL_WINDOWPOS_CENTERED_DISPLAY(display), SDL_WINDOWPOS_CENTERED_DISPLAY(display));
 	SDL_SetRenderLogicalPresentation(g_ren, W, H, SDL_LOGICAL_PRESENTATION_LETTERBOX);
 	int hx = 0, hy = 0;
 	if (SDL_Surface *ic = group_picture(14, 377, nullptr, &hx, &hy)) { SDL_SetWindowIcon(g_win, ic); SDL_DestroySurface(ic); }   // IDI_LAUNCHER
@@ -685,8 +700,40 @@ bool launcher_run(const std::string &gameDir) {
 	sound_load(g_snd[0], "Launcher\\lsound\\mmove.wav");
 	sound_load(g_snd[1], "Launcher\\lsound\\mclick.wav");
 	bool play = false, running = true;
+	// a button's action (0x404700)
+	auto act = [&](int i) {
+		switch (i) {
+		case INSTALL: if (install_game()) running = false; break;
+		case PLAY: if (play_game()) { play = true; running = false; } break;
+		case CINEMATICS: cinematics(); break;
+		case HELP: help(); break;
+		case SERVER: change_server(); break;
+		case DIRECTX: if (install_directx()) running = false; break;
+		case VIDEO: video_setup(); break;
+		case QUIT: running = false; break;
+		}
+	};
+	// (a check: AXISSDL_LAUNCHER_TEST=install|play|cinematics|help|server|directx|video|quit - that button pressed once the
+	// window is up, its dialog then answered by hand)
+	static const char *const names[8] = { "install", "play", "cinematics", "help", "server", "directx", "video", "quit" };
+	int test = -1;
+	if (const char *tst = SDL_getenv("AXISSDL_LAUNCHER_TEST"))
+		for (int i = 0; i < 8; i++) if (!SDL_strcasecmp(tst, names[i])) test = i;
 	draw();
 	while (running) {
+		if (test >= 0) {
+			SDL_Delay(500);
+			SDL_Log("launcher test: the %s button", names[test]);
+			const int i = test;
+			test = -1;
+			g_state[i] = PRESSED;
+			draw();
+			act(i);
+			SDL_Log("launcher test: %s done (play %d, running %d)", names[i], play, running);
+			g_state[i] = NORMAL;
+			draw();
+			continue;
+		}
 		SDL_Event e;
 		if (!SDL_WaitEventTimeout(&e, 100)) continue;
 		SDL_ConvertEventToRenderCoordinates(g_ren, &e);
@@ -708,16 +755,7 @@ bool launcher_run(const std::string &gameDir) {
 			sound_play(1);
 			g_state[i] = PRESSED;
 			draw();
-			switch (i) {
-			case INSTALL: if (install_game()) running = false; break;
-			case PLAY: if (play_game()) { play = true; running = false; } break;
-			case CINEMATICS: cinematics(); break;
-			case HELP: help(); break;
-			case SERVER: change_server(); break;
-			case DIRECTX: if (install_directx()) running = false; break;
-			case VIDEO: video_setup(); break;
-			case QUIT: running = false; break;
-			}
+			act(i);
 			break;
 		}
 		default: break;

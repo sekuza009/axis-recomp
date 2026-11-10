@@ -46,3 +46,8 @@ Linux (2026-11-09, WSLg on Ubuntu 24.04; OpenGL through Mesa's D3D12 driver on t
 a skirmish, chat typing, sound; the game folder (the Windows one) only read - its writes (axis.cfg, axisuser.dat, the
 launcher marks) in ~/.local/share/axis. Under WSLg the window is a plain one (`--windowed`: Wayland places windows
 itself) and vsync does not hold (the game ran at 270-350 fps).
+The Linux launcher (2026-11-09, WSLg, SDL's X11 back end): its message-box dialogs - Video Setup (Select OpenGL Render
+wrote RenderMode 200), Cinematics (Opening only while the game was never finished; the Opening movie full screen with
+sound, Esc back to the launcher), Help, Select Server List (the server's button wrote the choice) - and Play Game into
+the game. Checks: `AXISSDL_LAUNCHER_TEST=<button>` presses one button once the launcher is up; `AXISSDL_DISPLAY=<n>`
+puts it on another display.
