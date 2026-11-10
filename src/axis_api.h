@@ -40,6 +40,10 @@
 #define AXIS_API
 #endif
 
+#ifdef __cplusplus   /* (a C++ host: host/sdl/main.cpp) */
+extern "C" {
+#endif
+
 /* a host's sound (AxisHostConfig.sound): the game's sounds as DirectSound has them - buffers of PCM samples (the
    format a WAVEFORMATEX), each played once or looping, with a volume in hundredths of a decibel (0 .. -10000) and a
    pan (-10000 left .. 10000 right) - and its music, a file played as a stream. Every call gets config.user */
@@ -112,4 +116,7 @@ AXIS_API int axis_textInput(void);
 /* the game asked to close */
 AXIS_API void axis_shutdown(void);
 
+#ifdef __cplusplus
+}
+#endif
 #endif
