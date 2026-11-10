@@ -30,9 +30,13 @@ the game folder (or the game folder itself); `--game-dir <folder>` overrides.
 
 Linux x86-64 (cross-built with zig): `bash standalone/build64.sh linux-gnu`, then `bash host/sdl/build.sh linux` ->
 `build/sdl/linux/AxisSDL` + `libSDL3.so.0` (found beside it: rpath $ORIGIN). SDL3 for Linux (SDL3_LINUX: lib/, include/)
-was built from the release source in WSL's Ubuntu 24.04 (cmake, with the X11 / Wayland / PulseAudio / PipeWire / ALSA
-development headers), so it needs glibc 2.38 or newer (current distributions, SteamOS); for older systems SDL3 is to be
-built against an older glibc.
+is built from its release source with zig for glibc 2.28 (`host/sdl/sdl3_linux.sh`, run in WSL's Ubuntu: X11, Wayland,
+PulseAudio, PipeWire and ALSA all in, loaded at run time): AxisSDL needs glibc 2.17, SDL3 2.27 - distributions back to
+about 2018 (Ubuntu 18.04+), SteamOS.
+
+macOS: `bash host/sdl/build.sh macos` on a Mac (the macOS workflow does it on GitHub's) -> `build/sdl/macos/AxisSDL.app`
+(universal, macOS 11+, SDL3 inside, ad-hoc signed) and `AxisSDL-macos.zip`. Put the app in (or beside) the game folder;
+not notarised: open it the first time with right-click > Open.
 
 Checked (2026-11-09, Windows x64, RTX 3080): the title, menus and a skirmish at 120 fps with sound; two copies in one
 match over the network; the drawing against the original - a session recorded by the native 32-bit build (real

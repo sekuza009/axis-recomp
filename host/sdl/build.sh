@@ -3,8 +3,8 @@
 # game library (standalone/build64.sh <target> first) and SDL3, built with zig:
 #   windows - build/sdl/windows/AxisSDL.exe and SDL3.dll (SDL3's MinGW development files in SDL3_MINGW, default
 #             Tools/sdl3/SDL3-3.4.20/x86_64-w64-mingw32);
-#   linux   - build/sdl/linux/AxisSDL (x86-64, glibc 2.38+) and libSDL3.so.0 beside it (found by its rpath $ORIGIN) -
-#             SDL3 built for Linux in SDL3_LINUX (default Tools/sdl3/linux-x86_64: lib/ and include/);
+#   linux   - build/sdl/linux/AxisSDL (x86-64, glibc 2.28+) and libSDL3.so.0 beside it (found by its rpath $ORIGIN) -
+#             SDL3 built for Linux in SDL3_LINUX (default Tools/sdl3/linux-x86_64-glibc228: lib/ and include/);
 #   macos   - on a Mac, with Apple's clang (not zig): build/sdl/macos/AxisSDL.app, universal (arm64 + x86_64, macOS
 #             11+), SDL3 in its Frameworks, ad-hoc signed, and AxisSDL-macos.zip of it - SDL3 built universal in SDL3_MACOS (a prefix:
 #             include/, lib/); the library from standalone/build64.sh macos (both processors' archives joined by lipo)
@@ -62,8 +62,8 @@ windows)
 	SYSLIBS="-lws2_32 -lwinmm -lole32 -loleaut32 -ladvapi32 -Wl,--subsystem,windows"
 	;;
 linux)
-	T=x86_64-linux-gnu.2.38   # (the SDL3 built on Ubuntu 24.04 needs glibc 2.38; an older one: SDL3 built against it)
-	SDL=${SDL3_LINUX:-C:/Users/Alexander/Tools/sdl3/linux-x86_64}
+	T=x86_64-linux-gnu.2.28   # (SDL3 built against glibc 2.28 too: zig in WSL, see README)
+	SDL=${SDL3_LINUX:-C:/Users/Alexander/Tools/sdl3/linux-x86_64-glibc228}
 	LIB=build/libaxis64_linux-gnu.a
 	OUT=build/sdl/linux; EXE=AxisSDL; SDLLIB=$SDL/lib/libSDL3.so.0.4.20
 	SYSLIBS="-lm -lpthread -ldl -Wl,-rpath,\$ORIGIN"
