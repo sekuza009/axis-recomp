@@ -63,7 +63,7 @@ static const char *const k_names[P_COUNT] = {
 static int g_kind[64];   /* op -> P_*, -1 unknown */
 static int g_plainOps;
 enum { OP_COLOR4UBV = 64, OP_FOGFV, OP_LOADMATRIX, OP_MULTMATRIX, OP_TEXCOORD2FV, OP_VERTEX3FV, OP_VERTEX4FV, OP_PIXELSTORE,
-       OP_DRAW, OP_TEXIMAGE, OP_MIPMAPS, OP_TEXPARAMI, OP_TAG, OP_CAMERA };   /* (tags, camera: the Godot remaster's notes) */
+       OP_DRAW, OP_TEXIMAGE, OP_MIPMAPS, OP_TEXPARAMI, OP_TAG, OP_CAMERA, OP_LIGHTS };   /* (tags, camera: the Godot remaster's notes) */
 
 int gl_play_init(void *(*getProc)(const char *name), void *(*getGlu)(const char *name), const unsigned char *header,
                  unsigned headerBytes, char *error, int room)
@@ -348,6 +348,7 @@ void gl_play_frame(const unsigned *words, unsigned count, int width, int height,
 		case OP_TEXPARAMI: p_glTexParameteri(p[0], p[1], (int)p[2]); p += 3; break;
 		case OP_TAG: p += 1; break;       /* (what the drawing is: nothing to draw here) */
 		case OP_CAMERA: p += 32; break;
+		case OP_LIGHTS: p += n; break;
 		case OP_DRAW: {   /* the arrays' contents as recorded (tightly packed), then the indices drawn */
 			u32 mode = p[0], cnt = p[1], itype = p[2], nv = p[3];
 			p += 4;

@@ -1,6 +1,6 @@
 /* draw_tags.h: what the drawing is, told to the 64-bit build's recorder (standalone/glrec64.c) for the Godot remaster:
    a tag op in the stream before the drawing it names, and once per view volume drawn the camera (its projection and
-   view matrices). The world is queued into the view volume by kind (the sky, the ground, map objects, actors ...) and
+   view matrices), once per frame the stage's lights. The world is queued into the view volume by kind (the sky, the ground, map objects, actors ...) and
    drawn by material, so each queued record keeps the kind it was queued under (view_volume.c) and the draw tags each
    one. Only the 64-bit build (AXIS_64): elsewhere these are nothing, the game's code as it was. */
 #pragma once
@@ -23,11 +23,18 @@ enum {
 extern int g_drawSource;                                       /* the kind records are queued under now */
 void glrec64_tag(int kind);                                    /* a tag op (when it changes) */
 void glrec64_camera(const float *projection, const float *view);
+void glrec64_lights(int pool, const void *records, int count);   /* a light pool's records in use (Factor, 0x2c bytes) */
 #define DRAW_SOURCE(k) (g_drawSource = (k))
+/* the stage's light pools, once per frame before the world: 0 the map's (from the map file), 1 the dynamic ones (the
+   actors' glow, the particles that give light: refilled each frame), 2 the actors' own (ambient and from above) */
+#define DRAW_LIGHTS(st) (glrec64_lights(0, (st)->mapLights.records, (st)->mapLights.count), \
+                         glrec64_lights(1, (st)->dynamicLights.records, (st)->dynamicLights.count), \
+                         glrec64_lights(2, (st)->actorLights.records, (st)->actorLights.count))
 #define DRAW_TAG(k) glrec64_tag(k)
 #define DRAW_CAMERA(p, v) glrec64_camera(p, v)
 #else
 #define DRAW_SOURCE(k) ((void)0)
 #define DRAW_TAG(k) ((void)0)
 #define DRAW_CAMERA(p, v) ((void)0)
+#define DRAW_LIGHTS(st) ((void)0)
 #endif

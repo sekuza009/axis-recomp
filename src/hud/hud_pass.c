@@ -37,6 +37,7 @@ void THISCALL (match_drawFrame)(Scene *scene)
 		} else if (scene->playing == 1 && scene->cameraMode == 2 && scene->localPlayer >= 0) {
 			scene->players[scene->localPlayer].viewMarked = 1;
 		}
+		DRAW_LIGHTS(STAGE(scene));
 		DRAW_TAG(DRAWTAG_SKY);
 		sky_draw(STAGE(scene), view_farPlane());
 		DRAW_SOURCE(DRAWTAG_GROUND);
