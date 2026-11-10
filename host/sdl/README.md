@@ -20,7 +20,17 @@ Build (Windows, with zig): `bash standalone/build64.sh windows`, then `bash host
 `build/sdl/windows/AxisSDL.exe` + `SDL3.dll` (SDL3's MinGW development files: SDL3_MINGW). Put both in a folder inside
 the game folder (or the game folder itself); `--game-dir <folder>` overrides.
 
+Linux x86-64 (cross-built with zig): `bash standalone/build64.sh linux-gnu`, then `bash host/sdl/build.sh linux` ->
+`build/sdl/linux/AxisSDL` + `libSDL3.so.0` (found beside it: rpath $ORIGIN). SDL3 for Linux (SDL3_LINUX: lib/, include/)
+was built from the release source in WSL's Ubuntu 24.04 (cmake, with the X11 / Wayland / PulseAudio / PipeWire / ALSA
+development headers), so it needs glibc 2.38 or newer (current distributions, SteamOS); for older systems SDL3 is to be
+built against an older glibc.
+
 Checked (2026-11-09, Windows x64, RTX 3080): the title, menus and a skirmish at 120 fps with sound; two copies in one
 match over the network; the drawing against the original - a session recorded by the native 32-bit build (real
 OpenGL) and its own images at frames 600, 1800, 2900, replayed with gl_play (`glplay_check`): 97.8-98.0% of the pixels
 identical, all within 8 levels (sub-pixel rounding; with gl_play's own GLU instead of glu32: 96%).
+Linux (2026-11-09, WSLg on Ubuntu 24.04; OpenGL through Mesa's D3D12 driver on the RTX 3080): the title, login, menus,
+a skirmish, chat typing, sound; the game folder (the Windows one) only read - its writes (axis.cfg, axisuser.dat, the
+launcher marks) in ~/.local/share/axis. Under WSLg the window is a plain one (`--windowed`: Wayland places windows
+itself) and vsync does not hold (the game ran at 270-350 fps).
