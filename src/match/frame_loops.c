@@ -772,8 +772,8 @@ static void particle_mark(u8 *p, const u8 *desc, u32 margin)
 	const ParticleDesc *pd = (const ParticleDesc *)desc;
 	PR->life = 2.0f;   /* 2 s */
 	memcpy(PR->markPoints[0], AP(const void, pd->markCorners), 12);
-	memcpy(PR->markPoints[1], AP(const void, pd->markCorners + 3), 12);
-	memcpy(PR->markPoints[2], AP(const void, pd->markCorners + 6), 12);
+	memcpy(PR->markPoints[1], AP(const float, pd->markCorners) + 3, 12);
+	memcpy(PR->markPoints[2], AP(const float, pd->markCorners) + 6, 12);
 	const float *q = AP(const float, pd->markCoords);
 	static const u8 uv[5] = { 0, 2, 3, 4, 5 };   /* (q[k] gives markUv[k]; q[1] is not used) */
 	if (!margin) {

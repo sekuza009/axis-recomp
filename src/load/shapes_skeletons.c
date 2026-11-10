@@ -816,7 +816,7 @@ static int obj_corner(u8 *part, int i, char *corner, const float *vs, const floa
 		return 0;
 	int ai = crt_atoi(a) - 1;
 	char *b = TOK(NULL, SLASH);
-	float *uv = AP(float, sp->texCoords + i * 2);
+	float *uv = AP(float, sp->texCoords) + i * 2;
 	if (!b) {
 		BITS(uv[0]) = BITS(uv[1]) = 0;
 		memcpy(AP(void, sp->normals + i * 12), ns + ai * 3, 12);
