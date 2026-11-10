@@ -118,7 +118,7 @@ static void r_gluPerspective(double f, double a, double n, double z) { put_op(39
 /* ---- the calls with pointers, draws, textures (glrec.c's ops from 64) */
 enum { OP_COLOR4UBV = 64, OP_FOGFV, OP_LOADMATRIX, OP_MULTMATRIX, OP_TEXCOORD2FV, OP_VERTEX3FV, OP_VERTEX4FV,
        OP_PIXELSTORE, OP_DRAW, OP_TEXIMAGE, OP_MIPMAPS, OP_TEXPARAMI,
-       OP_TAG, OP_CAMERA };   /* (the remaster's notes, nothing to draw: src/render/draw_tags.h - readers skip them) */
+       OP_TAG, OP_CAMERA, OP_LIGHTS };   /* (the remaster's notes, nothing to draw: src/render/draw_tags.h - readers skip them) */
 
 /* ---- what the drawing is (src/render/draw_tags.h): the kind records are queued under, a tag op when the drawing's
    kind changes, the camera of each view volume drawn (its projection and view matrices) */
@@ -131,6 +131,25 @@ void glrec64_tag(int kind)
 	g_tag = kind;
 	put_op(OP_TAG, 1);
 	put((u32)kind);
+}
+/* a light pool: the pool, the lights in use, then each one's kind, colour (packed RGBA), position, direction, radius */
+void glrec64_lights(int pool, const void *records, int count)
+{
+	const u8 *r = records;
+	int n = 0;
+	for (int i = 0; i < count && i < 0x400; i++)
+		if (*(const int *)(r + i * 0x2c + 4) == 1)
+			n++;
+	put_op(OP_LIGHTS, 2 + n * 9);
+	put((u32)pool);
+	put((u32)n);
+	for (int i = 0; i < count && i < 0x400; i++) {
+		const u8 *f = r + i * 0x2c;
+		if (*(const int *)(f + 4) != 1)
+			continue;
+		put_bytes(f + 8, 8);      /* kind, colour */
+		put_bytes(f + 0x10, 28);  /* position, direction, radius */
+	}
 }
 void glrec64_camera(const float *projection, const float *view)
 {

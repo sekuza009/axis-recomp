@@ -1224,6 +1224,7 @@ u32 THISCALL (replay_frame)(u8 *s)
 	ViewVolume_reset(view);
 	if (SC->playing == 1 && SC->cameraMode == 2 && SC->watchedPlayer >= 0)
 		SC->players[SC->watchedPlayer].viewMarked = 1;   /* (the followed player seen from inside) */
+	DRAW_LIGHTS((Stage *)stage);
 	DRAW_TAG(DRAWTAG_SKY);
 	sky_draw((Stage *)stage, view_farPlane());
 	DRAW_SOURCE(DRAWTAG_GROUND);
