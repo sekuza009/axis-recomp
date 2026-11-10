@@ -87,7 +87,7 @@ project directly - no large-address-aware copy needed. It needs:
 **Linux x86-64 (2026-11-09).** Cross-built on Windows with zig:
 - the game library: `bash standalone/build64.sh linux-gnu` -> `build/libaxis64.so` (glibc 2.28, exports only
   `axis_*`), copied to `project/bin/`; game.gd picks it off Windows;
-- the extension: `bash extension/build_linux.sh [debug|release]` (godot-cpp from `Tools/godot/godot-cpp64` - its
+- the extension: `bash extension/build_posix.sh [debug|release] linux` (godot-cpp from `Tools/godot/godot-cpp64` - its
   generated 64-bit bindings serve Linux too - compiled with the flags its SCons uses; its archive kept in
   `extension/obj_linux_<mode>/`) -> `project/bin/libaxis_godot.linux.template_<mode>.x86_64.so` (`host_posix.c`
   instead of `host_win.c`: dlopen; the mouse is Godot's captured mode);
@@ -101,6 +101,20 @@ headless): the library loaded with dlopen and run. **Run on a Linux desktop (202
 mode message, Video Setup, settings in registry.txt), Play into the game, keyboard, mouse (captured), sound, a login;
 the saves and axis.cfg written to ~/.local/share/axis, the Windows game folder untouched. There Vulkan is Mesa's
 software renderer and message boxes fall back to xmessage without zenity / kdialog.
+
+**macOS 11+, Intel and Apple Silicon (2026-11-09).** Cross-built on Windows with zig, as Linux:
+- the game library: `bash standalone/build64.sh macos` -> `build/libaxis64.dylib` (universal: x86_64 + arm64, joined
+  by tools/lipo.py; arm64 has no x87 - src/x87.h and axis.h's float helpers in plain C there), copied to `project/bin/`;
+- the extension: `bash extension/build_posix.sh [debug|release] macos` (the Linux script, generalised: `linux`,
+  `macos-x86_64`, `macos-arm64`, `macos`) -> `project/bin/libaxis_godot.macos.template_<mode>.dylib` (universal; the
+  arm64 parts ad-hoc signed by zig's linker);
+- the export: `bash godot/export.sh release install macos` (the "macOS" preset: universal, Godot's built-in ad-hoc
+  signing; the macos.zip template extracted from the .tpz) -> `build/godot_export_macos/AxisGodot.zip`, the app with the
+  game library in Contents/Frameworks (axis.gdextension's dependencies). The game folder is the one holding the app
+  (or the one above it - AxisFiles). Not notarised: on a Mac, open it the first time with right-click > Open (or
+  `xattr -dr com.apple.quarantine "Axis (Godot).app"`).
+Checked on GitHub's macOS runners (.github/workflows/macos.yml): the library built natively, the POSIX tests, the x87
+replacements against the x87's results, the library loaded with dlopen.
 
 ## Checked
 

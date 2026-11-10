@@ -12,9 +12,32 @@ static func game_dir() -> String:
 	if i >= 0 and i + 1 < args.size():
 		return args[i + 1]
 	if OS.has_feature("template"):
-		var here := OS.get_executable_path().get_base_dir()
+		var here := _program_dir()
 		return here if DirAccess.dir_exists_absolute(here.path_join("initdata")) else here.get_base_dir()
 	return EDITOR_DEFAULT
+
+## the folder the exported program is in - on macOS the one holding its .app bundle (AxisGodot.app/Contents/MacOS/...)
+static func _program_dir() -> String:
+	var here := OS.get_executable_path().get_base_dir()
+	if OS.get_name() == "macOS" and here.ends_with(".app/Contents/MacOS"):
+		return here.get_base_dir().get_base_dir().get_base_dir()
+	return here
+
+## the game library of this system and processor: axis64.dll / axis.dll (Windows, 64- / 32-bit), libaxis64.so (Linux),
+## libaxis64.dylib (macOS, universal); res://bin/ in the editor, beside the program when exported (on macOS the app's
+## Contents/Frameworks - axis.gdextension's dependencies put it there)
+static func library_path() -> String:
+	var name := "axis64.dll" if OS.has_feature("x86_64") else "axis.dll"
+	if OS.get_name() == "Linux":
+		name = "libaxis64.so"
+	elif OS.get_name() == "macOS":
+		name = "libaxis64.dylib"
+	if not OS.has_feature("template"):
+		return "res://bin/" + name
+	var here := OS.get_executable_path().get_base_dir()
+	if OS.get_name() == "macOS":
+		return here.get_base_dir().path_join("Frameworks").path_join(name)
+	return here.path_join(name)
 
 ## a path under the game's folder from the game's own spelling (".\\Launcher\\lsound\\mmove.wav"): each part matched
 ## without regard to case (Linux's file names keep the case the files were copied with). "" when it is not there.

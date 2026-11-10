@@ -17,15 +17,8 @@ var no_game := false
 
 func _ready() -> void:
 	var args := OS.get_cmdline_user_args()
-	var dir := "C:/Users/Alexander/Desktop/Axis"
-	var lib_name := "axis64.dll" if OS.has_feature("x86_64") else "axis.dll"   # (the game library of Godot's own architecture)
-	if OS.get_name() != "Windows":
-		lib_name = "libaxis64.so"   # (Linux: standalone/build64.sh linux-gnu)
-	var lib := "res://bin/" + lib_name
-	if OS.has_feature("template"):   # (an exported game: the library beside the exe; the game's folder that one or the one above it)
-		var here := OS.get_executable_path().get_base_dir()
-		lib = here.path_join(lib_name)
-		dir = here if DirAccess.dir_exists_absolute(here.path_join("initdata")) else here.get_base_dir()
+	var dir := AxisFiles.game_dir()   # (--game-dir is read again below, for the other arguments' sake)
+	var lib := AxisFiles.library_path()
 	var i := 0
 	while i < args.size():
 		var a: String = args[i]

@@ -14,14 +14,14 @@ if env["platform"] == "windows":
 	env.Append(LIBS=["dbghelp", "advapi32"])
 else:
 	env.Append(LIBS=["dl"])
-# the launcher's movies: the library's reader and FFmpeg's indeo3 decoder (../../axisnet/iv32/ffmpeg, LGPL 2.1+), and
+# the launcher's movies: the library's reader and FFmpeg's indeo3 decoder (../../third_party/ffmpeg, LGPL 2.1+), and
 # off Windows the library's registry stand-in (the launcher's settings, shared with the game); objects kept here
 ffenv = env.Clone()
-ffenv.Append(CPPDEFINES=["HAVE_AV_CONFIG_H", "AXIS_PORTABLE"], CPPPATH=["../../../axisnet/iv32/ffmpeg"], CCFLAGS=["-w"])
+ffenv.Append(CPPDEFINES=["HAVE_AV_CONFIG_H", "AXIS_PORTABLE"], CPPPATH=["../../third_party/ffmpeg"], CCFLAGS=["-w"])
 objdir = "obj_{}_{}/".format(env["arch"], env["target"])
 for name, path in [("avimovie", "../../standalone/avimovie.c"),
-                   ("indeo3", "../../../axisnet/iv32/ffmpeg/libavcodec/indeo3.c"),
-                   ("hpeldsp", "../../../axisnet/iv32/ffmpeg/libavcodec/hpeldsp.c"),
+                   ("indeo3", "../../third_party/ffmpeg/libavcodec/indeo3.c"),
+                   ("hpeldsp", "../../third_party/ffmpeg/libavcodec/hpeldsp.c"),
                    ("registry", "../../src/plat/posix/registry.c")]:
 	sources.append(ffenv.SharedObject(target=objdir + name, source=path))
 library = env.SharedLibrary("../project/bin/axis_godot{}{}".format(env["suffix"], env["SHLIBSUFFIX"]), source=sources)
