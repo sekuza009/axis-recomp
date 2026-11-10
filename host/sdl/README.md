@@ -38,6 +38,11 @@ macOS: `bash host/sdl/build.sh macos` on a Mac (the macOS workflow does it on Gi
 (universal, macOS 11+, SDL3 inside, ad-hoc signed) and `AxisSDL-macos.zip`. Put the app in (or beside) the game folder;
 not notarised: open it the first time with right-click > Open.
 
+Packages: `python host/sdl/package.py [windows] [linux]` -> `build/sdl/dist/AxisSDL-windows-x64.zip`, `AxisSDL-linux-x64.zip`
+(a folder AxisSDL/ with the program, SDL3, a README for players and the licences: SDL3 zlib, dr_mp3 public domain /
+MIT-0, FFmpeg's LGPL with where the source is; the Linux files stripped with GNU strip in WSL, the program's executable
+bit kept in the zip). The macOS zip comes from the workflow.
+
 Checked (2026-11-09, Windows x64, RTX 3080): the title, menus and a skirmish at 120 fps with sound; two copies in one
 match over the network; the drawing against the original - a session recorded by the native 32-bit build (real
 OpenGL) and its own images at frames 600, 1800, 2900, replayed with gl_play (`glplay_check`): 97.8-98.0% of the pixels
