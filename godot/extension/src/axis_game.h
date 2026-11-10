@@ -59,6 +59,7 @@ private:
 	String frameEvents;
 	String keyEvents;
 	double musicNearEnd = 0;
+	uint64_t emuUsec = 0;   // (the frame log: gl_emu and the hand-over in this step)
 	FILE *record = nullptr;
 	std::vector<unsigned char> streamHeader;
 	int musicLoops = 0;   // (the game's seeks: a track looped)   // (the input log: key events since the last status)

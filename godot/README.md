@@ -202,6 +202,24 @@ fall where the original's do), and the lit map materials use Godot's wrapped dif
 the game's is: half light at right angles to a light (shading.c facing(): (1 - n.L) x 128). Checked on the recorded
 Abyss round (all three modes) and live (mode 2: 120 fps; one 162 ms frame in the match, when the player died).
 
+## The weapon, Godot's own effects, more maps (step 6c)
+
+- **The first-person weapon** (the actors' view pass, tag 5, now in `godot_kinds`) is drawn by Godot and lit by its
+  lights: its depth squeezed to just in front of the near plane in its vertex shader (Godot's depth is reversed), so it
+  stays in order within itself and in front of the world, as the game draws it over a cleared depth buffer. Its own
+  mesh (`get_weapon_mesh_index()`) casts no shadow: the squeezed depth would spoil the shadow maps.
+- **The 162 ms frame** seen live on Abyss is the game's own: it happens in the original picture too, at the same moment
+  (the player's death), and of it the drawing's translation is 15 ms (the frame log now says so). No shader warm-up.
+- **Godot's own effects**: what Godot works out while it draws reaches the picture - SSAO is on in remaster_world.tscn
+  (radius 1.5 m, light affect 0.5; faint, as most of the remaster's light is the game's kept as a glow); Godot's glow,
+  tonemapping and colour adjustments run after AxisMapEffect's callback and cannot (the look's pass does those).
+- **Lights**: the point lights nearest the eye first (Metropolis has 511: `max_point_lights`, 64), the map's
+  directional lights at `map_directional_energy`, and the game's lighting kept as a glow less when the map has lights
+  of its own (`original_light_with_map_lights` 0.3, else `original_light_without` 0.6: Godot gives their light again).
+- **Metropolis and StarField** recorded (rounds 12, 13): their skies (144 and 540 triangles) drawn by Godot as the
+  original's. StarField's remaster is flatter and brighter than the original: its rocks' contrast is in the models'
+  own vertex colours, which the game multiplies with its light - only the lit result reaches Godot.
+
 ## Building (Windows, zig as the compiler)
 
 **Since 2026-11-09 64-bit only**: the extension `arch=x86_64` against `Tools/godot/godot-cpp64` (SConstruct's default),

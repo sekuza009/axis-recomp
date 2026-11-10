@@ -142,8 +142,10 @@ void AxisGame::on_frame(void *user, const unsigned *words, unsigned count, int w
 		fwrite(head, 4, 3, g->record);
 		fwrite(words, 4, count, g->record);
 	}
+	const uint64_t e0 = Time::get_singleton()->get_ticks_usec();
 	g->emu.run_words(words, count, width, height);
 	g->submit(width, height);
+	g->emuUsec += Time::get_singleton()->get_ticks_usec() - e0;   // (the frame log: the drawing's translation, apart from the game)
 	const bool resized = width != g->lastW || height != g->lastH;
 	g->lastW = width;
 	g->lastH = height;
@@ -476,6 +478,7 @@ void AxisGame::_process(double p_delta) {
 	wheel = 0;
 	const uint64_t t0 = Time::get_singleton()->get_ticks_usec();
 	const int f0 = gameFrames;
+	emuUsec = 0;
 	inStep = true;
 	stepStart = t0;
 	shownInStep = 0;
@@ -484,7 +487,7 @@ void AxisGame::_process(double p_delta) {
 	inStep = false;
 	const uint64_t took = Time::get_singleton()->get_ticks_usec() - t0;
 	if (took > 50000)   // (a step of more than 50 ms: its frames could not be shown until it returned)
-		frameEvents += String("game step of ") + String::num_int64((int64_t)(took / 1000)) + " ms drew " + String::num_int64(gameFrames - f0) + " frames, showed " + String::num_int64(shownInStep) + " (game frame " + String::num_int64(gameFrames) + ")\n";
+		frameEvents += String("game step of ") + String::num_int64((int64_t)(took / 1000)) + " ms drew " + String::num_int64(gameFrames - f0) + " frames, showed " + String::num_int64(shownInStep) + " (game frame " + String::num_int64(gameFrames) + "; the drawing's translation " + String::num_int64((int64_t)(emuUsec / 1000)) + " ms)\n";
 	feed_audio();
 	if (!api.running()) {
 		running = false;

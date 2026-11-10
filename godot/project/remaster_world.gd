@@ -20,6 +20,12 @@ extends Node3D
 ## teal and grey lights then fall where the original's do)
 @export var turn_directional_lights := true
 @export_range(1, 256) var max_point_lights := 64
+@export_range(0.0, 4.0, 0.01) var map_directional_energy := 1.0
+## how much of the game's own lighting the remaster keeps as a glow (AxisReplay.original_light): less when the map has
+## lights of its own (Godot gives their light again), more when it has none (the Sun alone would leave it dark)
+@export_range(0.0, 1.5, 0.01) var original_light_with_map_lights := 0.3
+@export_range(0.0, 1.5, 0.01) var original_light_without := 0.6
+var map_has_lights := false   # (apply_lights: the frame's map pool has directional or point lights)
 
 var _omnis: Array[OmniLight3D] = []
 var _suns: Array[DirectionalLight3D] = []   # (the map's second and further directional lights; the first is the Sun)
@@ -33,8 +39,20 @@ func _ready() -> void:
 	_sun_energy = $Sun.light_energy
 
 ## the frame's lights (AxisReplay.get_lights())
-func apply_lights(lights: Array, scale: float = 1.0) -> void:
+func apply_lights(lights: Array, scale: float = 1.0, eye := Vector3.ZERO) -> void:
 	var env: Environment = $Environment.environment
+	map_has_lights = false
+	# the point lights nearest the eye first (Metropolis has 511 of its own: max_point_lights of them, the nearest)
+	var points := []
+	for l in lights:
+		if l.pool != 2 and (l.kind == 2 or l.kind == 3) and l.radius > 0.0:
+			points.append(l)
+		if l.pool == 0 and l.kind >= 1:
+			map_has_lights = true
+	if points.size() > max_point_lights:
+		points.sort_custom(func(a, b): return (a.position * scale).distance_squared_to(eye) - (a.radius * scale) ** 2 < (b.position * scale).distance_squared_to(eye) - (b.radius * scale) ** 2)
+		points.resize(max_point_lights)
+	lights = lights.filter(func(l): return not ((l.kind == 2 or l.kind == 3) and l.pool != 2)) + points
 	var used := 0
 	var map_dir := false
 	var dirs := 0
@@ -59,7 +77,7 @@ func apply_lights(lights: Array, scale: float = 1.0) -> void:
 						map_dir = true
 						s.transform.basis = Basis.looking_at(-d if turn_directional_lights else d, up)
 						s.light_color = l.colour
-						s.light_energy = _sun_energy
+						s.light_energy = map_directional_energy
 						s.visible = true
 				2, 3:   # point lights
 					if used >= max_point_lights or l.radius <= 0.0:

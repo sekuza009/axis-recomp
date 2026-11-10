@@ -256,6 +256,7 @@ void AxisReplay::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_original_light"), &AxisReplay::get_original_light);
 	ClassDB::bind_method(D_METHOD("build_map_meshes"), &AxisReplay::build_map_meshes);
 	ClassDB::bind_method(D_METHOD("build_sky_meshes"), &AxisReplay::build_sky_meshes);
+	ClassDB::bind_method(D_METHOD("get_weapon_mesh_index"), &AxisReplay::get_weapon_mesh_index);
 	ClassDB::bind_method(D_METHOD("get_clear_colour"), &AxisReplay::get_clear_colour);
 	ClassDB::bind_method(D_METHOD("set_godot_kinds", "mask"), &AxisReplay::set_godot_kinds);
 	ClassDB::bind_method(D_METHOD("get_godot_kinds"), &AxisReplay::get_godot_kinds);
@@ -994,17 +995,20 @@ bool AxisReplay::frame_effects() const {
 	return pictureMode == 2 && mapViewport;   // (the sky is Godot's too then: build_sky_meshes)
 }
 
-Ref<ShaderMaterial> AxisReplay::map_material(uint32_t texture, uint32_t env, int blendClass, int cull, int priority) {
+Ref<ShaderMaterial> AxisReplay::map_material(uint32_t texture, uint32_t env, int blendClass, int cull, int priority, bool weapon) {
 	const int lit = pictureMode == 2 && blendClass < 2 ? 1 : 0;   // (effects are unlit: they give light, not take it)
 	const uint64_t key = (uint64_t)texture | (uint64_t)(env & 0xffff) << 32 | (uint64_t)blendClass << 48 | (uint64_t)lit << 51 |
-	                     (uint64_t)cull << 52 | (uint64_t)(priority + 128) << 54;
+	                     (uint64_t)cull << 52 | (uint64_t)(priority + 128) << 54 | (uint64_t)weapon << 63;
 	auto it = mapMaterials.find(key);
 	if (it != mapMaterials.end()) return it->second;
-	Ref<Shader> &sh = mapShaders[lit][blendClass][cull];
+	Ref<Shader> &sh = mapShaders[lit][blendClass][cull][weapon ? 1 : 0];
 	if (sh.is_null()) {
 		static const char *blend[5] = { "", "", ", blend_mix, depth_draw_never", ", blend_add, depth_draw_never", ", blend_add, depth_draw_never" };
 		static const char *culls[4] = { "cull_disabled", "cull_back", "cull_front", "cull_disabled" };
 		String code = String("shader_type spatial;\nrender_mode ") + culls[cull] + (lit ? ", diffuse_lambert_wrap" : ", unshaded") + blend[blendClass] + ";\n" + k_map_common;
+		if (weapon)   // (the first-person weapon, as the game draws it over a cleared depth buffer: its depth squeezed to just
+		              // in front of the near plane - in order within itself, in front of the world; Godot's depth is reversed)
+			code += String("void vertex() {\n\tPOSITION = PROJECTION_MATRIX * MODELVIEW_MATRIX * vec4(VERTEX, 1.0);\n\tPOSITION.z = mix(POSITION.z, POSITION.w, 0.995);\n}\n");
 		if (blendClass >= 2)   // (an effect: the game's colour as it is, blended by Godot in the game's order)
 			code += String("void fragment() {\n\tvec4 o = game_colour(COLOR, UV);\n\tALBEDO = pow(o.rgb, vec3(2.2));\n\tALPHA = ") +
 			        (blendClass == 4 ? "1.0" : "o.a") + ";\n}\n";
@@ -1047,7 +1051,8 @@ TypedArray<ArrayMesh> AxisReplay::build_map_meshes() {
 		}
 	}
 	// the batches of the kinds Godot draws (godotKinds: the ground, map objects, actors, items), by material
-	struct Surface { PackedVector3Array v, n; PackedVector2Array uv; PackedColorArray col; uint32_t texture, env; int blend, cull, run; };
+	struct Surface { PackedVector3Array v, n; PackedVector2Array uv; PackedColorArray col; uint32_t texture, env; int blend, cull, run; bool weapon; };
+	weaponMesh = -1;
 	const bool effects = frame_effects();
 	int runs = 0;
 	uint64_t lastEffect = ~0ull;
@@ -1062,7 +1067,8 @@ TypedArray<ArrayMesh> AxisReplay::build_map_meshes() {
 		// its culled face kept (0 none, 1 back, 2 front)
 		const int cull = !b.pipe.cull ? 0 : b.pipe.cullFace == 0x404 ? 2 : b.pipe.cullFace == 0x405 ? 1 : 3;
 		const bool turn = b.pipe.frontFace == 0x901;
-		uint64_t key = (uint64_t)b.texture | (uint64_t)(b.env & 0xffff) << 32 | (uint64_t)blendClass << 48 | (uint64_t)cull << 56;
+		uint64_t key = (uint64_t)b.texture | (uint64_t)(b.env & 0xffff) << 32 | (uint64_t)blendClass << 48 | (uint64_t)cull << 56 |
+		               (uint64_t)(b.tag == 5) << 61;
 		int run = 0;
 		if (blendClass >= 2) {   // (effects: a surface per run of one material, in the game's order - it sorts them back to front)
 			if (key != lastEffect) { runs++; lastEffect = key; }
@@ -1077,6 +1083,7 @@ TypedArray<ArrayMesh> AxisReplay::build_map_meshes() {
 			it->second.blend = blendClass;
 			it->second.cull = cull;
 			it->second.run = run;
+			it->second.weapon = b.tag == 5;
 			order.push_back(key);
 		}
 		Surface &s = it->second;
@@ -1133,6 +1140,8 @@ TypedArray<ArrayMesh> AxisReplay::build_map_meshes() {
 		}
 		s.n = smooth;
 	}
+	Ref<ArrayMesh> weapon;   // (the weapon's surfaces in a mesh of their own: it casts no shadow - its squeezed depth would
+	                         // spoil the shadow maps)
 	for (uint64_t key : order) {
 		Surface &s = surfaces[key];
 		Array arrays;
@@ -1141,6 +1150,14 @@ TypedArray<ArrayMesh> AxisReplay::build_map_meshes() {
 		arrays[Mesh::ARRAY_NORMAL] = s.n;
 		arrays[Mesh::ARRAY_TEX_UV] = s.uv;
 		arrays[Mesh::ARRAY_COLOR] = s.col;
+		if (s.weapon) {
+			if (weapon.is_null()) weapon.instantiate();
+			if (weapon->get_surface_count() < 256) {
+				weapon->add_surface_from_arrays(Mesh::PRIMITIVE_TRIANGLES, arrays);
+				weapon->surface_set_material(weapon->get_surface_count() - 1, map_material(s.texture, s.env, s.blend, s.cull, 0, true));
+			}
+			continue;
+		}
 		if (mesh.is_null() || mesh->get_surface_count() >= 256) {
 			mesh.instantiate();
 			meshes.push_back(mesh);
@@ -1149,6 +1166,10 @@ TypedArray<ArrayMesh> AxisReplay::build_map_meshes() {
 		// (effects drawn in the game's order: Godot's render priority, -128 .. 127, by run)
 		const int priority = s.run <= 0 ? 0 : runs <= 255 ? -128 + s.run : -128 + (int)((int64_t)s.run * 255 / (runs + 1));
 		mesh->surface_set_material(mesh->get_surface_count() - 1, map_material(s.texture, s.env, s.blend, s.cull, priority));
+	}
+	if (weapon.is_valid()) {
+		weaponMesh = (int)meshes.size();
+		meshes.push_back(weapon);
 	}
 	return meshes;
 }

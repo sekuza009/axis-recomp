@@ -7,6 +7,11 @@ background_mode = 1
 background_color = Color(0, 0, 0, 0)
 ambient_light_source = 1
 tonemap_mode = 0
+ssao_enabled = true
+ssao_radius = 1.5
+ssao_intensity = 2.5
+ssao_light_affect = 0.5
+ssao_ao_channel_affect = 1.0
 
 [node name="RemasterWorld" type="Node3D"]
 script = ExtResource("1_world")

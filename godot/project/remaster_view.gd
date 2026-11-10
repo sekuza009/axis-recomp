@@ -160,9 +160,15 @@ func update(frame: Vector2i) -> void:
 			map_sub.add_child(mi)
 			mi.scale = Vector3.ONE * WORLD_SCALE
 			map_meshes.append(mi)
+		var weapon: int = replay.get_weapon_mesh_index()
 		for i in map_meshes.size():
 			map_meshes[i].mesh = built[i] if i < built.size() else null
-		world.apply_lights(replay.get_lights(), WORLD_SCALE)
+			# (the first-person weapon casts no shadow: its depth is squeezed in front of the near plane)
+			map_meshes[i].cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF if i == weapon else GeometryInstance3D.SHADOW_CASTING_SETTING_ON
+		world.apply_lights(replay.get_lights(), WORLD_SCALE, map_cam.global_position)
+		var keep: float = world.original_light_with_map_lights if world.map_has_lights else world.original_light_without
+		if absf(replay.original_light - keep) > 0.001:
+			replay.original_light = keep
 	update_sky(frame, map_on)
 	var on := replay != null and replay.overlay and apply_camera(frame)
 	shown.visible = on
