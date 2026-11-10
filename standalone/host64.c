@@ -238,17 +238,39 @@ static u32 h_GetModuleFileNameA(void *m, char *out, u32 size)
 static const char *h_GetCommandLineA(void) { return "AxisGL.exe"; }
 
 /* ---- a crash: where (the instruction, the address it read, the call chain by frame pointers), into the log */
-#if !defined(_WIN32) && defined(__x86_64__)
+#if !defined(_WIN32)
 #include <signal.h>
+#ifdef __APPLE__   /* (macOS's <ucontext.h> wants _XOPEN_SOURCE; the type alone is here) */
+#include <sys/ucontext.h>
+#else
 #include <ucontext.h>
+#endif
+/* (the instruction, frame and stack pointers of the interrupted code, by system and processor) */
+#if defined(__APPLE__) && defined(__x86_64__)
+#define CTX_IP(uc) (uc)->uc_mcontext->__ss.__rip
+#define CTX_FP(uc) (uc)->uc_mcontext->__ss.__rbp
+#define CTX_SP(uc) (uc)->uc_mcontext->__ss.__rsp
+#elif defined(__APPLE__)
+#define CTX_IP(uc) (uc)->uc_mcontext->__ss.__pc
+#define CTX_FP(uc) (uc)->uc_mcontext->__ss.__fp
+#define CTX_SP(uc) (uc)->uc_mcontext->__ss.__sp
+#elif defined(__x86_64__)
+#define CTX_IP(uc) (uc)->uc_mcontext.gregs[REG_RIP]
+#define CTX_FP(uc) (uc)->uc_mcontext.gregs[REG_RBP]
+#define CTX_SP(uc) (uc)->uc_mcontext.gregs[REG_RSP]
+#else
+#define CTX_IP(uc) (uc)->uc_mcontext.pc
+#define CTX_FP(uc) (uc)->uc_mcontext.regs[29]
+#define CTX_SP(uc) (uc)->uc_mcontext.sp
+#endif
 static void crashed(int sig, siginfo_t *si, void *ctx)
 {
 	ucontext_t *uc = ctx;
-	uintptr_t ip = (uintptr_t)uc->uc_mcontext.gregs[REG_RIP], bp = (uintptr_t)uc->uc_mcontext.gregs[REG_RBP];
+	uintptr_t ip = (uintptr_t)CTX_IP(uc), bp = (uintptr_t)CTX_FP(uc);
 	uintptr_t a = (uintptr_t)si->si_addr;
 	hlog("CRASH: signal %d at ip %p, address %p (arena offset %08lx%s)\n", sig, (void *)ip, (void *)a,
 	     (unsigned long)(a - (uintptr_t)g_arena), a - (uintptr_t)g_arena < 0x100000000ull ? "" : ", outside");
-	hlog("  rsp %p rbp %p; calls:", (void *)(uintptr_t)uc->uc_mcontext.gregs[REG_RSP], (void *)bp);
+	hlog("  sp %p fp %p; calls:", (void *)(uintptr_t)CTX_SP(uc), (void *)bp);
 	for (int i = 0; i < 24 && bp && !(bp & 7); i++) {
 		uintptr_t *f = (uintptr_t *)bp;
 		hlog(" %p", (void *)f[1]);

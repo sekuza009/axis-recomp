@@ -1,0 +1,1 @@
+Unmodified files from FFmpeg n6.1 (https://github.com/FFmpeg/FFmpeg/tree/n6.1), LGPL 2.1+, see COPYING.LGPLv2.1. Only the Indeo 3 decoder and what it includes. config.h, libavutil/avconfig.h and libavutil/ffversion.h are hand-written for this build (no asm, no threads).

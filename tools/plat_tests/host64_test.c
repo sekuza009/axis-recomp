@@ -97,6 +97,10 @@ int main(int argc, char **argv)
 		printf("axis_load failed (see standalone64.log)\n");
 		return 1;
 	}
+	if (getenv("AXIS_TEST_LOAD_ONLY")) {   /* (a check without the game's files: the library loaded and made ready) */
+		printf("axis_load: 1 (the library ready; no game started)\n");
+		return 0;
+	}
 	unsigned r = axis_init(NULL, NULL, "", 1);
 	printf("axis_init: %u\n", r);
 	if (!r)
