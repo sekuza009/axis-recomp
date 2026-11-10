@@ -77,6 +77,11 @@ public:
 	// this frame's world of the kinds Godot draws, in the world's space: meshes of at most 256 surfaces each (Godot's
 	// limit; the effects are a surface per run, to keep the game's order)
 	TypedArray<ArrayMesh> build_map_meshes();
+	// the sky (picture mode 2): its triangles in the game's camera space, whichever viewpoint of its own each part was
+	// drawn from (sky.c) - the same on screen - in the game's order, for remaster_view.gd's sky viewport
+	TypedArray<ArrayMesh> build_sky_meshes();
+	Color get_clear_colour() const;   // the frame's first colour clear (what shows through a see-through sky)
+	bool sky_in_godot() const { return pictureMode == 2 && mapViewport; }
 	void draw_deferred(const RID &p_color, const RID &p_depth, const Vector2i &p_size);   // (AxisMapEffect, render thread)
 	Projection get_camera_projection() const;
 	Transform3D get_camera_view() const;
@@ -157,6 +162,9 @@ protected:
 	std::unordered_map<uint64_t, Ref<ShaderMaterial>> mapMaterials;
 	Ref<Shader> mapShaders[2][5][4];   // [original lighting / remaster][the class: godot_class()][the culling]
 	Ref<ShaderMaterial> map_material(uint32_t texture, uint32_t env, int blendClass, int cull, int priority = 0);
+	Ref<Shader> skyShaders[4];   // [no blending / alpha / additive (source alpha) / additive (one)]
+	std::unordered_map<uint64_t, Ref<ShaderMaterial>> skyMaterials;
+	Ref<ShaderMaterial> sky_material(const EmuBatch &b, int priority);
 	// the look's passes (compute): the world copied, bloom (a bright pass, a chain of half sizes down, blurred back
 	// up), then the composite written back into the frame
 	RID postBloomShader, postCompShader, postSampler, postScene;

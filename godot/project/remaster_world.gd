@@ -15,9 +15,14 @@ extends Node3D
 @export_range(0.0, 8.0, 0.01) var dynamic_energy := 1.0
 @export var dynamic_shadows := false
 @export var sun_without_map_light := true
+## the map's directional lights turned round: the game shades with the normals stored in its models, which point the
+## other way from their faces, so its lights in effect shine against their direction (checked on Abyss: its warm,
+## teal and grey lights then fall where the original's do)
+@export var turn_directional_lights := true
 @export_range(1, 256) var max_point_lights := 64
 
 var _omnis: Array[OmniLight3D] = []
+var _suns: Array[DirectionalLight3D] = []   # (the map's second and further directional lights; the first is the Sun)
 var _sun_basis: Basis
 var _sun_colour: Color
 var _sun_energy: float
@@ -32,6 +37,7 @@ func apply_lights(lights: Array, scale: float = 1.0) -> void:
 	var env: Environment = $Environment.environment
 	var used := 0
 	var map_dir := false
+	var dirs := 0
 	if use_game_lights:
 		for l in lights:
 			if l.pool == 2:
@@ -42,14 +48,19 @@ func apply_lights(lights: Array, scale: float = 1.0) -> void:
 						env.ambient_light_source = Environment.AMBIENT_SOURCE_COLOR
 						env.ambient_light_color = l.colour
 						env.ambient_light_energy = ambient_energy
-				1:   # directional: the game's light travels along its direction (lit where a normal faces against it)
-					if l.pool == 0 and not map_dir and l.direction.length_squared() > 0.0:
-						map_dir = true
+				1:   # directional: the game's light travels along its direction (lit where a normal faces against it);
+					# the first is the Sun (its shadows), the others lights of their own without shadows
+					if l.pool == 0 and l.direction.length_squared() > 0.0:
 						var d: Vector3 = l.direction.normalized()
 						var up := Vector3.UP if absf(d.dot(Vector3.UP)) < 0.99 else Vector3.RIGHT
-						$Sun.transform.basis = Basis.looking_at(d, up)
-						$Sun.light_color = l.colour
-						$Sun.light_energy = _sun_energy
+						var s: DirectionalLight3D = $Sun if not map_dir else _sun(dirs)
+						if map_dir:
+							dirs += 1
+						map_dir = true
+						s.transform.basis = Basis.looking_at(-d if turn_directional_lights else d, up)
+						s.light_color = l.colour
+						s.light_energy = _sun_energy
+						s.visible = true
 				2, 3:   # point lights
 					if used >= max_point_lights or l.radius <= 0.0:
 						continue
@@ -81,8 +92,17 @@ func apply_lights(lights: Array, scale: float = 1.0) -> void:
 	if OS.get_environment("AXIS_LIGHT_TEST") != "" and Engine.get_process_frames() % 120 == 0:
 		var cam := get_viewport().get_camera_3d()
 		print("lights test: ", used, " omnis; camera ", cam.global_position, " near ", cam.near, " far ", cam.far, "; first ", _omnis[0].global_position if used > 0 else Vector3(), " range ", _omnis[0].omni_range if used > 0 else 0.0, " in tree ", _omnis[0].is_inside_tree() if used > 0 else false, " world ", get_world_3d(), " cam world ", cam.get_world_3d())
+	for i in range(dirs, _suns.size()):
+		_suns[i].visible = false
 	for i in range(used, _omnis.size()):
 		_omnis[i].visible = false
+
+func _sun(i: int) -> DirectionalLight3D:
+	while _suns.size() <= i:
+		var s := DirectionalLight3D.new()
+		add_child(s)
+		_suns.append(s)
+	return _suns[i]
 
 func _omni(i: int) -> OmniLight3D:
 	while _omnis.size() <= i:

@@ -167,6 +167,7 @@ struct PostPush { float a[4], b[4], c[4]; int32_t d[4]; };
 // additive (one). Solid surfaces are the chosen kinds' meshes drawn in perspective; effects are those kinds' blended
 // batches, also the see-through ones drawn already projected (depth-sorted triangles, billboards)
 int godot_class(const EmuBatch &b, int kinds, bool effects) {
+	if (effects && b.tag == 1 && b.scissor[2] > 0) return 5;   // (the sky, Godot's in the remaster: its colour as it is)
 	if (b.pipe.prim != 0 || b.scissor[2] <= 0 || b.count < 3 || !(kinds & (1 << b.tag))) return -1;
 	const bool mix = b.pipe.src == 0x302 && b.pipe.dst == 0x303;
 	if (b.persp && (!b.pipe.blend || mix)) return b.pipe.blend ? 1 : 0;
@@ -254,6 +255,8 @@ void AxisReplay::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_original_light", "amount"), &AxisReplay::set_original_light);
 	ClassDB::bind_method(D_METHOD("get_original_light"), &AxisReplay::get_original_light);
 	ClassDB::bind_method(D_METHOD("build_map_meshes"), &AxisReplay::build_map_meshes);
+	ClassDB::bind_method(D_METHOD("build_sky_meshes"), &AxisReplay::build_sky_meshes);
+	ClassDB::bind_method(D_METHOD("get_clear_colour"), &AxisReplay::get_clear_colour);
 	ClassDB::bind_method(D_METHOD("set_godot_kinds", "mask"), &AxisReplay::set_godot_kinds);
 	ClassDB::bind_method(D_METHOD("get_godot_kinds"), &AxisReplay::get_godot_kinds);
 	ADD_GROUP("Remaster picture", "");
@@ -923,6 +926,19 @@ Unproject unprojector(const GLEmu &e) {
 	u.ok = true;
 	return u;
 }
+// to the game's camera space: only the projection inverted (the sky's parts are drawn under their own views, all
+// with the camera's projection: their eye-space positions are where they are seen)
+Unproject eye_unprojector(const GLEmu &e) {
+	Unproject u;
+	if (!e.hasCamera) return u;
+	double p[16];
+	for (int i = 0; i < 16; i++) p[i] = e.camProjection[i];
+	if (!invert(p, u.inv)) return u;
+	u.W = e.width();
+	u.H = e.height();
+	u.ok = true;
+	return u;
+}
 } // namespace
 
 PackedVector3Array AxisReplay::get_world_triangles(int mask) const {
@@ -975,10 +991,7 @@ void AxisReplay::set_original_light(float v) {
 }
 
 bool AxisReplay::frame_effects() const {
-	if (pictureMode != 2) return false;
-	for (const EmuCmd &c : emu.cmds)
-		if (c.kind == EmuCmd::BATCH && c.batch.tag == 1 && c.batch.count) return false;   // (the sky: Godot has none yet)
-	return true;
+	return pictureMode == 2 && mapViewport;   // (the sky is Godot's too then: build_sky_meshes)
 }
 
 Ref<ShaderMaterial> AxisReplay::map_material(uint32_t texture, uint32_t env, int blendClass, int cull, int priority) {
@@ -991,13 +1004,14 @@ Ref<ShaderMaterial> AxisReplay::map_material(uint32_t texture, uint32_t env, int
 	if (sh.is_null()) {
 		static const char *blend[5] = { "", "", ", blend_mix, depth_draw_never", ", blend_add, depth_draw_never", ", blend_add, depth_draw_never" };
 		static const char *culls[4] = { "cull_disabled", "cull_back", "cull_front", "cull_disabled" };
-		String code = String("shader_type spatial;\nrender_mode ") + culls[cull] + (lit ? "" : ", unshaded") + blend[blendClass] + ";\n" + k_map_common;
+		String code = String("shader_type spatial;\nrender_mode ") + culls[cull] + (lit ? ", diffuse_lambert_wrap" : ", unshaded") + blend[blendClass] + ";\n" + k_map_common;
 		if (blendClass >= 2)   // (an effect: the game's colour as it is, blended by Godot in the game's order)
 			code += String("void fragment() {\n\tvec4 o = game_colour(COLOR, UV);\n\tALBEDO = pow(o.rgb, vec3(2.2));\n\tALPHA = ") +
 			        (blendClass == 4 ? "1.0" : "o.a") + ";\n}\n";
 		else if (!lit)
 			code += String("void fragment() {\n\tvec4 o = game_colour(COLOR, UV);\n\tALBEDO = pow(o.rgb, vec3(2.2));\n") + (blendClass ? "\tALPHA = o.a;\n\tALPHA_SCISSOR_THRESHOLD = 0.5;\n" : "") + "}\n";
-		else   // (lit by Godot: the texture as the surface, the game's own lighting kept as a glow of original_light)
+		else   // (lit by Godot: the texture as the surface, the game's own lighting kept as a glow of original_light; wrapped
+		       // diffuse light as the game's - half light at right angles to a light, none only facing away)
 			code += String("void fragment() {\n\tvec4 t = texture_only(UV);\n\tvec4 o = game_colour(COLOR, UV);\n\tALBEDO = pow(t.rgb, vec3(2.2));\n"
 			               "\tEMISSION = pow(o.rgb, vec3(2.2)) * original_light;\n\tROUGHNESS = 0.8;\n") + (blendClass ? "\tALPHA = o.a;\n\tALPHA_SCISSOR_THRESHOLD = 0.5;\n" : "") + "}\n";
 		sh.instantiate();
@@ -1043,7 +1057,7 @@ TypedArray<ArrayMesh> AxisReplay::build_map_meshes() {
 		const EmuBatch &b = c.batch;
 		if (c.kind != EmuCmd::BATCH) continue;
 		const int blendClass = godot_class(b, godotKinds, effects);
-		if (blendClass < 0) continue;
+		if (blendClass < 0 || blendClass == 5) continue;   // (the sky: build_sky_meshes)
 		// the game's culling: GL's front faces (counter-clockwise unless glFrontFace(GL_CW)) turned to Godot's (clockwise),
 		// its culled face kept (0 none, 1 back, 2 front)
 		const int cull = !b.pipe.cull ? 0 : b.pipe.cullFace == 0x404 ? 2 : b.pipe.cullFace == 0x405 ? 1 : 3;
@@ -1085,13 +1099,16 @@ TypedArray<ArrayMesh> AxisReplay::build_map_meshes() {
 		String st;
 		for (const EmuCmd &c : emu.cmds) {
 			const EmuBatch &b = c.batch;
-			if (c.kind != EmuCmd::BATCH || (b.tag != 2 && b.tag != 3)) continue;
-			st += String(" [tex ") + String::num_int64(b.texture) + " n " + String::num_int64(b.count / 3) + " persp " + String::num_int64(b.persp) +
+			if (c.kind != EmuCmd::BATCH || (b.tag != 1 && b.tag != 2 && b.tag != 3)) continue;
+			st += String(" [tag ") + String::num_int64(b.tag) + " tex " + String::num_int64(b.texture) + " n " + String::num_int64(b.count / 3) + " persp " + String::num_int64(b.persp) +
 			      " depth " + String::num_int64(b.pipe.depthTest) + "/" + String::num_int64(b.pipe.depthFunc, 16) + " blend " +
 			      String::num_int64(b.pipe.blend) + " " + String::num_int64(b.pipe.src, 16) + "/" + String::num_int64(b.pipe.dst, 16) +
-			      " cull " + String::num_int64(b.pipe.cull) + " fog " + String::num_int64(b.fog) + "]";
+			      " cull " + String::num_int64(b.pipe.cull) + " fog " + String::num_int64(b.fog) +
+			      (b.tag == 1 ? String(" col ") + String::num(emu.verts[b.first].col[0], 2) + "," + String::num(emu.verts[b.first].col[1], 2) + "," +
+			                    String::num(emu.verts[b.first].col[2], 2) + "," + String::num(emu.verts[b.first].col[3], 2) + " w " + String::num(emu.verts[b.first].pos[3], 0) +
+			                    " env " + String::num_int64(b.env, 16) : String()) + "]";
 		}
-		UtilityFunctions::print("map batches:", st);
+		UtilityFunctions::print("map batches:", st, " clear ", get_clear_colour());
 	}
 	// smooth normals: each vertex's the sum of the faces that share its position and lie within 60 degrees of its own
 	// face (the mechs' curved armour shaded smoothly under Godot's lights; a box's edges kept sharp)
@@ -1132,6 +1149,89 @@ TypedArray<ArrayMesh> AxisReplay::build_map_meshes() {
 		// (effects drawn in the game's order: Godot's render priority, -128 .. 127, by run)
 		const int priority = s.run <= 0 ? 0 : runs <= 255 ? -128 + s.run : -128 + (int)((int64_t)s.run * 255 / (runs + 1));
 		mesh->surface_set_material(mesh->get_surface_count() - 1, map_material(s.texture, s.env, s.blend, s.cull, priority));
+	}
+	return meshes;
+}
+
+Ref<ShaderMaterial> AxisReplay::sky_material(const EmuBatch &b, int priority) {
+	const int blend = !b.pipe.blend ? 0 : (b.pipe.src == 0x302 && b.pipe.dst == 0x303) ? 1 : b.pipe.dst == 1 ? (b.pipe.src == 1 ? 3 : 2) : 1;
+	uint32_t fc = 0;
+	for (int k = 0; k < 3; k++) fc |= (uint32_t)(b.fogColor[k] * 255.0f + 0.5f) << (k * 8);
+	const uint64_t key = (uint64_t)b.texture | (uint64_t)(b.env & 0xff) << 24 | (uint64_t)blend << 32 | (uint64_t)b.fog << 34 |
+	                     (uint64_t)(priority + 128) << 35 | (uint64_t)fc << 43;
+	auto it = skyMaterials.find(key);
+	if (it != skyMaterials.end()) return it->second;
+	Ref<Shader> &sh = skyShaders[blend];
+	if (sh.is_null()) {
+		static const char *modes[4] = { "blend_mix", "blend_mix", "blend_add", "blend_add" };
+		// (drawn in the game's order - every part a transparent one, its render priority by run - with no depth test, as
+		// the game draws its sky; the fog per vertex: UV2.x, its colour per batch)
+		String code = String("shader_type spatial;\nrender_mode unshaded, cull_disabled, depth_test_disabled, depth_draw_never, ") +
+		              modes[blend] + ";\n" + k_map_common + "uniform bool fogged = false;\nuniform vec3 fog_colour = vec3(0.0);\n" +
+		              "void fragment() {\n\tvec4 o = game_colour(COLOR, UV);\n\tif (fogged) o.rgb = mix(fog_colour, o.rgb, clamp(UV2.x, 0.0, 1.0));\n\tALBEDO = o.rgb;\n\tALPHA = " + (blend == 0 || blend == 3 ? "1.0" : "o.a") + ";\n}\n";
+		sh.instantiate();
+		sh->set_code(code);
+	}
+	Ref<ShaderMaterial> m;
+	m.instantiate();
+	m->set_shader(sh);
+	m->set_shader_parameter("env", b.env == 0x1E01 ? 1 : b.env == 0x2101 ? 2 : 0);
+	m->set_shader_parameter("textured", b.texture != 0);
+	m->set_shader_parameter("fogged", b.fog != 0);
+	m->set_shader_parameter("fog_colour", Vector3(b.fogColor[0], b.fogColor[1], b.fogColor[2]));
+	m->set_render_priority(priority);
+	if (b.texture) {
+		Ref<Texture2DRD> &t = texShown[b.texture - 1];
+		if (t.is_null()) t.instantiate();
+		m->set_shader_parameter("tex", t);
+	}
+	skyMaterials[key] = m;
+	return m;
+}
+
+Color AxisReplay::get_clear_colour() const {
+	for (const EmuCmd &c : emu.cmds)
+		if (c.kind == EmuCmd::CLEAR && (c.clearMask & 0x4000)) return Color(c.clearColor[0], c.clearColor[1], c.clearColor[2], 1.0f);
+	return Color(0, 0, 0, 1);
+}
+
+TypedArray<ArrayMesh> AxisReplay::build_sky_meshes() {
+	TypedArray<ArrayMesh> meshes;
+	const Unproject u = eye_unprojector(emu);
+	if (!u.ok || !sky_in_godot()) return meshes;
+	std::vector<const EmuBatch *> sky;
+	for (const EmuCmd &c : emu.cmds)
+		if (c.kind == EmuCmd::BATCH && c.batch.tag == 1 && c.batch.pipe.prim == 0 && c.batch.scissor[2] > 0 && c.batch.count >= 3) sky.push_back(&c.batch);
+	if (sky.empty()) return meshes;
+	Ref<ArrayMesh> mesh;
+	const int n = (int)sky.size();
+	static const int only = getenv("AXIS_SKY_ONLY") ? atoi(getenv("AXIS_SKY_ONLY")) : -1;   // (a check: one part alone)
+	for (int r = 0; r < n; r++) {   // (a surface per batch, in order: few)
+		if (only >= 0 && r != only) continue;
+		const EmuBatch &b = *sky[r];
+		PackedVector3Array v;
+		PackedVector2Array uv, uv2;
+		PackedColorArray col;
+		for (uint32_t i = 0; i < b.count; i++) {
+			const EmuVertex &e = emu.verts[b.first + i];
+			v.push_back(u.world(e, b, nullptr));
+			uv.push_back(Vector2(e.uv[0], e.uv[1]));
+			uv2.push_back(Vector2(e.fog, 0));
+			col.push_back(Color(e.col[0], e.col[1], e.col[2], e.col[3]));
+		}
+		Array arrays;
+		arrays.resize(Mesh::ARRAY_MAX);
+		arrays[Mesh::ARRAY_VERTEX] = v;
+		arrays[Mesh::ARRAY_TEX_UV] = uv;
+		arrays[Mesh::ARRAY_TEX_UV2] = uv2;
+		arrays[Mesh::ARRAY_COLOR] = col;
+		if (mesh.is_null() || mesh->get_surface_count() >= 256) {
+			mesh.instantiate();
+			meshes.push_back(mesh);
+		}
+		mesh->add_surface_from_arrays(Mesh::PRIMITIVE_TRIANGLES, arrays);
+		const int priority = n <= 255 ? -128 + r : -128 + (int)((int64_t)r * 255 / n);
+		mesh->surface_set_material(mesh->get_surface_count() - 1, sky_material(b, priority));
 	}
 	return meshes;
 }

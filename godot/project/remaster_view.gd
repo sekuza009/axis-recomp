@@ -28,6 +28,12 @@ var map_sub: SubViewport     # Godot's map (picture modes 1 and 2)
 var map_cam: Camera3D
 var map_mesh: MeshInstance3D       # (the first of map_meshes)
 var map_meshes: Array[MeshInstance3D] = []
+# the sky (picture mode 2): its own viewport, a child of the map's (so drawn first), its camera at the game's eye looking
+# down -z (the sky's triangles come in the camera's space), its picture the map world's background (BG_CANVAS)
+var sky_sub: SubViewport
+var sky_cam: Camera3D
+var sky_meshes: Array[MeshInstance3D] = []
+var sky_back: TextureRect
 ## Godot's map world in metres: the game's units (its near plane is 100, its far a million) scaled by this - Godot's
 ## clustered point lights and shadows are made for scenes of metres
 const WORLD_SCALE := 0.01
@@ -82,6 +88,38 @@ func setup(p_replay: AxisReplay, p_view: TextureRect) -> void:
 	map_sub.add_child(map_mesh)
 	map_mesh.scale = Vector3.ONE * WORLD_SCALE
 	map_meshes.append(map_mesh)
+	sky_sub = SubViewport.new()
+	sky_sub.own_world_3d = true
+	sky_sub.render_target_update_mode = SubViewport.UPDATE_DISABLED
+	map_sub.add_child(sky_sub)
+	var sky_env := WorldEnvironment.new()
+	sky_env.environment = Environment.new()
+	sky_env.environment.background_mode = Environment.BG_COLOR
+	sky_env.environment.background_color = Color(0, 0, 0)
+	sky_env.environment.tonemap_mode = Environment.TONE_MAPPER_LINEAR
+	sky_sub.add_child(sky_env)
+	sky_cam = Camera3D.new()
+	sky_cam.keep_aspect = Camera3D.KEEP_HEIGHT
+	sky_sub.add_child(sky_cam)
+	sky_cam.current = true
+	var layer := CanvasLayer.new()
+	layer.layer = -1
+	map_sub.add_child(layer)
+	sky_back = TextureRect.new()
+	sky_back.texture = sky_sub.get_texture()
+	sky_back.set_anchors_preset(Control.PRESET_FULL_RECT)
+	sky_back.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
+	sky_back.visible = false
+	# (the sky viewport holds the game's gamma values as if linear, stored as sRGB; the map world's background reads its
+	# canvas as sRGB into linear: so here sRGB -> the gamma value -> linear (^2.2) -> sRGB)
+	var sm := ShaderMaterial.new()
+	sm.shader = Shader.new()
+	sm.shader.code = "shader_type canvas_item;\n" + \
+		"vec3 to_linear(vec3 c) { return mix(c / 12.92, pow((c + 0.055) / 1.055, vec3(2.4)), step(0.04045, c)); }\n" + \
+		"vec3 to_srgb(vec3 c) { return mix(c * 12.92, 1.055 * pow(c, vec3(1.0 / 2.4)) - 0.055, step(0.0031308, c)); }\n" + \
+		"void fragment() { vec4 t = texture(TEXTURE, UV); COLOR = vec4(to_srgb(pow(to_linear(t.rgb), vec3(2.2))), 1.0); }\n"
+	sky_back.material = sm
+	layer.add_child(sky_back)
 	replay.set_map_viewport(true)
 
 ## the Camera3D set from the game's matrices (false: no camera this frame - the menus)
@@ -125,6 +163,7 @@ func update(frame: Vector2i) -> void:
 		for i in map_meshes.size():
 			map_meshes[i].mesh = built[i] if i < built.size() else null
 		world.apply_lights(replay.get_lights(), WORLD_SCALE)
+	update_sky(frame, map_on)
 	var on := replay != null and replay.overlay and apply_camera(frame)
 	shown.visible = on
 	if not on:
@@ -141,6 +180,28 @@ func update(frame: Vector2i) -> void:
 	var mesh := ArrayMesh.new()
 	mesh.add_surface_from_arrays(Mesh.PRIMITIVE_TRIANGLES, arrays)
 	mesh_inst.mesh = mesh
+
+## the sky in its viewport, the map world's background, when the frame has one (picture mode 2)
+func update_sky(frame: Vector2i, map_on: bool) -> void:
+	var built: Array = replay.build_sky_meshes() if map_on else []
+	var on := built.size() > 0
+	sky_sub.render_target_update_mode = SubViewport.UPDATE_ALWAYS if on else SubViewport.UPDATE_DISABLED
+	sky_back.visible = on
+	var env: Environment = world.get_node("Environment").environment
+	env.background_mode = Environment.BG_CANVAS if on else Environment.BG_COLOR
+	if not on:
+		return
+	var cc: Color = replay.get_clear_colour()   # (the game's clear colour, in its gamma: shows through the sky)
+	sky_sub.get_child(0).environment.background_color = Color(cc.r, cc.g, cc.b).linear_to_srgb()   # (as the sky: the game's gamma)
+	apply_camera(frame, sky_cam, sky_sub, 1.0)
+	sky_cam.global_transform = Transform3D.IDENTITY   # (the sky's triangles are in the camera's space)
+	sky_back.size = Vector2(frame)
+	while sky_meshes.size() < built.size():
+		var mi := MeshInstance3D.new()
+		sky_sub.add_child(mi)
+		sky_meshes.append(mi)
+	for i in sky_meshes.size():
+		sky_meshes[i].mesh = built[i] if i < built.size() else null
 
 ## the check: where Godot's camera puts a sample of the world's points against where the game drew them
 func report(frame: Vector2i) -> String:

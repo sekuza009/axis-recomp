@@ -178,6 +178,30 @@ the game's own effects to look as the original. Not in a frame that draws the sk
 the game's effects. The skirmish arena has no sky. Checked on the recorded skirmish's explosion frames and live (mode 2:
 120 fps, no long frames in the match).
 
+## Godot draws the sky (step 6b)
+
+The skirmish rounds' maps are mapinfo.dat's in order (round N, map N: 11 Abyss, 12 Metropolis, 13 StarField, 14
+Netsphere - the arena of the earlier recordings); sess5/godot_sky.sh in the scratchpad drives a round of the skirmish screen.
+Abyss has a sky, 33 point lights and 3 directional lights of its own.
+
+sky.c draws the sky from several viewpoints of its own (the sphere and the cloud layers from the origin looking along
+the camera, the side walls and the floor from heights of their own), all with the camera's projection. So
+`build_sky_meshes()` takes each sky triangle back to the camera's space by inverting the projection only: where it is
+seen, whichever view drew it. remaster_view.gd renders them in a viewport of their own (a child of the map's, so drawn
+first; its camera at the eye looking down -z), in the game's order (a surface per batch, render priority by order, no
+depth test, the fog per vertex), and that picture is the map world's background (BG_CANVAS). The sky's colours stay in
+the game's gamma while its layers blend - blended in linear light a dark layer under a bright one all but vanishes
+(Abyss's purple nebula under its clouds did) - and the finished sky is taken to linear light once (sky_back's shader).
+The frame's clear colour shows through it as in the game. With the sky Godot's, the remaster picture's effects are
+Godot's on every map (frame_effects()). `AXIS_SKY_ONLY=<n>` renders one sky part alone (a check).
+
+Lights, from Abyss: every directional light of the map is used (the first as the Sun, with shadows; the rest without),
+turned round (`turn_directional_lights`: the game shades with the normals stored in its models, which point the other
+way from their faces, so its lights in effect shine against their direction - turned, its warm, teal and grey lights
+fall where the original's do), and the lit map materials use Godot's wrapped diffuse light (`diffuse_lambert_wrap`) as
+the game's is: half light at right angles to a light (shading.c facing(): (1 - n.L) x 128). Checked on the recorded
+Abyss round (all three modes) and live (mode 2: 120 fps; one 162 ms frame in the match, when the player died).
+
 ## Building (Windows, zig as the compiler)
 
 **Since 2026-11-09 64-bit only**: the extension `arch=x86_64` against `Tools/godot/godot-cpp64` (SConstruct's default),

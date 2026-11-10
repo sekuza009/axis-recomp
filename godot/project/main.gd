@@ -82,6 +82,10 @@ func _process(_delta: float) -> void:
 				if mi:
 					mi.save_png(shot_path.get_basename() + "_map.png")
 				print("map mesh surfaces: ", remaster.map_mesh.mesh.get_surface_count() if remaster.map_mesh.mesh else -1)
+				if remaster.sky_back.visible:
+					var si := remaster.sky_sub.get_texture().get_image()
+					if si:
+						si.save_png(shot_path.get_basename() + "_sky.png")
 				if OS.get_environment("AXIS_LIGHT_LIST") != "":
 					for l in replay.get_lights():
 						print("light ", l)
