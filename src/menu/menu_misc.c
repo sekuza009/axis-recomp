@@ -481,8 +481,16 @@ u32 (skirmish_startRound)(void)
 {
 	int sel = g_skirmishRoundShown;
 	u32 t = (u32)sel * 0x5c;
-	g_mapIndex = sel;
-	memcpy(AP(void, OBJ(g_gameTitle)), AP(const void, (OBJ(g_mapNames) + sel * 32)), 32);
+	int map = sel;
+#ifdef AXIS_64
+	{	/* (a check for the Godot remaster, 64-bit build only: AXIS_MAP_INDEX=<n> plays the round on map n - any of
+		   mapinfo.dat's, the arena-only and the hidden ones (22 .. 24) too: glrec64.c) */
+		extern int glrec64_mapOverride(int count);
+		map = glrec64_mapOverride(g_mapCount) >= 0 ? glrec64_mapOverride(g_mapCount) : map;
+	}
+#endif
+	g_mapIndex = map;
+	memcpy(AP(void, OBJ(g_gameTitle)), AP(const void, (OBJ(g_mapNames) + map * 32)), 32);
 	const SkirmishInfo *rec = AP(const SkirmishInfo, (OBJ(g_skirmishInfo) + t));
 	int a = rec->gameMode, b = rec->fragLimit, c = rec->timeLimit;
 	g_mapRotation = 0;

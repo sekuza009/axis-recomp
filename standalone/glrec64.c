@@ -151,6 +151,13 @@ void glrec64_lights(int pool, const void *records, int count)
 		put_bytes(f + 0x10, 28);  /* position, direction, radius */
 	}
 }
+/* (a check for the Godot remaster: AXIS_MAP_INDEX=<n>, the skirmish round played on map n; -1 none - src/menu/menu_misc.c) */
+int glrec64_mapOverride(int count)
+{
+	const char *m = getenv("AXIS_MAP_INDEX");
+	int n = m ? atoi(m) : -1;
+	return n >= 0 && n < count ? n : -1;
+}
 void glrec64_camera(const float *projection, const float *view)
 {
 	put_op(OP_CAMERA, 32);
