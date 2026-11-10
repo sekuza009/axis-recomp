@@ -232,13 +232,31 @@ static int ov_rel(const char *in, char *rel, size_t room)
 	norm[n] = 0;
 	const char *s = norm;
 	size_t rl = strlen(g_root);
-	if (abs) {
-		if (strncasecmp(norm, g_root, rl) || (norm[rl] && norm[rl] != '/')) {
+	if (abs && (strncasecmp(norm, g_root, rl) || (norm[rl] && norm[rl] != '/'))) {
+		/* (another name for the same place - macOS's /tmp is /private/tmp: the longest part that exists resolved
+		   through its links, the rest kept) */
+		char canon[PATH_ROOM * 2], head[PATH_ROOM * 2];
+		snprintf(head, sizeof head, "%s", norm);
+		while (!realpath(head, canon)) {   /* (head: ever shorter prefixes of norm) */
+			char *sl = strrchr(head, '/');
+			if (!sl || sl == head) {
+				canon[0] = 0;
+				break;
+			}
+			*sl = 0;
+		}
+		if (canon[0]) {   /* (then the rest of norm, after the prefix that exists) */
+			size_t c = strlen(canon);
+			snprintf(canon + c, sizeof canon - c, "%s", norm + strlen(head));
+		}
+		if (!canon[0] || strncasecmp(canon, g_root, rl) || (canon[rl] && canon[rl] != '/')) {
 			snprintf(rel, room, "%s", norm);
 			return 0;
 		}
-		s = norm + rl;
+		snprintf(norm, sizeof norm, "%s", canon);
 	}
+	if (abs)
+		s = norm + rl;
 	char out[PATH_ROOM] = "";
 	size_t o = 0;
 	while (*s) {

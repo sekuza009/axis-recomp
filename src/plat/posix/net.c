@@ -102,7 +102,9 @@ PLAT(int, send, uint32_t s, const void *buf, int len, int flags)
 	return (int)send((int)s, buf, (size_t)len, flags | MSG_NOSIGNAL_);   /* (a closed peer: an error, not SIGPIPE) */
 }
 PLAT(int, recv, uint32_t s, void *buf, int len, int flags) { return (int)recv((int)s, buf, (size_t)len, flags); }
-PLAT(int, shutdown, uint32_t s, int how) { return shutdown((int)s, how); }   /* (SD_RECEIVE / SD_SEND / SD_BOTH: 0 / 1 / 2, as SHUT_*) */
+/* (SD_RECEIVE / SD_SEND / SD_BOTH: 0 / 1 / 2, as SHUT_*; a connection the other side already ended is no error, as on
+   Windows and Linux - macOS says ENOTCONN) */
+PLAT(int, shutdown, uint32_t s, int how) { int r = shutdown((int)s, how); return r != 0 && errno == ENOTCONN ? 0 : r; }
 PLAT(int, closesocket, uint32_t s) { return close((int)s); }
 PLAT(uint32_t, inet_addr, const char *text) { return inet_addr(text); }
 PLAT(const char *, inet_ntoa, uint32_t addr)

@@ -3,6 +3,7 @@
 #define AXIS_PORTABLE 1
 #include "../../src/plat/posix/files.c"
 #include <stdio.h>
+#include <strings.h>
 
 static int fails;
 static void check(int ok, const char *what)
@@ -10,6 +11,16 @@ static void check(int ok, const char *what)
 	printf("%s  %s\n", ok ? "PASS" : "FAIL", what);
 	if (!ok)
 		fails++;
+}
+/* (macOS: /tmp is a link to /private/tmp, and its disks ignore case by default - a name found as written is kept so) */
+static char T[1024];   /* /tmp/axt as the system names it */
+static int g_ci;       /* the disk ignores case */
+static int same(const char *a, const char *b) { return g_ci ? !strcasecmp(a, b) : !strcmp(a, b); }
+static int same_t(const char *a, const char *rest)   /* a == T + rest */
+{
+	char want[1100];
+	snprintf(want, sizeof want, "%s%s", T, rest);
+	return same(a, want);
 }
 static void put(const char *path, const char *text)
 {
@@ -26,21 +37,23 @@ int main(void)
 	put("/tmp/axt/Save/bob.AXS", "bob");
 	put("/tmp/axt/Save/notes.txt", "n");
 	put("/tmp/axt/initdata/battle.sra", "movie");
-	if (chdir("/tmp/axt") != 0)
+	if (chdir("/tmp/axt") != 0 || !realpath("/tmp/axt", T))
 		return 2;
+	g_ci = access("/tmp/AXT/SAVE", F_OK) == 0;
+	printf("(the disk %s case; /tmp/axt is %s)\n", g_ci ? "ignores" : "keeps", T);
 	setenv("AXIS_USER_DIR", "-", 1);   /* (first the game folder written as before; the user folder below) */
 	plat_userReset();
 	char p[1024];
 	int f;
 
 	f = plat_path("iftex\\cylinder.ptx", p, sizeof p);
-	check(f == 1 && !strcmp(p, "Iftex/Cylinder.PTX"), "iftex\\cylinder.ptx -> Iftex/Cylinder.PTX");
+	check(f == 1 && same(p, "Iftex/Cylinder.PTX"), "iftex\\cylinder.ptx -> Iftex/Cylinder.PTX");
 	f = plat_path("SAVE\\newguy.axs", p, sizeof p);
-	check(f == 0 && !strcmp(p, "Save/newguy.axs"), "SAVE\\newguy.axs (a new file) -> Save/newguy.axs, not found");
+	check(f == 0 && same(p, "Save/newguy.axs"), "SAVE\\newguy.axs (a new file) -> Save/newguy.axs, not found");
 	f = plat_path(".\\initdata\\\\BATTLE.SRA", p, sizeof p);
-	check(f == 1 && !strcmp(p, "./initdata/battle.sra"), ".\\initdata\\\\BATTLE.SRA -> ./initdata/battle.sra");
+	check(f == 1 && same(p, "./initdata/battle.sra"), ".\\initdata\\\\BATTLE.SRA -> ./initdata/battle.sra");
 	f = plat_path("/tmp/AXT/save/ALEX.axs", p, sizeof p);
-	check(f == 1 && !strcmp(p, "/tmp/axt/Save/Alex.axs"), "/tmp/AXT/save/ALEX.axs -> /tmp/axt/Save/Alex.axs");
+	check(f == 1 && same(p, "/tmp/axt/Save/Alex.axs"), "/tmp/AXT/save/ALEX.axs -> /tmp/axt/Save/Alex.axs");
 
 	char buf[64] = { 0 };
 	FILE *fp = plat_fopen("save\\ALEX.AXS", "rb");
@@ -81,7 +94,7 @@ int main(void)
 	check(plat_fileDelete("save\\BOB.axs") == 1 && access("/tmp/axt/Save/bob.AXS", F_OK) != 0, "fileDelete(save\\BOB.axs) removes Save/bob.AXS");
 	check(plat_fileDelete("save\\BOB.axs") == 0, "fileDelete again: 0");
 	check(plat_mkdir("SAVE\\Replays") == 0 && access("/tmp/axt/Save/Replays", F_OK) == 0, "mkdir(SAVE\\Replays) -> Save/Replays");
-	check(plat_chdir("save") == 0 && plat_currentDirectory(sizeof p, p) && !strcmp(p, "/tmp/axt/Save"), "chdir(save) -> /tmp/axt/Save");
+	check(plat_chdir("save") == 0 && plat_currentDirectory(sizeof p, p) && same_t(p, "/Save"), "chdir(save) -> /tmp/axt/Save");
 	fp = plat_fopen("ALEX.axs", "r");
 	check(fp != NULL, "fopen(ALEX.axs) from there");
 	if (fp) fclose(fp);
@@ -135,12 +148,12 @@ int main(void)
 	check(plat_mkdir("save") == -1 && errno == EEXIST, "mkdir(save): there already (EEXIST)");
 	check(plat_mkdir("AutoPlay") == 0 && access("/tmp/axu/AutoPlay", F_OK) == 0 && access("/tmp/axt/AutoPlay", F_OK) != 0,
 	      "mkdir(AutoPlay): in the user folder only");
-	check(plat_chdir("autoplay") == 0 && plat_currentDirectory(sizeof p, p) && !strcmp(p, "/tmp/axt/autoplay"),
+	check(plat_chdir("autoplay") == 0 && plat_currentDirectory(sizeof p, p) && same_t(p, "/autoplay"),
 	      "chdir(autoplay) into a user-folder-only folder; current directory /tmp/axt/autoplay (as typed, as Windows)");
 	fp = plat_fopen("Match1.ape", "wb");
 	if (fp) fclose(fp);
 	check(access("/tmp/axu/AutoPlay/Match1.ape", F_OK) == 0, "  ... a file made there: /tmp/axu/AutoPlay/Match1.ape");
-	check(plat_chdir("..") == 0 && plat_currentDirectory(sizeof p, p) && !strcmp(p, "/tmp/axt"), "chdir(..): the game folder");
+	check(plat_chdir("..") == 0 && plat_currentDirectory(sizeof p, p) && same_t(p, ""), "chdir(..): the game folder");
 	check(plat_chdir("nosuch") == -1, "chdir to a missing folder: -1");
 	memset(buf, 0, sizeof buf);
 	fp = fopen("/tmp/axt/Save/Alex.axs", "rb");
