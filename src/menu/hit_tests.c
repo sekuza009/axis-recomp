@@ -73,3 +73,16 @@ int (menu_pointInPolygon)(int x, int y, int n, ...)
 	va_end(args);
 	return 1;
 }
+
+#ifdef AXIS_64
+/* (the 64-bit build's point_in_outline: menu_pointInPolygon's test on an outline given by address - game.h) */
+int menu_outlineHolds(int x, int y, const Outline *o)
+{
+	const int *px = o->x, *py = o->y;
+	int cx = x - 320, cy = 240 - y;
+	for (int i = 0; i < o->n; i++)
+		if ((int)((u32)(px[i + 1] - px[i]) * (u32)(cy - py[i]) + (u32)(cx - px[i]) * (u32)(py[i] - py[i + 1])) > 0)
+			return 0;
+	return 1;
+}
+#endif

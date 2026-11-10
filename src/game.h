@@ -1295,7 +1295,15 @@ void fix_glViewport(int x, int y, int w, int h);
 /* a menu button's outline as menu_pointInPolygon takes it on the stack: the edge count, then the corners' xs and ys */
 typedef struct { int n, x[5], y[5]; } Outline;   /* a MenuOutline (scene.fields) as point_in_outline takes it by value: the
    same 0x2c bytes, not packed (aligned loads, as the original) */
+#ifdef AXIS_64
+/* (the 64-bit build: a struct this size goes by reference, not on the stack, so menu_pointInPolygon's reading of its
+   arguments as the stack would get the pointer as its edge count and stack leftovers as corners - the main menu's and
+   the rooms' buttons then answered the pointer by chance: the same test, given the outline itself) */
+int menu_outlineHolds(int x, int y, const Outline *outline);
+#define point_in_outline(x, y, outline) menu_outlineHolds(x, y, &(outline))
+#else
 #define point_in_outline(x, y, outline) CALL_FN(menu_pointInPolygon, int, int, int, Outline)(x, y, outline)   /* menu_pointInPolygon */
+#endif
 
 /* the Korean text passes (text/text_passes.c): the lead glyphs, and the vowel and tail glyphs, at 13 and 31 units */
 #define text_hangul13Pass(x, y, s) CALL_FN(text_hangul13Pass, void, int, int, const char *)(x, y, s)
