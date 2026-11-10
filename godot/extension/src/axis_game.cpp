@@ -343,6 +343,13 @@ void AxisGame::release_all() {
 void AxisGame::_input(const Ref<InputEvent> &p_event) {
 	if (!running) return;
 	Ref<InputEventKey> k = p_event;
+	if (k.is_valid() && k->get_physical_keycode() == KEY_F11 && k->is_ctrl_pressed()) {   // Ctrl+F11: the remaster's look
+		if (k->is_pressed() && !k->is_echo()) {                                            // on / off (not the game's)
+			look.enabled = !look.enabled;
+			UtilityFunctions::print("AxisGame: the remaster look ", look.enabled ? "on" : "off");
+		}
+		return;
+	}
 	if (k.is_valid()) {
 		const int dik = dik_of(k->get_physical_keycode(), k->get_location());
 		if (dik >= 0) keys[dik] = k->is_pressed() ? 0x80 : 0;

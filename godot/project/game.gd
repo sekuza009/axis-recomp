@@ -1,6 +1,6 @@
 extends Control
-## The game itself, running in Godot (AxisGame: axis.dll in-process, drawn by Godot, Godot's input).
-## Command line (after --): --game-dir <the Axis folder> [--library <axis.dll>] [--shot frame:file.png ...]
+## The game itself, running in Godot (AxisGame: the game library in-process, drawn by Godot, Godot's input).
+## Command line (after --): --game-dir <the Axis folder> [--library <axis64.dll>] [--shot frame:file.png ...]
 ##   [--quit-after N]   (frames: the game's own, counted from its first)
 
 var game: AxisGame
@@ -54,6 +54,8 @@ func _ready() -> void:
 			i += 1
 		elif a == "--gl":
 			pass
+		elif a == "--no-look":   # the original picture (the remaster look off; Ctrl+F11 toggles it in game)
+			$Game.look_enabled = false
 		elif a == "--status":
 			pass
 		elif a == "--windowed":

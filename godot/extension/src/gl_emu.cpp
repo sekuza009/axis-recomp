@@ -202,6 +202,7 @@ void GLEmu::emit(int prim, const EmuVertex *v, int n) {
 	}
 	b.env = envMode;
 	b.fog = fog;
+	b.persp = mats[1][depth[1]][11] != 0.0f;   // (the projection's w row: -1 for perspective, 0 for glOrtho)
 	memcpy(b.fogColor, fogColor, 16);
 	b.scissor[0] = viewport[0]; b.scissor[1] = fbH - viewport[1] - viewport[3]; b.scissor[2] = viewport[2]; b.scissor[3] = viewport[3];
 	const uint32_t first = (uint32_t)verts.size();
@@ -212,7 +213,7 @@ void GLEmu::emit(int prim, const EmuVertex *v, int n) {
 	if (!cmds.empty() && cmds.back().kind == EmuCmd::BATCH) {
 		EmuBatch &l = cmds.back().batch;
 		if (l.pipe == b.pipe && l.texture == b.texture && l.minFilter == b.minFilter && l.magFilter == b.magFilter &&
-		    l.wrapS == b.wrapS && l.wrapT == b.wrapT && l.env == b.env && l.fog == b.fog && (!b.fog || !memcmp(l.fogColor, b.fogColor, 16)) &&
+		    l.wrapS == b.wrapS && l.wrapT == b.wrapT && l.env == b.env && l.fog == b.fog && l.persp == b.persp && (!b.fog || !memcmp(l.fogColor, b.fogColor, 16)) &&
 		    !memcmp(l.scissor, b.scissor, 16) && l.first + l.count == first) {
 			l.count += (uint32_t)n;
 			return;

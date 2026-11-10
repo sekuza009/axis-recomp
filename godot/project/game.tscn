@@ -32,3 +32,13 @@ offset_right = 600.0
 offset_bottom = 32.0
 
 [node name="Game" type="AxisGame" parent="."]
+look_enabled = true
+bloom = 0.4
+bloom_threshold = 0.85
+bloom_radius = 1.0
+exposure = 1.0
+contrast = 1.06
+saturation = 1.08
+warmth = 0.0
+vignette = 0.2
+sharpen = 0.25

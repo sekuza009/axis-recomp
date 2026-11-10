@@ -1,6 +1,6 @@
 extends Control
 ## Plays a recorded stream of the game's drawing (standalone/glrec.c, AXIS_GLREC_DUMP) with AxisReplay.
-## Command line (after --): <file.glrec> [--fps N] [--shot frame:path ...] [--quit-after N]
+## Command line (after --): <file.glrec> [--fps N] [--shot frame:path ...] [--quit-after N] [--look]
 ##   --shot 300:C:/x.png  saves the replay's image once 300 frames are played (the game's frame 300, counted from 1,
 ##   as AXIS_GLREC_DUMP_SHOTS); --quit-after N quits once N frames are played.
 
@@ -23,6 +23,8 @@ func _ready() -> void:
 			i += 1
 			var parts: PackedStringArray = args[i].split(":", true, 1)
 			shots[int(parts[0])] = parts[1]
+		elif a == "--look":   # the remaster look on (main.tscn holds its settings)
+			$Replay.look_enabled = true
 		elif a == "--no-status":
 			pass
 		elif a == "--windowed":

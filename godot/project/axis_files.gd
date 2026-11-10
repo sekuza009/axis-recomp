@@ -23,11 +23,11 @@ static func _program_dir() -> String:
 		return here.get_base_dir().get_base_dir().get_base_dir()
 	return here
 
-## the game library of this system and processor: axis64.dll / axis.dll (Windows, 64- / 32-bit), libaxis64.so (Linux),
+## the game library of this system: axis64.dll (Windows, 64-bit), libaxis64.so (Linux),
 ## libaxis64.dylib (macOS, universal); res://bin/ in the editor, beside the program when exported (on macOS the app's
 ## Contents/Frameworks - axis.gdextension's dependencies put it there)
 static func library_path() -> String:
-	var name := "axis64.dll" if OS.has_feature("x86_64") else "axis.dll"
+	var name := "axis64.dll"
 	if OS.get_name() == "Linux":
 		name = "libaxis64.so"
 	elif OS.get_name() == "macOS":

@@ -42,6 +42,8 @@ struct EmuBatch {
 	uint8_t fog = 0;
 	float fogColor[4] = { 0, 0, 0, 0 };
 	int scissor[4] = { 0, 0, 0, 0 };   // the viewport, framebuffer pixels, top-left origin
+	uint8_t persp = 0;         // drawn with a perspective projection: the 3D world (the remaster's effects apply to it,
+	                           // not to the HUD and menus drawn flat over it)
 };
 
 struct EmuCmd {

@@ -1,6 +1,26 @@
 # The godot branch
 
-The rebuilt game on Godot 4 (PORTING.md). Windows first, 32-bit (the game library is x86 for now), Godot 4.7.
+The rebuilt game on Godot 4 (PORTING.md): the base for a remaster - Godot as the renderer. 64-bit (Windows, Linux,
+macOS), Godot 4.7. (The 32-bit build was dropped on 2026-11-09: the portable build, AxisSDL - host/sdl on the portable
+branch - is the original game on every system; this one is free to change the picture.)
+
+## The remaster look (step 1)
+
+`AxisReplay` / `AxisGame` apply effects to the finished **3D world** - the batches drawn with a perspective projection
+(gl_emu marks them: `EmuBatch::persp`) - after the frame's last 3D batch and before the HUD and menus are drawn over
+it, so the HUD, text and menu panels stay exactly the original's. Compute passes on Godot's RenderingDevice
+(axis_replay.cpp, `run_post`): the world copied; bloom (a bright pass with a soft knee, saturated colours weighted
+over pale surfaces - the game has nothing brighter than white - then a chain of half sizes down with a 13-tap filter
+and back up with a tent); the composite written back into the frame: sharpening (limited to the neighbours' range),
+the bloom added, exposure, contrast, saturation, warmth, a vignette, highlights rolled off above 0.9.
+
+The settings are properties ("Remaster look" in the inspector): `look_enabled`, `bloom`, `bloom_threshold`,
+`bloom_radius`, `exposure`, `contrast`, `saturation`, `warmth`, `vignette`, `sharpen`. game.tscn's Game node holds the
+game's (on); they can be changed while the game runs from the editor's Remote scene tree. In game **Ctrl+F11** turns
+the look on and off (the game does not see that key); `--no-look` starts with it off. main.tscn (the replay) has it
+off, `--look` on - the recorded frames compared both ways. Checked on a recorded match (frames 6,000-8,000) and live:
+menus without 3D are untouched; the title and menu backdrops and the arena get the look.
+
 
 ## What is here
 
@@ -57,6 +77,10 @@ restart after a graphics change passes it, as the original game started AxisGL.e
 original AxisPlay.exe.
 
 ## Building (Windows, zig as the compiler)
+
+**Since 2026-11-09 64-bit only**: the extension `arch=x86_64` against `Tools/godot/godot-cpp64` (SConstruct's default),
+the game library `bin/axis64.dll` (`bash standalone/build64.sh windows`), the 64-bit editor `Tools/godot/editor64`
+(the .bat files use it), `bash godot/export.sh release install` -> <Axis>/Godot64. The 32-bit notes below are history.
 
 Set up once (outside the repo, C:/Users/Alexander/Tools/godot): Godot 4.7.2 (32-bit editor), godot-cpp (branch 4.5)
 built against Godot 4.7's API (`--dump-extension-api`), SCons (`pip install scons`), and `zig-mingw/bin`: small
