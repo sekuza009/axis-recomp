@@ -26,6 +26,9 @@ extends Node3D
 ## lights of its own (Godot gives their light again), more when it has none (the Sun alone would leave it dark)
 @export_range(0.0, 1.5, 0.01) var original_light_with_map_lights := 0.3
 @export_range(0.0, 1.5, 0.01) var original_light_without := 0.6
+## the lights on a lit map surface summed no higher than this (AxisReplay.light_cap), rolled off towards it: the game
+## clamps its lighting at full white, Godot would add lights without end (hard white patches where many overlap)
+@export_range(0.0, 8.0, 0.01) var light_cap := 1.0
 var map_has_lights := false   # (apply_lights: the frame's map pool has directional or point lights)
 
 var _omnis: Array[OmniLight3D] = []

@@ -241,6 +241,38 @@ sess5/map_survey.sh drives all 32, survey_sheet.py makes the contact sheets).
   light, and only the lit result reaches Godot: Godot's lit surfaces have the texture alone as their colour. The fix is
   the base colours sent from the game (the 64-bit build) for Godot's albedo.
 
+## Bright light in the remaster (2026-11-10)
+
+The remaster's over-bright patches had three causes; checked with the survey (`sess5/map_survey.sh`, all 32; the
+contact sheets: original, the remaster before, the remaster now).
+
+- **The effects were blended in linear light** (the larger part): Godot blends in linear light, the game in its gamma,
+  and there a faint, bright, see-through edge counts for far more. Valhalla's washed-out green floor was a see-through
+  layer, IllusionCity's hazy halos its glows' edges, Asgard's cyan floor patch and Hive's bright haze the same. The
+  effects now read the picture behind them (Godot's screen texture), work out the game's blend in its gamma and give
+  Godot what lands on that result (axis_replay.cpp `k_map_effect`: mix as the colour that, mixed by its alpha, gives the
+  game's result; additive as the difference). Exact over the opaque world, near it over other effects. (Godot's
+  `blend_premul_alpha` was tried first: the result was the same on the maps retested; plain `blend_mix` is kept.)
+- **Godot adds lights without end**, the game clamps at full white: the lit map surfaces have their own light function
+  (`k_map_light`: Godot's wrapped diffuse, its sum rolled off past `light_knee` (0.6) of `light_cap`, 1.0 - AxisReplay
+  `light_cap`, remaster_world.gd `light_cap`, `AXIS_LIGHT_CAP` for checks; no specular, as the game). Catacomb's mean
+  0.286 -> 0.248 (original 0.220), Bootcamp 0.238 -> 0.220 (0.186), Cube's clipped pixels halved. With the cap off it
+  gives what Godot's own lighting gives (`AXIS_BUILTIN_LIGHT=1`: the same means), so it changes nothing below the knee.
+- **Per pixel, not per vertex**: the game lights its vertices and blends between them, so a point light near the middle
+  of a big flat face hardly reaches its corners and the face is lit evenly; Godot lights each pixel and shows the light's
+  pool (HeadQuarters' partition and ceiling). Not clipping - the cap does not touch them. `AXIS_VERTEX_LIGHT=1` lights
+  the map surfaces per vertex (Godot's `vertex_lighting`; the cap's function is not used then): HeadQuarters' walls
+  then lit evenly as the original's - but with Godot's per-pixel light and shadows lost. A choice still to be made.
+- Tried and left as a check: the point lights lit whatever way a surface faces, as the game's kind 2 (by distance
+  alone) - the shader's `point_facing` false: per pixel it gave more hard blobs, not fewer.
+
+Found on the way: **some maps want their directional lights turned round** after all. With them turned Gigantic-Core
+is as bright as the original (0.149 / 0.135), not turned half that (0.074) - while on Bloodbath, CrimsonField,
+StarField, Abyss, Centropolis and Valhalla not turned matches. JudgmentChamber (0.046 / 0.085) and HeadQuarters look
+the same. Likely by model, not by map: the remaster's normals are made from the faces' winding, the game shades with
+the normals stored in its models - where those point the other way from the winding, the game's directional light falls
+on the other side. To do: the game's own normals, or the side the game lit, for Godot.
+
 ## The 64-bit build's lighting bug (fixed 2026-11-10)
 
 The purple and yellow patches on many maps were not the original's: in the 64-bit game library an APTR field is the

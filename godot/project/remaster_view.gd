@@ -169,6 +169,9 @@ func update(frame: Vector2i) -> void:
 		var keep: float = world.original_light_with_map_lights if world.map_has_lights else world.original_light_without
 		if absf(replay.original_light - keep) > 0.001:
 			replay.original_light = keep
+		var cap: float = world.light_cap if OS.get_environment("AXIS_LIGHT_CAP") == "" else OS.get_environment("AXIS_LIGHT_CAP").to_float()
+		if absf(replay.light_cap - cap) > 0.001:
+			replay.light_cap = cap
 	update_sky(frame, map_on)
 	var on := replay != null and replay.overlay and apply_camera(frame)
 	shown.visible = on

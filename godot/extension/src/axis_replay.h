@@ -62,6 +62,7 @@ public:
 	int pictureMode = 0;
 	bool mapViewport = false;   // (remaster_view.gd's viewport and its effect are there)
 	float originalLight = 0.6f;
+	float lightCap = 1.0f;   // (the lit map surfaces' lights summed no higher than this: k_map_light)
 	// what Godot draws in picture modes 1 and 2, by kind (1 << tag, src/render/draw_tags.h): the ground, map objects,
 	// actors and items by default (the actors' view pass, over a cleared depth buffer, and the effects stay the game's)
 	int godotKinds = (1 << 2) | (1 << 3) | (1 << 4) | (1 << 5) | (1 << 6) | (1 << 7) | (1 << 8);
@@ -76,6 +77,8 @@ public:
 	bool get_map_viewport() const { return mapViewport; }
 	void set_original_light(float v);
 	float get_original_light() const { return originalLight; }
+	void set_light_cap(float v);
+	float get_light_cap() const { return lightCap; }
 	// this frame's world of the kinds Godot draws, in the world's space: meshes of at most 256 surfaces each (Godot's
 	// limit; the effects are a surface per run, to keep the game's order)
 	TypedArray<ArrayMesh> build_map_meshes();
