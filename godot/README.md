@@ -253,6 +253,15 @@ remaster close on most maps, StarField's rocks and CrimsonField's colours as the
 missing base colours). Left for the remaster: hard bright patches near some white point lights (HeadQuarters' ceiling
 light, IllusionCity's glows) - Godot adds lights without the game's clamp at full white.
 
+## The 64-bit build's menu buttons (fixed 2026-11-10)
+
+Only some of the main menu's and the rooms' buttons answered the pointer (Skirmish alone, in one build): their hit test,
+menu_pointInPolygon, takes a button's outline as a struct on the stack through `...`, and on x64 a struct that size goes
+by reference - the test read the pointer as its edge count and stack leftovers as corners, so which buttons worked
+changed from build to build. The 64-bit build now gives the outline by address (game.h point_in_outline,
+menu_outlineHolds); checked in AxisSDL and here: every main-menu button's caption shows under the pointer, Arm Center
+opens on a click (sess5/hover_test.sh).
+
 ## Building (Windows, zig as the compiler)
 
 **Since 2026-11-09 64-bit only**: the extension `arch=x86_64` against `Tools/godot/godot-cpp64` (SConstruct's default),
