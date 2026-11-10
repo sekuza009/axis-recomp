@@ -1,0 +1,26 @@
+# AxisSDL - the portable build as a program of its own
+
+The original game, with its fixes, on Windows, Linux and macOS, without Godot: the 64-bit game library
+(src/axis_api.h, `standalone/build64.sh`) linked into a small SDL3 program.
+
+- **Drawing:** the game's own OpenGL 1.x calls, recorded by the library each frame, played one by one on a real
+  OpenGL context (`gl_play.c`); GLU is the system's (Windows' glu32, as the original used), else gl_play's own.
+  At DESKTOP the game is shown 1:1; another resolution is scaled to fit with its shape kept.
+- **Window:** borderless, one row taller than the screen from y = -1 - the original fix's window, so the driver keeps it
+  an ordinary window (instant Alt-Tab); `--windowed` for a resizable window.
+- **Input:** SDL's keys as DirectInput's key codes; the mouse relative, with the system's pointer speed (what the
+  original's DirectInput reported); text fields get keys and characters as Windows sends them.
+- **Sound:** the game's buffers mixed as DirectSound mixes them (`axis_audio.cpp`, shared with the Godot host), its MP3
+  music decoded with dr_mp3 (third_party/dr_libs, public domain / MIT-0).
+- **Network:** the library's - axisnet's DirectPlay, as every other build: plays with AxisRC.exe, AxisGL.exe and the
+  Godot builds.
+- Saves and settings: the game folder on Windows, the user folder elsewhere (src/plat/posix/files.c).
+
+Build (Windows, with zig): `bash standalone/build64.sh windows`, then `bash host/sdl/build.sh windows` ->
+`build/sdl/windows/AxisSDL.exe` + `SDL3.dll` (SDL3's MinGW development files: SDL3_MINGW). Put both in a folder inside
+the game folder (or the game folder itself); `--game-dir <folder>` overrides.
+
+Checked (2026-11-09, Windows x64, RTX 3080): the title, menus and a skirmish at 120 fps with sound; two copies in one
+match over the network; the drawing against the original - a session recorded by the native 32-bit build (real
+OpenGL) and its own images at frames 600, 1800, 2900, replayed with gl_play (`glplay_check`): 97.8-98.0% of the pixels
+identical, all within 8 levels (sub-pixel rounding; with gl_play's own GLU instead of glu32: 96%).
