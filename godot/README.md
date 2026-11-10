@@ -128,6 +128,27 @@ Checked on the recorded skirmish (frames 8,400 / 9,000 / 10,200): mode 1 looks t
 differ by the texture filtering and the gamma round trip on a busy texture: 53-59% within 8 levels, 76-80% within 32);
 live in a skirmish (mode 2): 120 fps, no long frames. `AXIS_MAP_STATS=1` prints the map batches' state.
 
+## The game's lights in Godot (step 4)
+
+Once per frame the 64-bit library sends the stage's three light pools (src/render/draw_tags.h `DRAW_LIGHTS`, glrec64's
+OP_LIGHTS): the map's (from the map file), the dynamic ones (refilled every frame: a light at each mech, of its glow,
+and at each particle that gives light - explosions, flashes) and the actors' own (an ambient and one from above, for the
+mechs). `AxisReplay.get_lights()` gives them as {pool, kind, colour, position, direction, radius}.
+
+remaster_world.gd (on remaster_world.tscn, its settings in the inspector) turns them into Godot's for the remaster
+picture each frame: the map's ambient as the environment's ambient colour (`ambient_energy`), the map's and the dynamic
+point lights as OmniLight3Ds of the game's colour and radius (`map_point_energy`, `dynamic_energy`, `dynamic_shadows`,
+`max_point_lights`), a directional light of the map's as the Sun (else the Sun as placed: `sun_without_map_light`). The
+game's kind 2 point light is full out to about half its radius and fades out at it: Godot's `omni_attenuation` 0
+(constant, a smooth edge); Godot's default falls off with the distance squared, nearly nothing at the game's
+distances. Godot's map world is in metres: the game's units x 0.01 (remaster_view.gd `WORLD_SCALE`; the camera, the
+mesh and the lights scaled alike).
+
+The skirmish arena has no point lights of its own (its map pool is one white ambient: its look is in its textures and
+vertex colours); its dynamic lights - the mechs' glow, the explosions - light the walls around them per pixel (up to 13
+at once in the recorded match). `AXIS_LIGHT_LIST=1` (main.tscn, at a --shot) prints the frame's lights;
+`AXIS_LIGHT_TEST=<energy>` adds a white light at the camera (a check that Godot's lights reach the map).
+
 ## Building (Windows, zig as the compiler)
 
 **Since 2026-11-09 64-bit only**: the extension `arch=x86_64` against `Tools/godot/godot-cpp64` (SConstruct's default),

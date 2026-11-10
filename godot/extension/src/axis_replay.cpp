@@ -230,6 +230,7 @@ void AxisReplay::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_camera_view"), &AxisReplay::get_camera_view);
 	ClassDB::bind_method(D_METHOD("get_tag_stats"), &AxisReplay::get_tag_stats);
 	ClassDB::bind_method(D_METHOD("get_camera_viewport"), &AxisReplay::get_camera_viewport);
+	ClassDB::bind_method(D_METHOD("get_lights"), &AxisReplay::get_lights);
 	ClassDB::bind_method(D_METHOD("get_world_triangles", "mask"), &AxisReplay::get_world_triangles);
 	ClassDB::bind_method(D_METHOD("get_world_samples", "mask", "count"), &AxisReplay::get_world_samples);
 	ClassDB::bind_method(D_METHOD("set_picture_mode", "mode"), &AxisReplay::set_picture_mode);
@@ -810,6 +811,21 @@ Transform3D AxisReplay::get_camera_view() const {
 	if (!emu.hasCamera) return Transform3D();
 	const float *m = emu.camView;
 	return Transform3D(Basis(Vector3(m[0], m[1], m[2]), Vector3(m[4], m[5], m[6]), Vector3(m[8], m[9], m[10])), Vector3(m[12], m[13], m[14]));   // (Basis from columns)
+}
+
+Array AxisReplay::get_lights() const {
+	Array out;
+	for (const EmuLight &l : emu.lights) {
+		Dictionary d;
+		d["pool"] = l.pool;
+		d["kind"] = l.kind;
+		d["colour"] = Color((l.colour & 0xff) / 255.0f, ((l.colour >> 8) & 0xff) / 255.0f, ((l.colour >> 16) & 0xff) / 255.0f, ((l.colour >> 24) & 0xff) / 255.0f);
+		d["position"] = Vector3(l.pos[0], l.pos[1], l.pos[2]);
+		d["direction"] = Vector3(l.dir[0], l.dir[1], l.dir[2]);
+		d["radius"] = l.radius;
+		out.push_back(d);
+	}
+	return out;
 }
 
 Rect2i AxisReplay::get_camera_viewport() const {

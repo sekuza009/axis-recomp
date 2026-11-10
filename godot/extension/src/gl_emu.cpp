@@ -34,7 +34,7 @@ const struct { const char *name; Plain kind; } k_names[] = {
 	{ "gluOrtho2D", P_ORTHO2D }, { "gluPerspective", P_PERSPECTIVE },
 };
 enum { OP_COLOR4UBV = 64, OP_FOGFV, OP_LOADMATRIX, OP_MULTMATRIX, OP_TEXCOORD2FV, OP_VERTEX3FV, OP_VERTEX4FV,
-	OP_PIXELSTORE, OP_DRAW, OP_TEXIMAGE, OP_MIPMAPS, OP_TEXPARAMI, OP_TAG, OP_CAMERA };
+	OP_PIXELSTORE, OP_DRAW, OP_TEXIMAGE, OP_MIPMAPS, OP_TEXPARAMI, OP_TAG, OP_CAMERA, OP_LIGHTS };
 
 float F(uint32_t w) { float f; memcpy(&f, &w, 4); return f; }
 double D(const uint32_t *w) { double d; memcpy(&d, w, 8); return d; }
@@ -462,6 +462,7 @@ void GLEmu::run_words(const uint32_t *words, size_t n, int width, int height) {
 	if (viewport[2] == 0) { viewport[2] = fbW; viewport[3] = fbH; }   // (a new context's viewport: the window)
 	curTag = 0;
 	hasCamera = false;
+	lights.clear();
 	const uint32_t *p = words, *end = p + n;
 	while (p < end) {
 		const uint32_t h = *p++, op = h & 0xffff, words = h >> 16;
@@ -587,6 +588,22 @@ void GLEmu::run_words(const uint32_t *words, size_t n, int width, int height) {
 			}
 			curTag = (int)p[0];
 			p += 1;
+			break;
+		}
+		case OP_LIGHTS: {
+			const uint32_t pool = p[0], count = p[1];
+			for (uint32_t i = 0; i < count && 2 + (i + 1) * 9 <= words; i++) {
+				const uint32_t *r = p + 2 + i * 9;
+				EmuLight l;
+				l.pool = (int)pool;
+				l.kind = (int)r[0];
+				l.colour = r[1];
+				memcpy(l.pos, r + 2, 12);
+				memcpy(l.dir, r + 5, 12);
+				memcpy(&l.radius, r + 8, 4);
+				lights.push_back(l);
+			}
+			p += words;
 			break;
 		}
 		case OP_CAMERA:

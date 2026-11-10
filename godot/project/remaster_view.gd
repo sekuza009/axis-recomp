@@ -27,6 +27,10 @@ var info := {}
 var map_sub: SubViewport     # Godot's map (picture modes 1 and 2)
 var map_cam: Camera3D
 var map_mesh: MeshInstance3D
+## Godot's map world in metres: the game's units (its near plane is 100, its far a million) scaled by this - Godot's
+## clustered point lights and shadows are made for scenes of metres
+const WORLD_SCALE := 0.01
+var world: Node3D           # remaster_world.tscn: its light (remaster_world.gd)
 
 func setup(p_replay: AxisReplay, p_view: TextureRect) -> void:
 	replay = p_replay
@@ -62,7 +66,8 @@ func setup(p_replay: AxisReplay, p_view: TextureRect) -> void:
 	map_sub.own_world_3d = true
 	map_sub.render_target_update_mode = SubViewport.UPDATE_DISABLED
 	add_child(map_sub)
-	map_sub.add_child(load("res://remaster_world.tscn").instantiate())
+	world = load("res://remaster_world.tscn").instantiate()
+	map_sub.add_child(world)
 	map_cam = Camera3D.new()
 	map_cam.keep_aspect = Camera3D.KEEP_HEIGHT
 	var effect := AxisMapEffect.new()
@@ -74,10 +79,11 @@ func setup(p_replay: AxisReplay, p_view: TextureRect) -> void:
 	map_cam.current = true
 	map_mesh = MeshInstance3D.new()
 	map_sub.add_child(map_mesh)
+	map_mesh.scale = Vector3.ONE * WORLD_SCALE
 	replay.set_map_viewport(true)
 
 ## the Camera3D set from the game's matrices (false: no camera this frame - the menus)
-func apply_camera(frame: Vector2i, c: Camera3D = null, s: SubViewport = null) -> bool:
+func apply_camera(frame: Vector2i, c: Camera3D = null, s: SubViewport = null, k: float = 1.0) -> bool:
 	if c == null:
 		c = cam
 		s = sub
@@ -87,7 +93,8 @@ func apply_camera(frame: Vector2i, c: Camera3D = null, s: SubViewport = null) ->
 	var p: Projection = replay.get_camera_projection()
 	var v: Transform3D = replay.get_camera_view()
 	var vp: Rect2i = replay.get_camera_viewport()
-	c.global_transform = v.affine_inverse()
+	var cv := v.affine_inverse()
+	c.global_transform = Transform3D(cv.basis, cv.origin * k)
 	var fovy := rad_to_deg(2.0 * atan(1.0 / p.y.y))
 	var near := p.w.z / (p.z.z - 1.0)
 	var far := p.w.z / (p.z.z + 1.0)
@@ -97,17 +104,18 @@ func apply_camera(frame: Vector2i, c: Camera3D = null, s: SubViewport = null) ->
 	var upp := (2.0 * near / p.y.y) / vp.size.y   # (near-plane units per pixel)
 	var centre := Vector2(vp.position) + Vector2(vp.size) * 0.5 - Vector2(frame) * 0.5
 	var off := Vector2(p.z.x * near / p.x.x - centre.x * upp, p.z.y * near / p.y.y + centre.y * upp)   # (a frustum moved up draws things lower)
-	c.set_frustum(upp * frame.y, off, near, far)
+	c.set_frustum(upp * frame.y * k, off * k, near * k, far * k)
 	info = { "fovy": fovy, "near": near, "far": far, "aspect": p.y.y / p.x.x, "frame_aspect": float(frame.x) / frame.y,
 		"det": v.basis.determinant(), "off_axis": Vector2(p.z.x, p.z.y), "viewport": vp }
 	return true
 
 ## per frame: Godot's map in picture modes 1 and 2; the overlay's camera and mesh when it is on
 func update(frame: Vector2i) -> void:
-	var map_on := replay != null and replay.picture_mode > 0 and apply_camera(frame, map_cam, map_sub)
+	var map_on := replay != null and replay.picture_mode > 0 and apply_camera(frame, map_cam, map_sub, WORLD_SCALE)
 	map_sub.render_target_update_mode = SubViewport.UPDATE_ALWAYS if map_on else SubViewport.UPDATE_DISABLED
 	if map_on:
 		map_mesh.mesh = replay.build_map_mesh()
+		world.apply_lights(replay.get_lights(), WORLD_SCALE)
 	var on := replay != null and replay.overlay and apply_camera(frame)
 	shown.visible = on
 	if not on:
@@ -148,6 +156,11 @@ func report(frame: Vector2i) -> String:
 	for t in TAG_NAMES.size():
 		if stats[t] > 0:
 			parts.append("%s %d" % [TAG_NAMES[t], stats[t]])
+	var lights := {}
+	for l in replay.get_lights():
+		var k := "%s %s" % [["map", "dynamic", "actor"][l.pool], ["ambient", "directional", "point", "point (1/d^2)"][l.kind]]
+		lights[k] = lights.get(k, 0) + 1
+	parts.append("lights %s" % [lights])
 	return "camera: fov %.2f, aspect %.4f, viewport %s in %s, near %.2f, far %.1f, view det %.3f, off-axis %s; Godot's Camera3D against the game: %d points, mean %.3f px, median %.3f, 95%% %.3f, 99%% %.3f, worst %.3f; triangles: %s" % [
 		info.fovy, info.aspect, info.viewport, frame, info.near, info.far, info.det, info.off_axis, n,
 		total / maxi(n, 1), pct.call(0.5), pct.call(0.95), pct.call(0.99), pct.call(1.0), ", ".join(parts)]

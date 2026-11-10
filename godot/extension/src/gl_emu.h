@@ -55,6 +55,15 @@ struct EmuCmd {
 	EmuBatch batch;
 };
 
+// a light of the stage's pools (src/render/draw_tags.h): the pool (0 the map's, 1 the dynamic ones, 2 the actors'),
+// the kind (0 ambient, 1 directional, 2 a point light fading out over its radius, 3 one falling off with the distance
+// squared), the colour (packed RGBA), the position and direction in the world, the radius
+struct EmuLight {
+	int pool, kind;
+	uint32_t colour;
+	float pos[3], dir[3], radius;
+};
+
 struct EmuTexture {
 	std::vector<std::vector<uint8_t>> levels;   // RGBA8 per mip level
 	std::vector<std::pair<int, int>> sizes;
@@ -85,6 +94,7 @@ public:
 	uint32_t unknownOps = 0;
 	// the frame's camera (the first view volume drawn: the world's), GL's column-major matrices; 0 none this frame
 	bool hasCamera = false;
+	std::vector<EmuLight> lights;   // the frame's lights (none outside a match)
 	float camProjection[16], camView[16];
 
 private:

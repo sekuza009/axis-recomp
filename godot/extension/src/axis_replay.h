@@ -72,7 +72,8 @@ public:
 	void draw_deferred(const RID &p_color, const RID &p_depth, const Vector2i &p_size);   // (AxisMapEffect, render thread)
 	Projection get_camera_projection() const;
 	Transform3D get_camera_view() const;
-	Rect2i get_camera_viewport() const;       // the world's viewport (framebuffer pixels, top-left origin)
+	Rect2i get_camera_viewport() const;
+	Array get_lights() const;   // the stage's lights this frame: {pool, kind, colour, position, direction, radius}       // the world's viewport (framebuffer pixels, top-left origin)
 	PackedInt32Array get_tag_stats() const;   // triangles drawn this frame by tag
 	PackedVector3Array get_world_triangles(int mask) const;   // the 3D batches of those tags, in the world's space
 	Array get_world_samples(int mask, int count) const;        // [world points, where the game drew them (pixels)]
