@@ -1,11 +1,12 @@
 # The macOS build checked on GitHub's own Macs - Apple Silicon (macos-15) and Intel (macos-15-intel): the 64-bit library
 # built there (standalone/build64.sh, zig), the POSIX platform's tests, the x87 replacements of the arm64 build against
-# the x87's results, and the library loaded with dlopen and made ready (no game files here: the game is not started).
+# the x87's results, and the library loaded with dlopen and made ready (no game files here: the game is not started);
+# then AxisSDL (host/sdl) built universal with SDL3 built from source, uploaded as an artifact to try on a Mac.
 name: macOS
 on:
   push:
     branches: [portable, godot]
-    paths: ['src/**', 'standalone/**', 'tools/**', 'third_party/**', 'recomp.c', 'axisnet_dp.c', '.github/workflows/macos.yml']
+    paths: ['src/**', 'standalone/**', 'tools/**', 'third_party/**', 'host/**', 'recomp.c', 'axisnet_dp.c', '.github/workflows/macos.yml']
   workflow_dispatch:
 jobs:
   library:
@@ -39,3 +40,30 @@ jobs:
           AXIS_TEST_LOAD_ONLY=1 AXIS_TEST_LIB=$PWD/build/libaxis64_${{ matrix.arch }}.dylib AXIS_USER_DIR=$PWD/build/userdir \
             build/axis64_test_macos_${{ matrix.arch }} $PWD/build/gamedir
           cat build/userdir/standalone64.log
+  axissdl:
+    runs-on: macos-15
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-python@v6
+        with:
+          python-version: '3.12'
+      - name: zig
+        run: python -m pip install ziglang==0.16.0
+      - name: SDL3 (universal, from its release source)
+        run: |
+          curl -sL -o sdl3.tar.gz https://github.com/libsdl-org/SDL/releases/download/release-3.4.20/SDL3-3.4.20.tar.gz
+          tar xzf sdl3.tar.gz
+          cmake -S SDL3-3.4.20 -B sdlbuild -DCMAKE_BUILD_TYPE=Release -DCMAKE_OSX_ARCHITECTURES="arm64;x86_64"             -DCMAKE_OSX_DEPLOYMENT_TARGET=11.0 -DSDL_SHARED=ON -DSDL_STATIC=OFF -DSDL_TESTS=OFF -DSDL_EXAMPLES=OFF             -DCMAKE_INSTALL_PREFIX=$PWD/sdl3 > sdlcfg.log
+          cmake --build sdlbuild -j 4 > sdlbuild.log
+          cmake --install sdlbuild > /dev/null
+          lipo -info sdl3/lib/libSDL3.0.dylib
+      - name: the library (arm64 and x86_64)
+        run: bash standalone/build64.sh macos
+      - name: AxisSDL (universal)
+        run: SDL3_MACOS=$PWD/sdl3 bash host/sdl/build.sh macos
+      - uses: actions/upload-artifact@v5
+        with:
+          name: AxisSDL-macos
+          path: |
+            build/sdl/macos/AxisSDL
+            build/sdl/macos/libSDL3.0.dylib

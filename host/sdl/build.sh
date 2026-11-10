@@ -4,17 +4,36 @@
 #   windows - build/sdl/windows/AxisSDL.exe and SDL3.dll (SDL3's MinGW development files in SDL3_MINGW, default
 #             Tools/sdl3/SDL3-3.4.20/x86_64-w64-mingw32);
 #   linux   - build/sdl/linux/AxisSDL (x86-64, glibc 2.38+) and libSDL3.so.0 beside it (found by its rpath $ORIGIN) -
-#             SDL3 built for Linux in SDL3_LINUX (default Tools/sdl3/linux-x86_64: lib/ and include/)
+#             SDL3 built for Linux in SDL3_LINUX (default Tools/sdl3/linux-x86_64: lib/ and include/);
+#   macos   - on a Mac, with Apple's clang (not zig): build/sdl/macos/AxisSDL, universal (arm64 + x86_64, macOS 11+),
+#             and libSDL3.0.dylib beside it (rpath @executable_path) - SDL3 built universal in SDL3_MACOS (a prefix:
+#             include/, lib/); the library from standalone/build64.sh macos (both processors' archives joined by lipo)
 set -e
 cd "$(dirname "$0")/../.."
 TARGET=${1:-windows}
+if [ "$TARGET" = macos ]; then
+	SDL=${SDL3_MACOS:?SDL3_MACOS: SDL3 built universal (a prefix with include/ and lib/)}
+	OUT=build/sdl/macos; mkdir -p $OUT/obj
+	lipo -create build/libaxis64_macos-arm64.a build/libaxis64_macos-x86_64.a -output $OUT/obj/libaxis64.a
+	ARCH="-arch arm64 -arch x86_64 -mmacosx-version-min=11.0"
+	FLAGS="$ARCH -O2 -g -Wall -Wno-unused-function -I$SDL/include"
+	clang -c $FLAGS -o $OUT/obj/gl_play.o host/sdl/gl_play.c
+	clang++ -c -std=c++17 $FLAGS -o $OUT/obj/axis_audio.o host/sdl/axis_audio.cpp
+	clang++ -c -std=c++17 $FLAGS -Wno-unused-variable -o $OUT/obj/main.o host/sdl/main.cpp
+	clang++ -c -std=c++17 $FLAGS -o $OUT/obj/launcher.o host/sdl/launcher.cpp
+	clang++ $ARCH -o $OUT/AxisSDL $OUT/obj/main.o $OUT/obj/launcher.o $OUT/obj/gl_play.o $OUT/obj/axis_audio.o $OUT/obj/libaxis64.a 		-L$SDL/lib -lSDL3 -Wl,-rpath,@executable_path
+	cp -L $SDL/lib/libSDL3.0.dylib $OUT/
+	lipo -info $OUT/AxisSDL
+	otool -L $OUT/AxisSDL
+	exit
+fi
 case "$TARGET" in
 windows)
 	T=x86_64-windows-gnu
 	SDL=${SDL3_MINGW:-C:/Users/Alexander/Tools/sdl3/SDL3-3.4.20/x86_64-w64-mingw32}
 	LIB=build/libaxis64_windows.a
 	OUT=build/sdl/windows; EXE=AxisSDL.exe; SDLLIB=$SDL/lib/libSDL3.dll.a
-	SYSLIBS="-lws2_32 -lwinmm -lole32 -loleaut32 -Wl,--subsystem,windows"
+	SYSLIBS="-lws2_32 -lwinmm -lole32 -loleaut32 -ladvapi32 -Wl,--subsystem,windows"
 	;;
 linux)
 	T=x86_64-linux-gnu.2.38   # (the SDL3 built on Ubuntu 24.04 needs glibc 2.38; an older one: SDL3 built against it)
@@ -33,7 +52,8 @@ FLAGS="-O2 -g -Wall -Wno-unused-function -Wno-ignored-attributes -I$SDL/include"
 $CC -c $FLAGS -o $OUT/obj/gl_play.o host/sdl/gl_play.c
 $CXX -c -std=c++17 $FLAGS -o $OUT/obj/axis_audio.o host/sdl/axis_audio.cpp
 $CXX -c -std=c++17 $FLAGS -Wno-unused-variable -o $OUT/obj/main.o host/sdl/main.cpp
-$CXX -o $OUT/$EXE $OUT/obj/main.o $OUT/obj/gl_play.o $OUT/obj/axis_audio.o $LIB $SDLLIB $SYSLIBS
+$CXX -c -std=c++17 $FLAGS -o $OUT/obj/launcher.o host/sdl/launcher.cpp
+$CXX -o $OUT/$EXE $OUT/obj/main.o $OUT/obj/launcher.o $OUT/obj/gl_play.o $OUT/obj/axis_audio.o $LIB $SDLLIB $SYSLIBS
 [ "$TARGET" = windows ] && cp $SDL/bin/SDL3.dll $OUT/
 [ "$TARGET" = linux ] && cp $SDL/lib/libSDL3.so.0.4.20 $OUT/libSDL3.so.0
 ls -la $OUT

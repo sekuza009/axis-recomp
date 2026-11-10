@@ -17,6 +17,7 @@
 #include "../../src/axis_api.h"
 #include "axis_audio.h"
 #include "gl_play.h"
+#include "launcher.h"
 #define DR_MP3_IMPLEMENTATION
 #include "../../third_party/dr_libs/dr_mp3.h"
 
@@ -293,6 +294,12 @@ int main(int argc, char **argv) {
 #else
 	setenv("AXIS_GAME_DIR", g_dir.c_str(), 1);
 #endif
+	// the launcher first (launcher.cpp, AxisPlay.exe's rewrite) - Play Game goes on to the game; --play skips it (the
+	// game's own restart after a graphics change, as the original started AxisGL.exe itself)
+	if (!has_arg("--play") && !launcher_run(g_dir)) {
+		SDL_Quit();
+		return 0;
+	}
 	// the window: borderless over the whole screen (the game's DESKTOP size is the screen's, 1:1), or a window
 	SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 2);
 	SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 1);
@@ -447,8 +454,9 @@ int main(int argc, char **argv) {
 	if (audio) SDL_DestroyAudioStream(audio);
 	SDL_GL_DestroyContext(gl);
 	SDL_DestroyWindow(g_window);
-	if (g_restart) {   // (a graphics change: this program again, with its arguments)
+	if (g_restart) {   // (a graphics change: this program again, with its arguments - straight into the game)
 		std::vector<const char *> av = { argv[0] };
+		if (!has_arg("--play")) av.push_back("--play");
 		for (const std::string &s : g_args) av.push_back(s.c_str());
 		av.push_back(nullptr);
 		SDL_Process *p = SDL_CreateProcess(av.data(), false);

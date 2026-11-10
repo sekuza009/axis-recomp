@@ -15,6 +15,14 @@ The original game, with its fixes, on Windows, Linux and macOS, without Godot: t
 - **Network:** the library's - axisnet's DirectPlay, as every other build: plays with AxisRC.exe, AxisGL.exe and the
   Godot builds.
 - Saves and settings: the game folder on Windows, the user folder elsewhere (src/plat/posix/files.c).
+- **Launcher** (`launcher.cpp`): AxisPlay.exe rewritten, as the Godot build's launcher.gd (godot branch) - the 642 x 482
+  window with MainBK.bmp, the eight buttons with their four pictures, the icon and cursor read from the user's own
+  AxisPlay.exe, the hover / click sounds, the install-state rules, Play Game (server and render-mode checks, StartMode
+  1, then the game in this program), Cinematics (the movies decoded by the library's avimovie.c, full screen with
+  sound, Esc skips), Help, Change Server (ServerList.dat into SelectServer), Install DirectX (Windows), Video Setup
+  (OpenGL only), Install Game, Quit; the settings in the registry (Windows) or the library's registry.txt. On Windows
+  the dialogs are the original's own - its dialog templates from AxisPlay.exe, run by Windows; elsewhere message boxes
+  with the same choices. `--play` skips the launcher (the game's restart after a graphics change passes it).
 
 Build (Windows, with zig): `bash standalone/build64.sh windows`, then `bash host/sdl/build.sh windows` ->
 `build/sdl/windows/AxisSDL.exe` + `SDL3.dll` (SDL3's MinGW development files: SDL3_MINGW). Put both in a folder inside
