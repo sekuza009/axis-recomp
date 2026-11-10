@@ -3,10 +3,10 @@
 # game library (standalone/build64.sh <target> first) and SDL3, built with zig:
 #   windows - build/sdl/windows/AxisSDL.exe and SDL3.dll (SDL3's MinGW development files in SDL3_MINGW, default
 #             Tools/sdl3/SDL3-3.4.20/x86_64-w64-mingw32);
-#   linux   - build/sdl/linux/AxisSDL (x86-64, glibc 2.38+) and libSDL3.so.0 beside it (found by its rpath $ORIGIN) -
-#             SDL3 built for Linux in SDL3_LINUX (default Tools/sdl3/linux-x86_64: lib/ and include/);
-#   macos   - on a Mac, with Apple's clang (not zig): build/sdl/macos/AxisSDL, universal (arm64 + x86_64, macOS 11+),
-#             and libSDL3.0.dylib beside it (rpath @executable_path) - SDL3 built universal in SDL3_MACOS (a prefix:
+#   linux   - build/sdl/linux/AxisSDL (x86-64, glibc 2.28+) and libSDL3.so.0 beside it (found by its rpath $ORIGIN) -
+#             SDL3 built for Linux in SDL3_LINUX (default Tools/sdl3/linux-x86_64-glibc228: lib/ and include/);
+#   macos   - on a Mac, with Apple's clang (not zig): build/sdl/macos/AxisSDL.app, universal (arm64 + x86_64, macOS
+#             11+), SDL3 in its Frameworks, ad-hoc signed, and AxisSDL-macos.zip of it - SDL3 built universal in SDL3_MACOS (a prefix:
 #             include/, lib/); the library from standalone/build64.sh macos (both processors' archives joined by lipo)
 set -e
 cd "$(dirname "$0")/../.."
@@ -21,10 +21,36 @@ if [ "$TARGET" = macos ]; then
 	clang++ -c -std=c++17 $FLAGS -o $OUT/obj/axis_audio.o host/sdl/axis_audio.cpp
 	clang++ -c -std=c++17 $FLAGS -Wno-unused-variable -o $OUT/obj/main.o host/sdl/main.cpp
 	clang++ -c -std=c++17 $FLAGS -o $OUT/obj/launcher.o host/sdl/launcher.cpp
-	clang++ $ARCH -o $OUT/AxisSDL $OUT/obj/main.o $OUT/obj/launcher.o $OUT/obj/gl_play.o $OUT/obj/axis_audio.o $OUT/obj/libaxis64.a 		-L$SDL/lib -lSDL3 -Wl,-rpath,@executable_path
-	cp -L $SDL/lib/libSDL3.0.dylib $OUT/
-	lipo -info $OUT/AxisSDL
-	otool -L $OUT/AxisSDL
+	# (the app: AxisSDL.app - the program in Contents/MacOS, SDL3 in Contents/Frameworks, ad-hoc signed; the game folder
+	# is the one holding the app, or the one above it)
+	APP=$OUT/AxisSDL.app
+	rm -rf $APP
+	mkdir -p $APP/Contents/MacOS $APP/Contents/Frameworks
+	clang++ $ARCH -o $APP/Contents/MacOS/AxisSDL $OUT/obj/main.o $OUT/obj/launcher.o $OUT/obj/gl_play.o $OUT/obj/axis_audio.o $OUT/obj/libaxis64.a -L$SDL/lib -lSDL3 -Wl,-rpath,@executable_path/../Frameworks
+	cp -L $SDL/lib/libSDL3.0.dylib $APP/Contents/Frameworks/
+	cat > $APP/Contents/Info.plist <<'PLIST'
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>CFBundleExecutable</key><string>AxisSDL</string>
+	<key>CFBundleIdentifier</key><string>net.axisport.axissdl</string>
+	<key>CFBundleName</key><string>Axis</string>
+	<key>CFBundleDisplayName</key><string>Axis</string>
+	<key>CFBundlePackageType</key><string>APPL</string>
+	<key>CFBundleShortVersionString</key><string>1.0</string>
+	<key>CFBundleVersion</key><string>1</string>
+	<key>LSMinimumSystemVersion</key><string>11.0</string>
+	<key>NSHighResolutionCapable</key><true/>
+</dict>
+</plist>
+PLIST
+	codesign --force --sign - $APP/Contents/Frameworks/libSDL3.0.dylib
+	codesign --force --sign - $APP
+	codesign --verify --verbose $APP
+	lipo -info $APP/Contents/MacOS/AxisSDL
+	otool -L $APP/Contents/MacOS/AxisSDL
+	(cd $OUT && rm -f AxisSDL-macos.zip && ditto -c -k --keepParent AxisSDL.app AxisSDL-macos.zip)
 	exit
 fi
 case "$TARGET" in
@@ -36,8 +62,8 @@ windows)
 	SYSLIBS="-lws2_32 -lwinmm -lole32 -loleaut32 -ladvapi32 -Wl,--subsystem,windows"
 	;;
 linux)
-	T=x86_64-linux-gnu.2.38   # (the SDL3 built on Ubuntu 24.04 needs glibc 2.38; an older one: SDL3 built against it)
-	SDL=${SDL3_LINUX:-C:/Users/Alexander/Tools/sdl3/linux-x86_64}
+	T=x86_64-linux-gnu.2.28   # (SDL3 built against glibc 2.28 too: zig in WSL, see README)
+	SDL=${SDL3_LINUX:-C:/Users/Alexander/Tools/sdl3/linux-x86_64-glibc228}
 	LIB=build/libaxis64_linux-gnu.a
 	OUT=build/sdl/linux; EXE=AxisSDL; SDLLIB=$SDL/lib/libSDL3.so.0.4.20
 	SYSLIBS="-lm -lpthread -ldl -Wl,-rpath,\$ORIGIN"

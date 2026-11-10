@@ -267,6 +267,11 @@ static std::string game_folder() {
 	std::string here = SDL_GetBasePath() ? SDL_GetBasePath() : "./";
 	for (char &c : here) if (c == '\\') c = '/';
 	if (!here.empty() && here.back() != '/') here += '/';
+	const size_t app = here.rfind(".app/Contents/");   // (macOS: inside AxisSDL.app - the folder holding the app)
+	if (app != std::string::npos) {
+		here = here.substr(0, app);
+		here = here.substr(0, here.find_last_of('/') + 1);
+	}
 	if (SDL_GetPathInfo((here + "initdata").c_str(), nullptr)) return here;
 	std::string up = here.substr(0, here.size() - 1);
 	size_t cut = up.find_last_of('/');

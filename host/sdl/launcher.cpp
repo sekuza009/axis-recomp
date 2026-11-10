@@ -357,9 +357,16 @@ struct DlgState { int ending; std::vector<std::string> *servers; bool getlist; i
 INT_PTR CALLBACK dlg_proc(HWND d, UINT m, WPARAM wp, LPARAM lp) {
 	DlgState *s = (DlgState *)GetWindowLongPtrA(d, DWLP_USER);
 	switch (m) {
-	case WM_INITDIALOG:
+	case WM_INITDIALOG: {
 		SetWindowLongPtrA(d, DWLP_USER, lp);
 		s = (DlgState *)lp;
+		HWND owner = GetWindow(d, GW_OWNER);   // (at the launcher's top left, as the original's dialogs opened)
+		if (owner) {
+			POINT o = { 0, 0 };
+			ClientToScreen(owner, &o);
+			SetWindowPos(d, nullptr, o.x, o.y, 0, 0, SWP_NOSIZE | SWP_NOZORDER | SWP_NOACTIVATE);
+		}
+	}
 		if (GetDlgItem(d, 1079)) EnableWindow(GetDlgItem(d, 1079), s->ending);   // (Ending Cinema: once EndMode is set)
 		if (GetDlgItem(d, 1083)) {   // (Video Setup: one renderer here - OpenGL; Direct3D, Savage, GLSetup grey)
 			EnableWindow(GetDlgItem(d, 1083), FALSE);
