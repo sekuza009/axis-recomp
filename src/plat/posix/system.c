@@ -78,6 +78,17 @@ PLAT(uint16_t, GetSystemDefaultLangID, void)
 	const char *v = getenv("LC_ALL");
 	if (!v || !*v) v = getenv("LC_MESSAGES");
 	if (!v || !*v) v = getenv("LANG");
+#ifdef __APPLE__   /* (a program started from the Finder has no LANG: the system's own locale, e.g. "ko_KR") */
+	char mac[64] = "";
+	if (!v || !*v) {
+		FILE *p = popen("defaults read -g AppleLocale 2>/dev/null", "r");
+		if (p) {
+			if (fgets(mac, sizeof mac, p))
+				v = mac;
+			pclose(p);
+		}
+	}
+#endif
 	return korean(v) ? 0x412 : 0x409;
 }
 PLAT(void *, GetModuleHandleA, const char *name) { (void)name; return (void *)new_handle(); }

@@ -53,6 +53,8 @@ int main(void)
 	check(game_GetSystemMetrics(0) == 2560 && game_GetSystemMetrics(1) == 1440, "GetSystemMetrics: the host's screen 2560x1440");
 	check(game_GetDeviceCaps(NULL, 8) == 2560 && game_GetDeviceCaps(NULL, 10) == 1440 && game_GetDeviceCaps(NULL, 12) == 32,
 	      "GetDeviceCaps: HORZRES, VERTRES, 32 bits");
+	unsetenv("LC_ALL");   /* (a machine's own settings, which come first, out of the way) */
+	unsetenv("LC_MESSAGES");
 	setenv("LANG", "ko_KR.UTF-8", 1);
 	check(game_GetSystemDefaultLangID() == 0x412, "LANG=ko_KR.UTF-8: Korean (0x412)");
 	setenv("LANG", "en_GB.UTF-8", 1);
