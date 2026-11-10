@@ -16,8 +16,11 @@
 #include <godot_cpp/classes/rendering_server.hpp>
 #include <godot_cpp/core/class_db.hpp>
 #include <godot_cpp/variant/utility_functions.hpp>
+#include <godot_cpp/classes/render_data.hpp>
+#include <godot_cpp/classes/render_scene_buffers_rd.hpp>
 
 #include <cstring>
+#include <cstdlib>
 
 using namespace godot;
 
@@ -43,6 +46,7 @@ void main() {
 const char *k_fragment = R"(#version 450
 layout(push_constant, std430) uniform PC { uint base; uint flags; uint env; uint pad; vec4 fog_color; } pc;
 layout(set = 1, binding = 0) uniform sampler2D tex;
+layout(set = 2, binding = 0) uniform sampler2D godot_map;   // (the remaster: Godot's picture of the map, linear light)
 layout(location = 0) in vec4 v_col;
 layout(location = 1) in vec2 v_uv;
 layout(location = 2) in float v_fog;
@@ -52,6 +56,10 @@ layout(location = 0) out vec4 frag;
 const vec3 k_tags[11] = vec3[](vec3(0.5), vec3(0.3, 0.5, 1.0), vec3(0.2, 0.9, 0.2), vec3(1.0, 0.9, 0.1), vec3(1.0, 0.2, 0.2),
 	vec3(1.0, 0.4, 0.8), vec3(1.0, 0.6, 0.0), vec3(0.0, 1.0, 1.0), vec3(0.8, 0.3, 1.0), vec3(1.0), vec3(0.6, 0.6, 0.6));
 void main() {
+	if ((pc.flags & 8u) != 0u) {   // a map surface: Godot's colour where the game's map is seen (its own depth test, as before)
+		frag = vec4(pow(clamp(texelFetch(godot_map, ivec2(gl_FragCoord.xy), 0).rgb, 0.0, 1.0), vec3(1.0 / 2.2)), 1.0);
+		return;
+	}
 	vec4 c = v_col;
 	if ((pc.flags & 1u) != 0u) {
 		vec4 t = texture(tex, v_uv);
@@ -154,6 +162,20 @@ void main() {
 )";
 struct PostPush { float a[4], b[4], c[4]; int32_t d[4]; };
 
+// the map's materials (Godot spatial shaders): the game's texture environment (0 modulate, 1 replace, 2 decal), its
+// colours in the game's gamma (2.2) taken to Godot's linear light
+const char *k_map_common = R"(
+uniform sampler2D tex : filter_linear_mipmap, repeat_enable;
+uniform bool textured = true;
+uniform int env = 0;
+uniform float original_light = 0.6;
+vec4 game_colour(vec4 c, vec2 uv) {
+	vec4 t = textured ? texture(tex, uv) : vec4(1.0);
+	return env == 1 ? t : env == 2 ? vec4(mix(c.rgb, t.rgb, t.a), c.a) : c * t;
+}
+vec4 texture_only(vec2 uv) { return textured ? texture(tex, uv) : vec4(1.0); }
+)";
+
 RenderingDevice::BlendFactor blend_factor(uint32_t gl) {
 	switch (gl) {
 	case 0: return RenderingDevice::BLEND_FACTOR_ZERO;
@@ -210,6 +232,16 @@ void AxisReplay::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_camera_viewport"), &AxisReplay::get_camera_viewport);
 	ClassDB::bind_method(D_METHOD("get_world_triangles", "mask"), &AxisReplay::get_world_triangles);
 	ClassDB::bind_method(D_METHOD("get_world_samples", "mask", "count"), &AxisReplay::get_world_samples);
+	ClassDB::bind_method(D_METHOD("set_picture_mode", "mode"), &AxisReplay::set_picture_mode);
+	ClassDB::bind_method(D_METHOD("get_picture_mode"), &AxisReplay::get_picture_mode);
+	ClassDB::bind_method(D_METHOD("set_map_viewport", "on"), &AxisReplay::set_map_viewport);
+	ClassDB::bind_method(D_METHOD("get_map_viewport"), &AxisReplay::get_map_viewport);
+	ClassDB::bind_method(D_METHOD("set_original_light", "amount"), &AxisReplay::set_original_light);
+	ClassDB::bind_method(D_METHOD("get_original_light"), &AxisReplay::get_original_light);
+	ClassDB::bind_method(D_METHOD("build_map_mesh"), &AxisReplay::build_map_mesh);
+	ADD_GROUP("Remaster picture", "");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "picture_mode", PROPERTY_HINT_ENUM, "Original,Original lighting,Remaster"), "set_picture_mode", "get_picture_mode");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "original_light", PROPERTY_HINT_RANGE, "0,1.5,0.01"), "set_original_light", "get_original_light");
 	ADD_GROUP("Remaster view", "");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "tag_view"), "set_tag_view", "get_tag_view");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "overlay"), "set_overlay", "get_overlay");
@@ -290,6 +322,7 @@ void AxisReplay::submit(int w, int h) {
 	p.h = h;
 	p.look = look;
 	p.tagView = tagView;
+	p.composite = pictureMode > 0 && mapViewport && emu.hasCamera;
 	for (const auto &kv : emu.textures) {   // (only the textures changed since last handed over)
 		auto it = sentVersions.find(kv.first);
 		if (it == sentVersions.end() || it->second != kv.second.version) {
@@ -367,6 +400,7 @@ bool AxisReplay::ensure_shader() {
 	TypedArray<RDUniform> us;
 	us.push_back(u);
 	whiteSet = rd->uniform_set_create(us, shader, 1);
+	whiteSet2 = rd->uniform_set_create(us, shader, 2);   // (the third set when there is no Godot map)
 	return shader.is_valid();
 }
 
@@ -436,6 +470,10 @@ void AxisReplay::upload_texture(uint32_t key, const EmuTexture &t) {
 	GTex &g = gtex[key];
 	if (g.tex.is_valid()) { rd->free_rid(g.tex); g.tex = RID(); g.sets.clear(); }   // (its uniform sets go with it)
 	g.version = t.version;
+	{
+		std::lock_guard<std::mutex> lock(texMutex);
+		texRids.erase(key);
+	}
 	if (!t.complete()) return;
 	const int levels = t.mipped ? (int)t.levels.size() : 1;
 	Ref<RDTextureFormat> f;
@@ -452,6 +490,8 @@ void AxisReplay::upload_texture(uint32_t key, const EmuTexture &t) {
 	Ref<RDTextureView> v;
 	v.instantiate();
 	g.tex = rd->texture_create(f, v, data);
+	std::lock_guard<std::mutex> lock(texMutex);
+	texRids[key] = g.tex;
 }
 
 // the texture's uniform set for a batch's sampling (made once per filter / wrap combination)
@@ -543,6 +583,44 @@ void AxisReplay::_render() {
 		set0 = rd->uniform_set_create(us, shader, 0);
 	}
 	if (need) rd->buffer_update(vbuf, 0, need, bytes(p.verts.data(), need));
+	haveDeferred = false;   // (a frame left for Godot's map that never came: dropped - its vertices are gone now)
+	if (p.composite) {      // drawn during the map viewport's render (draw_deferred), into Godot's map
+		deferred = std::move(p);
+		haveDeferred = true;
+		return;
+	}
+	draw_cmds(p, RID(), RID());
+}
+
+RID AxisReplay::godot_map_set(const RID &p_color) {
+	auto it = godotSets.find(p_color.get_id());
+	if (it != godotSets.end() && rd->uniform_set_is_valid(it->second)) return it->second;
+	Ref<RDUniform> u;
+	u.instantiate();
+	u->set_uniform_type(RenderingDevice::UNIFORM_TYPE_SAMPLER_WITH_TEXTURE);
+	u->set_binding(0);
+	u->add_id(whiteSampler);
+	u->add_id(p_color);
+	TypedArray<RDUniform> us;
+	us.push_back(u);
+	const RID s = rd->uniform_set_create(us, shader, 2);
+	godotSets[p_color.get_id()] = s;
+	return s;
+}
+
+void AxisReplay::draw_deferred(const RID &p_color, const RID &p_depth, const Vector2i &p_size) {
+	if (!haveDeferred || !rd) return;
+	haveDeferred = false;
+	const bool fits = p_size.x == fbW && p_size.y == fbH;   // (Godot's buffers the frame's size: else drawn as the original)
+	draw_cmds(deferred, fits ? p_color : RID(), fits ? p_depth : RID());
+}
+
+void AxisReplay::draw_cmds(const Pending &p, const RID &gColor, const RID &gDepth) {
+	// with Godot's map: the game's solid map surfaces drawn as they are (their depth, their depth test) but coloured from
+	// Godot's picture of the map at each pixel - Godot's map seen exactly where the game's would be
+	const bool comp = gColor.is_valid();
+	(void)gDepth;   // (Godot's depth is not needed: the game's own map surfaces give it)
+	const RID mapSet = comp ? godot_map_set(gColor) : whiteSet2;
 	// the look: after the frame's last 3D batch (the world done, the HUD and menus still to come) the effects run on
 	// what is drawn so far; a frame without 3D (the menus) is left as it is
 	size_t split = (size_t)-1;
@@ -557,6 +635,11 @@ void AxisReplay::_render() {
 			run_post(p.look);
 		}
 		const EmuCmd &c = p.cmds[ci];
+		// the map's solid surfaces (the view volume's meshes, drawn in perspective): Godot's colour now, the game's depth.
+		// Its see-through parts (queued as triangles, depth-sorted and drawn already projected: glows, beams) stay the
+		// game's own - over the sky they need what is behind them
+		const bool fromGodot = comp && c.kind == EmuCmd::BATCH && (c.batch.tag == 2 || c.batch.tag == 3) && c.batch.persp &&
+		                       (!c.batch.pipe.blend || (c.batch.pipe.src == 0x302 && c.batch.pipe.dst == 0x303));
 		if (c.kind == EmuCmd::CLEAR) {
 			if (dl >= 0) rd->draw_list_end();
 			BitField<RenderingDevice::DrawFlags> flags = 0;
@@ -570,7 +653,13 @@ void AxisReplay::_render() {
 		const EmuBatch &b = c.batch;
 		if (b.count == 0 || b.scissor[2] <= 0 || b.scissor[3] <= 0) continue;
 		if (dl < 0) dl = rd->draw_list_begin(framebuffer);
-		rd->draw_list_bind_render_pipeline(dl, pipeline_for(b.pipe));
+		if (fromGodot) {   // (unblended: Godot's colour replaces, as a solid surface)
+			EmuPipe gp = b.pipe;
+			gp.blend = 0;
+			rd->draw_list_bind_render_pipeline(dl, pipeline_for(gp));
+		} else
+			rd->draw_list_bind_render_pipeline(dl, pipeline_for(b.pipe));
+		rd->draw_list_bind_uniform_set(dl, mapSet, 2);
 		rd->draw_list_bind_uniform_set(dl, set0, 0);
 		RID set = whiteSet;
 		bool textured = false;
@@ -580,7 +669,7 @@ void AxisReplay::_render() {
 		}
 		rd->draw_list_bind_uniform_set(dl, set, 1);
 		rd->draw_list_enable_scissor(dl, Rect2(b.scissor[0], b.scissor[1], b.scissor[2], b.scissor[3]));
-		Push push = { b.first, (textured ? 1u : 0u) | (b.fog ? 2u : 0u) | (p.tagView ? 4u : 0u), b.env, b.tag,
+		Push push = { b.first, (textured ? 1u : 0u) | (b.fog ? 2u : 0u) | (p.tagView ? 4u : 0u) | (fromGodot ? 8u : 0u), b.env, b.tag,
 		              { b.fogColor[0], b.fogColor[1], b.fogColor[2], b.fogColor[3] } };
 		rd->draw_list_set_push_constant(dl, bytes(&push, sizeof push), sizeof push);
 		rd->draw_list_draw(dl, false, 1, b.count);
@@ -588,6 +677,7 @@ void AxisReplay::_render() {
 	if (dl >= 0) rd->draw_list_end();
 	if (split == p.cmds.size()) run_post(p.look);   // (nothing after the world)
 }
+
 
 // the look's resources for a w x h frame: the shaders, the world's copy, the bloom chain and their uniform sets
 bool AxisReplay::ensure_post(int w, int h) {
@@ -840,6 +930,125 @@ Array AxisReplay::get_world_samples(int mask, int count) const {
 	out.push_back(world);
 	out.push_back(screen);
 	return out;
+}
+
+// ---- the map as Godot's mesh (main thread) ----
+
+void AxisReplay::set_original_light(float v) {
+	originalLight = v;
+	for (auto &kv : mapMaterials)
+		if (kv.second.is_valid()) kv.second->set_shader_parameter("original_light", v);
+}
+
+Ref<ShaderMaterial> AxisReplay::map_material(uint32_t texture, uint32_t env, int blendClass, int cull) {
+	const int lit = pictureMode == 2 ? 1 : 0;
+	const uint64_t key = (uint64_t)texture | (uint64_t)(env & 0xffff) << 32 | (uint64_t)blendClass << 48 | (uint64_t)lit << 52 | (uint64_t)cull << 56;
+	auto it = mapMaterials.find(key);
+	if (it != mapMaterials.end()) return it->second;
+	Ref<Shader> &sh = mapShaders[lit][blendClass][cull];
+	if (sh.is_null()) {
+		static const char *blend[3] = { "", "", "" };   // (0 opaque, 1 a cutout: both in Godot's opaque pass)
+		static const char *culls[4] = { "cull_disabled", "cull_back", "cull_front", "cull_disabled" };
+		String code = String("shader_type spatial;\nrender_mode ") + culls[cull] + (lit ? "" : ", unshaded") + blend[blendClass] + ";\n" + k_map_common;
+		if (!lit)
+			code += String("void fragment() {\n\tvec4 o = game_colour(COLOR, UV);\n\tALBEDO = pow(o.rgb, vec3(2.2));\n") + (blendClass ? "\tALPHA = o.a;\n\tALPHA_SCISSOR_THRESHOLD = 0.5;\n" : "") + "}\n";
+		else   // (lit by Godot: the texture as the surface, the game's own lighting kept as a glow of original_light)
+			code += String("void fragment() {\n\tvec4 t = texture_only(UV);\n\tvec4 o = game_colour(COLOR, UV);\n\tALBEDO = pow(t.rgb, vec3(2.2));\n"
+			               "\tEMISSION = pow(o.rgb, vec3(2.2)) * original_light;\n\tROUGHNESS = 0.8;\n") + (blendClass ? "\tALPHA = o.a;\n\tALPHA_SCISSOR_THRESHOLD = 0.5;\n" : "") + "}\n";
+		sh.instantiate();
+		sh->set_code(code);
+	}
+	Ref<ShaderMaterial> m;
+	m.instantiate();
+	m->set_shader(sh);
+	m->set_shader_parameter("env", env == 0x1E01 ? 1 : env == 0x2101 ? 2 : 0);
+	m->set_shader_parameter("textured", texture != 0);
+	m->set_shader_parameter("original_light", originalLight);
+	if (texture) {
+		Ref<Texture2DRD> &t = texShown[texture - 1];
+		if (t.is_null()) t.instantiate();
+		m->set_shader_parameter("tex", t);
+	}
+	mapMaterials[key] = m;
+	return m;
+}
+
+Ref<ArrayMesh> AxisReplay::build_map_mesh() {
+	Ref<ArrayMesh> mesh;
+	mesh.instantiate();
+	const Unproject u = unprojector(emu);
+	if (!u.ok) return mesh;
+	{	// the textures' RD textures as they are now (uploaded on the render thread)
+		std::lock_guard<std::mutex> lock(texMutex);
+		for (auto &kv : texShown) {
+			auto it = texRids.find(kv.first);
+			const RID r = it != texRids.end() ? it->second : RID();
+			if (r.is_valid() && kv.second->get_texture_rd_rid() != r) kv.second->set_texture_rd_rid(r);
+		}
+	}
+	// the batches of the ground and map objects, by material
+	struct Surface { PackedVector3Array v, n; PackedVector2Array uv; PackedColorArray col; uint32_t texture, env; int blend, cull; };
+	std::unordered_map<uint64_t, Surface> surfaces;
+	std::vector<uint64_t> order;
+	for (const EmuCmd &c : emu.cmds) {
+		const EmuBatch &b = c.batch;
+		if (c.kind != EmuCmd::BATCH || (b.tag != 2 && b.tag != 3) || b.pipe.prim != 0 || b.scissor[2] <= 0 || b.count < 3 || !b.persp) continue;
+		if (b.pipe.blend && !(b.pipe.src == 0x302 && b.pipe.dst == 0x303)) continue;   // (additive and others: the game's own)
+		const int blendClass = b.pipe.blend ? 1 : 0;   // (alpha-blended solid meshes: a cutout - their clear texels let through)
+		// the game's culling: GL's front faces (counter-clockwise unless glFrontFace(GL_CW)) turned to Godot's (clockwise),
+		// its culled face kept (0 none, 1 back, 2 front)
+		const int cull = !b.pipe.cull ? 0 : b.pipe.cullFace == 0x404 ? 2 : b.pipe.cullFace == 0x405 ? 1 : 3;
+		const bool turn = b.pipe.frontFace == 0x901;
+		const uint64_t key = (uint64_t)b.texture | (uint64_t)(b.env & 0xffff) << 32 | (uint64_t)blendClass << 48 | (uint64_t)cull << 56;
+		auto it = surfaces.find(key);
+		if (it == surfaces.end()) {
+			it = surfaces.emplace(key, Surface()).first;
+			it->second.texture = b.texture;
+			it->second.env = b.env;
+			it->second.blend = blendClass;
+			it->second.cull = cull;
+			order.push_back(key);
+		}
+		Surface &s = it->second;
+		for (uint32_t i = 0; i + 2 < b.count; i += 3) {
+			Vector3 w[3];
+			const int idx[3] = { 0, turn ? 2 : 1, turn ? 1 : 2 };
+			for (int k = 0; k < 3; k++) w[k] = u.world(emu.verts[b.first + i + idx[k]], b, nullptr);
+			Vector3 n = (w[2] - w[0]).cross(w[1] - w[0]);   // (Godot's clockwise front: the normal towards the viewer)
+			n = n.length_squared() > 0 ? n.normalized() : Vector3(0, 1, 0);
+			for (int k = 0; k < 3; k++) {
+				const EmuVertex &v = emu.verts[b.first + i + idx[k]];
+				s.v.push_back(w[k]);
+				s.n.push_back(n);
+				s.uv.push_back(Vector2(v.uv[0], v.uv[1]));
+				s.col.push_back(Color(v.col[0], v.col[1], v.col[2], v.col[3]));
+			}
+		}
+	}
+	if (getenv("AXIS_MAP_STATS")) {   // (a check: the map's batches and their depth state)
+		String st;
+		for (const EmuCmd &c : emu.cmds) {
+			const EmuBatch &b = c.batch;
+			if (c.kind != EmuCmd::BATCH || (b.tag != 2 && b.tag != 3)) continue;
+			st += String(" [tex ") + String::num_int64(b.texture) + " n " + String::num_int64(b.count / 3) + " persp " + String::num_int64(b.persp) +
+			      " depth " + String::num_int64(b.pipe.depthTest) + "/" + String::num_int64(b.pipe.depthFunc, 16) + " blend " +
+			      String::num_int64(b.pipe.blend) + " " + String::num_int64(b.pipe.src, 16) + "/" + String::num_int64(b.pipe.dst, 16) +
+			      " cull " + String::num_int64(b.pipe.cull) + " fog " + String::num_int64(b.fog) + "]";
+		}
+		UtilityFunctions::print("map batches:", st);
+	}
+	for (uint64_t key : order) {
+		Surface &s = surfaces[key];
+		Array arrays;
+		arrays.resize(Mesh::ARRAY_MAX);
+		arrays[Mesh::ARRAY_VERTEX] = s.v;
+		arrays[Mesh::ARRAY_NORMAL] = s.n;
+		arrays[Mesh::ARRAY_TEX_UV] = s.uv;
+		arrays[Mesh::ARRAY_COLOR] = s.col;
+		mesh->add_surface_from_arrays(Mesh::PRIMITIVE_TRIANGLES, arrays);
+		mesh->surface_set_material(mesh->get_surface_count() - 1, map_material(s.texture, s.env, s.blend, s.cull));
+	}
+	return mesh;
 }
 
 void AxisReplay::free_all() {

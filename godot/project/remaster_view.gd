@@ -7,6 +7,11 @@ class_name RemasterView
 ##   picture - lined up when the camera is right;
 ## - report(): a sample of the world's points projected by the Camera3D (unproject_position) against where the game
 ##   drew them, in pixels.
+## The picture (step 3; AxisReplay.picture_mode, Ctrl+F12 in game, --picture N): in modes 1 (the original lighting)
+## and 2 (the remaster) the map is drawn by Godot - a second viewport with the same camera, the map rebuilt each frame
+## from the game's own batches (AxisReplay.build_map_mesh) under remaster_world.tscn (its environment and light, to be
+## edited in the editor), and the game's frame drawn into it by AxisMapEffect (its actors, effects and HUD over Godot's
+## map, hidden behind it by its depth).
 
 const MASK_MAP := (1 << 2) | (1 << 3)            # the ground and the map's objects
 const MASK_WORLD := MASK_MAP | (1 << 4) | (1 << 8)   # with the actors and items
@@ -19,6 +24,9 @@ var cam: Camera3D
 var mesh_inst: MeshInstance3D
 var shown: TextureRect
 var info := {}
+var map_sub: SubViewport     # Godot's map (picture modes 1 and 2)
+var map_cam: Camera3D
+var map_mesh: MeshInstance3D
 
 func setup(p_replay: AxisReplay, p_view: TextureRect) -> void:
 	replay = p_replay
@@ -47,16 +55,39 @@ func setup(p_replay: AxisReplay, p_view: TextureRect) -> void:
 	shown.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
 	shown.visible = false
 	view.add_child(shown)
+	# the map's viewport: rendered every frame it is needed, never shown itself (the effect draws the game into it, the
+	# game's frame texture shows the result)
+	map_sub = SubViewport.new()
+	map_sub.transparent_bg = true
+	map_sub.own_world_3d = true
+	map_sub.render_target_update_mode = SubViewport.UPDATE_DISABLED
+	add_child(map_sub)
+	map_sub.add_child(load("res://remaster_world.tscn").instantiate())
+	map_cam = Camera3D.new()
+	map_cam.keep_aspect = Camera3D.KEEP_HEIGHT
+	var effect := AxisMapEffect.new()
+	effect.set_replay(replay)
+	var comp := Compositor.new()
+	comp.compositor_effects = [effect]
+	map_cam.compositor = comp
+	map_sub.add_child(map_cam)
+	map_cam.current = true
+	map_mesh = MeshInstance3D.new()
+	map_sub.add_child(map_mesh)
+	replay.set_map_viewport(true)
 
 ## the Camera3D set from the game's matrices (false: no camera this frame - the menus)
-func apply_camera(frame: Vector2i) -> bool:
+func apply_camera(frame: Vector2i, c: Camera3D = null, s: SubViewport = null) -> bool:
+	if c == null:
+		c = cam
+		s = sub
 	if replay == null or not replay.has_camera() or frame.x <= 0 or frame.y <= 0:
 		return false
-	sub.size = frame
+	s.size = frame
 	var p: Projection = replay.get_camera_projection()
 	var v: Transform3D = replay.get_camera_view()
 	var vp: Rect2i = replay.get_camera_viewport()
-	cam.global_transform = v.affine_inverse()
+	c.global_transform = v.affine_inverse()
 	var fovy := rad_to_deg(2.0 * atan(1.0 / p.y.y))
 	var near := p.w.z / (p.z.z - 1.0)
 	var far := p.w.z / (p.z.z + 1.0)
@@ -66,13 +97,17 @@ func apply_camera(frame: Vector2i) -> bool:
 	var upp := (2.0 * near / p.y.y) / vp.size.y   # (near-plane units per pixel)
 	var centre := Vector2(vp.position) + Vector2(vp.size) * 0.5 - Vector2(frame) * 0.5
 	var off := Vector2(p.z.x * near / p.x.x - centre.x * upp, p.z.y * near / p.y.y + centre.y * upp)   # (a frustum moved up draws things lower)
-	cam.set_frustum(upp * frame.y, off, near, far)
+	c.set_frustum(upp * frame.y, off, near, far)
 	info = { "fovy": fovy, "near": near, "far": far, "aspect": p.y.y / p.x.x, "frame_aspect": float(frame.x) / frame.y,
 		"det": v.basis.determinant(), "off_axis": Vector2(p.z.x, p.z.y), "viewport": vp }
 	return true
 
-## per frame: the camera, and the overlay's mesh when it is on
+## per frame: Godot's map in picture modes 1 and 2; the overlay's camera and mesh when it is on
 func update(frame: Vector2i) -> void:
+	var map_on := replay != null and replay.picture_mode > 0 and apply_camera(frame, map_cam, map_sub)
+	map_sub.render_target_update_mode = SubViewport.UPDATE_ALWAYS if map_on else SubViewport.UPDATE_DISABLED
+	if map_on:
+		map_mesh.mesh = replay.build_map_mesh()
 	var on := replay != null and replay.overlay and apply_camera(frame)
 	shown.visible = on
 	if not on:

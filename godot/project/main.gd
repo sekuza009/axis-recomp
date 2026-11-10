@@ -25,6 +25,9 @@ func _ready() -> void:
 			i += 1
 			var parts: PackedStringArray = args[i].split(":", true, 1)
 			shots[int(parts[0])] = parts[1]
+		elif a == "--picture":   # the picture: 0 the original, 1 the original lighting, 2 the remaster
+			i += 1
+			$Replay.picture_mode = int(args[i])
 		elif a == "--tags":   # the tag view
 			$Replay.tag_view = true
 		elif a == "--overlay":   # the camera check's overlay
@@ -74,6 +77,11 @@ func _process(_delta: float) -> void:
 				img.save_png(shot_path)
 				print("AxisReplay: frame ", f, " saved to ", shot_path)
 			# (and what the window shows: Godot's display of the texture - colour handling, scaling)
+			if remaster and remaster.map_sub.render_target_update_mode == SubViewport.UPDATE_ALWAYS:   # (Godot's map alone)
+				var mi := remaster.map_sub.get_texture().get_image()
+				if mi:
+					mi.save_png(shot_path.get_basename() + "_map.png")
+				print("map mesh surfaces: ", remaster.map_mesh.mesh.get_surface_count() if remaster.map_mesh.mesh else -1)
 			var view := get_viewport().get_texture().get_image()
 			if view:
 				view.save_png(shot_path.get_basename() + "_view.png")

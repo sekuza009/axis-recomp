@@ -102,6 +102,32 @@ worst 0.56 px (frames 8,400 / 9,000 / 10,200).
 `--record <file>` (game.gd): the game's drawing written as an AXGLREC1 file while it plays, for main.tscn to replay
 (the camera and tags included).
 
+## The picture: Godot draws the map (step 1b.3)
+
+`picture_mode` (AxisReplay / AxisGame, "Remaster picture" in the inspector; **Ctrl+F12** in game cycles it,
+`--picture N` on the command line):
+- **0 Original**: the game's own drawing, exactly as before.
+- **1 Original lighting**: the map drawn by Godot with the game's own lighting (its vertex colours: the light factors
+  it computes per vertex) - unshaded materials, texture x colour as the game's texture environment does it.
+- **2 Remaster**: the map lit by Godot - remaster_world.tscn's DirectionalLight3D (shadows) and WorldEnvironment, to be
+  edited in the editor - with the game's own lighting kept as a base glow (`original_light`, 0.6).
+
+How: remaster_view.gd keeps a second SubViewport with the same Camera3D (step 2) under remaster_world.tscn. Each frame
+`AxisReplay.build_map_mesh()` rebuilds the map from that frame's own batches - the ground and map objects drawn as the
+view volume's solid meshes, in the world (the camera inverted), textured with the game's textures (Texture2DRD over the
+same RD textures), the game's culling kept (GL's counter-clockwise fronts turned to Godot's clockwise). An
+AxisMapEffect (CompositorEffect, after Godot's transparent pass) then draws the game's frame during that viewport's
+render: the game's solid map surfaces are drawn as always - their own depth, their own depth test - but coloured from
+Godot's picture at each pixel, so Godot's map is seen exactly where the game's would be and everything the game draws
+next (mechs, effects, items, the HUD) is hidden behind it as before. What stays the game's own: the sky, the map's
+see-through parts (depth-sorted glows and beams - over the sky they need what is behind them) and additive surfaces.
+Alpha-blended solid meshes are cutouts in Godot (the arena's central column is such a mesh with a clear texture: only
+its glow shows).
+
+Checked on the recorded skirmish (frames 8,400 / 9,000 / 10,200): mode 1 looks the same as the original (the pixels
+differ by the texture filtering and the gamma round trip on a busy texture: 53-59% within 8 levels, 76-80% within 32);
+live in a skirmish (mode 2): 120 fps, no long frames. `AXIS_MAP_STATS=1` prints the map batches' state.
+
 ## Building (Windows, zig as the compiler)
 
 **Since 2026-11-09 64-bit only**: the extension `arch=x86_64` against `Tools/godot/godot-cpp64` (SConstruct's default),

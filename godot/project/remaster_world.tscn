@@ -1,0 +1,18 @@
+[gd_scene load_steps=2 format=3]
+
+[sub_resource type="Environment" id="Environment_axis"]
+background_mode = 1
+background_color = Color(0, 0, 0, 0)
+ambient_light_source = 1
+tonemap_mode = 0
+
+[node name="RemasterWorld" type="Node3D"]
+
+[node name="Environment" type="WorldEnvironment" parent="."]
+environment = SubResource("Environment_axis")
+
+[node name="Sun" type="DirectionalLight3D" parent="."]
+transform = Transform3D(0.819152, 0, -0.573576, -0.469846, 0.573576, -0.67101, 0.32899, 0.819152, 0.469846, 0, 0, 0)
+light_energy = 1.2
+shadow_enabled = true
+directional_shadow_max_distance = 30000.0

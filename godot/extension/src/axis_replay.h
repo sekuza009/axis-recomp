@@ -6,6 +6,10 @@
 #include <godot_cpp/classes/rendering_device.hpp>
 #include <godot_cpp/classes/texture2drd.hpp>
 #include <godot_cpp/variant/projection.hpp>
+#include <godot_cpp/classes/array_mesh.hpp>
+#include <godot_cpp/classes/compositor_effect.hpp>
+#include <godot_cpp/classes/shader.hpp>
+#include <godot_cpp/classes/shader_material.hpp>
 #include <godot_cpp/variant/transform3d.hpp>
 
 #include <mutex>
@@ -49,6 +53,23 @@ public:
 	void set_overlay(bool v) { overlay = v; }
 	bool get_overlay() const { return overlay; }
 	bool has_camera() const { return emu.hasCamera; }
+
+	// the picture (step 3): 0 the original - the game's own drawing; 1 the original lighting - the map drawn by Godot
+	// (remaster_view.gd's viewport, the game's camera) with the game's vertex colours; 2 the remaster - the map lit by
+	// Godot's lights (the game's lighting kept as a base: original_light). In 1 and 2 the game's map batches (ground,
+	// map objects) are left out and Godot's map put in their place - its colour and depth, so the game's actors, effects
+	// and HUD are drawn into it as before (AxisMapEffect, during that viewport's render)
+	int pictureMode = 0;
+	bool mapViewport = false;   // (remaster_view.gd's viewport and its effect are there)
+	float originalLight = 0.6f;
+	void set_picture_mode(int v) { pictureMode = v < 0 ? 0 : v > 2 ? 2 : v; }
+	int get_picture_mode() const { return pictureMode; }
+	void set_map_viewport(bool v) { mapViewport = v; }
+	bool get_map_viewport() const { return mapViewport; }
+	void set_original_light(float v);
+	float get_original_light() const { return originalLight; }
+	Ref<ArrayMesh> build_map_mesh();   // this frame's map (the ground and map objects) as a Godot mesh, in the world
+	void draw_deferred(const RID &p_color, const RID &p_depth, const Vector2i &p_size);   // (AxisMapEffect, render thread)
 	Projection get_camera_projection() const;
 	Transform3D get_camera_view() const;
 	Rect2i get_camera_viewport() const;       // the world's viewport (framebuffer pixels, top-left origin)
@@ -94,6 +115,7 @@ protected:
 		bool ready = false;
 		Look look;
 		bool tagView = false;
+		bool composite = false;   // drawn later, into Godot's map (draw_deferred)
 	};
 	std::mutex mutex;
 	Pending pending;
@@ -110,6 +132,20 @@ protected:
 	String status;
 
 	void _render();
+	void draw_cmds(const Pending &p, const RID &gColor, const RID &gDepth);
+	Pending deferred;
+	bool haveDeferred = false;
+	// Godot's picture of the map as the shader's third set (the map's solid surfaces coloured from it)
+	RID whiteSet2;
+	std::unordered_map<uint64_t, RID> godotSets;
+	RID godot_map_set(const RID &p_color);
+	// the game's textures as Godot's (Texture2DRD over the same RD textures) and the map's materials
+	std::mutex texMutex;
+	std::unordered_map<uint32_t, RID> texRids;   // (render thread -> main thread)
+	std::unordered_map<uint32_t, Ref<Texture2DRD>> texShown;
+	std::unordered_map<uint64_t, Ref<ShaderMaterial>> mapMaterials;
+	Ref<Shader> mapShaders[2][3][4];   // [original lighting / remaster][opaque / alpha / additive][the culling]
+	Ref<ShaderMaterial> map_material(uint32_t texture, uint32_t env, int blendClass, int cull);
 	// the look's passes (compute): the world copied, bloom (a bright pass, a chain of half sizes down, blurred back
 	// up), then the composite written back into the frame
 	RID postBloomShader, postCompShader, postSampler, postScene;

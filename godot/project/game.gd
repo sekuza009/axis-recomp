@@ -61,6 +61,9 @@ func _ready() -> void:
 		elif a == "--record":   # the game's drawing to a file (main.tscn replays it)
 			i += 1
 			record_path = args[i]
+		elif a == "--picture":   # the picture: 0 the original, 1 the original lighting, 2 the remaster (Ctrl+F12 cycles)
+			i += 1
+			$Game.picture_mode = int(args[i])
 		elif a == "--tags":   # the tag view on (Ctrl+F9 toggles it)
 			$Game.tag_view = true
 		elif a == "--overlay":   # the camera check's overlay on (Ctrl+F10 toggles it)
