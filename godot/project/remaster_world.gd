@@ -15,10 +15,11 @@ extends Node3D
 @export_range(0.0, 8.0, 0.01) var dynamic_energy := 1.0
 @export var dynamic_shadows := false
 @export var sun_without_map_light := true
-## the map's directional lights turned round: the game shades with the normals stored in its models, which point the
-## other way from their faces, so its lights in effect shine against their direction (checked on Abyss: its warm,
-## teal and grey lights then fall where the original's do)
-@export var turn_directional_lights := true
+## the map's directional lights shine along their direction, as the game's code has it (shading.c: lit where a normal
+## faces against it). Turned round (true) they shine the other way - a check only: an earlier reading that they were
+## turned came from the 64-bit build's garbage normals (fixed on 2026-11-10); with them right, not turned matches the
+## original on every map with directional lights (Bloodbath, CrimsonField, StarField, Abyss, Centropolis, Valhalla)
+@export var turn_directional_lights := false
 @export_range(1, 256) var max_point_lights := 64
 @export_range(0.0, 4.0, 0.01) var map_directional_energy := 1.0
 ## how much of the game's own lighting the remaster keeps as a glow (AxisReplay.original_light): less when the map has
@@ -34,6 +35,8 @@ var _sun_colour: Color
 var _sun_energy: float
 
 func _ready() -> void:
+	if OS.get_environment("AXIS_TURN_DIR") != "":   # (a check: the directional lights turned or not)
+		turn_directional_lights = OS.get_environment("AXIS_TURN_DIR") == "1"
 	_sun_basis = $Sun.transform.basis
 	_sun_colour = $Sun.light_color
 	_sun_energy = $Sun.light_energy

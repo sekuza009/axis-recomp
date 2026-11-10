@@ -196,9 +196,8 @@ The frame's clear colour shows through it as in the game. With the sky Godot's, 
 Godot's on every map (frame_effects()). `AXIS_SKY_ONLY=<n>` renders one sky part alone (a check).
 
 Lights, from Abyss: every directional light of the map is used (the first as the Sun, with shadows; the rest without),
-turned round (`turn_directional_lights`: the game shades with the normals stored in its models, which point the other
-way from their faces, so its lights in effect shine against their direction - turned, its warm, teal and grey lights
-fall where the original's do), and the lit map materials use Godot's wrapped diffuse light (`diffuse_lambert_wrap`) as
+shining along their direction as the game's code has it (`turn_directional_lights` false; an earlier conclusion that
+they were turned came from the 64-bit build's lighting bug, fixed below), and the lit map materials use Godot's wrapped diffuse light (`diffuse_lambert_wrap`) as
 the game's is: half light at right angles to a light (shading.c facing(): (1 - n.L) x 128). Checked on the recorded
 Abyss round (all three modes) and live (mode 2: 120 fps; one 162 ms frame in the match, when the player died).
 
@@ -241,6 +240,18 @@ sess5/map_survey.sh drives all 32, survey_sheet.py makes the contact sheets).
   StarField, Hive, Bloodbath. The game multiplies each model's own vertex colours (its base colours, the art) with its
   light, and only the lit result reaches Godot: Godot's lit surfaces have the texture alone as their colour. The fix is
   the base colours sent from the game (the 64-bit build) for Godot's albedo.
+
+## The 64-bit build's lighting bug (fixed 2026-11-10)
+
+The purple and yellow patches on many maps were not the original's: in the 64-bit game library an APTR field is the
+address as a number, so `AP(T, field + n)` added n bytes where the 32-bit builds add n elements - shading.c read every
+vertex's normal but the first from the wrong place (portable branch commit "three element steps taken as bytes"). It
+was in everything built on the 64-bit library: AxisSDL and the Godot build's three picture modes. Found comparing the
+32-bit portable build's recorded drawing of Centropolis with the 64-bit one's vertex by vertex
+(`AXIS_DUMP_BATCHES`). After the fix the survey was run again: original lighting as the original on all 32; the
+remaster close on most maps, StarField's rocks and CrimsonField's colours as the original's (they were the bug, not
+missing base colours). Left for the remaster: hard bright patches near some white point lights (HeadQuarters' ceiling
+light, IllusionCity's glows) - Godot adds lights without the game's clamp at full white.
 
 ## Building (Windows, zig as the compiler)
 
