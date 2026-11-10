@@ -117,7 +117,27 @@ static void r_gluPerspective(double f, double a, double n, double z) { put_op(39
 
 /* ---- the calls with pointers, draws, textures (glrec.c's ops from 64) */
 enum { OP_COLOR4UBV = 64, OP_FOGFV, OP_LOADMATRIX, OP_MULTMATRIX, OP_TEXCOORD2FV, OP_VERTEX3FV, OP_VERTEX4FV,
-       OP_PIXELSTORE, OP_DRAW, OP_TEXIMAGE, OP_MIPMAPS, OP_TEXPARAMI };
+       OP_PIXELSTORE, OP_DRAW, OP_TEXIMAGE, OP_MIPMAPS, OP_TEXPARAMI,
+       OP_TAG, OP_CAMERA };   /* (the remaster's notes, nothing to draw: src/render/draw_tags.h - readers skip them) */
+
+/* ---- what the drawing is (src/render/draw_tags.h): the kind records are queued under, a tag op when the drawing's
+   kind changes, the camera of each view volume drawn (its projection and view matrices) */
+int g_drawSource;
+static int g_tag = -1;
+void glrec64_tag(int kind)
+{
+	if (kind == g_tag)
+		return;
+	g_tag = kind;
+	put_op(OP_TAG, 1);
+	put((u32)kind);
+}
+void glrec64_camera(const float *projection, const float *view)
+{
+	put_op(OP_CAMERA, 32);
+	put_bytes(projection, 64);
+	put_bytes(view, 64);
+}
 static void r_glColor4ubv(const void *v) { put_op(OP_COLOR4UBV, 1); put_bytes(v, 4); }
 static void r_glFogfv(u32 p, const float *v) { put_op(OP_FOGFV, 5); W(p); put_bytes(v, 16); }
 static void r_glLoadMatrixf(const float *m) { put_op(OP_LOADMATRIX, 16); put_bytes(m, 64); }
@@ -258,6 +278,7 @@ static int f_SwapBuffers(void *dc)
 	if (g_live)
 		g_live(g_liveUser, g_buf, (unsigned)g_len, w, h);
 	g_len = 0;
+	g_tag = -1;   /* (each frame starts untagged) */
 	return 1;
 }
 

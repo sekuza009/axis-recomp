@@ -3,6 +3,7 @@
    wrapped by the patch DLL (each element anchored for wide screens), so they go through their call sites. */
 #include "../game.h"
 #include "../fixes/fixes.h"
+#include "../render/draw_tags.h"
 
 
 /* 0x4982f0: the match's whole frame drawn (only while scene->matchDrawing; match_playFrame in match state 2): the
@@ -36,13 +37,21 @@ void THISCALL (match_drawFrame)(Scene *scene)
 		} else if (scene->playing == 1 && scene->cameraMode == 2 && scene->localPlayer >= 0) {
 			scene->players[scene->localPlayer].viewMarked = 1;
 		}
+		DRAW_TAG(DRAWTAG_SKY);
 		sky_draw(STAGE(scene), view_farPlane());
+		DRAW_SOURCE(DRAWTAG_GROUND);
 		ground_buildDrawLists(STAGE(scene), &scene->view, view_farPlane());
+		DRAW_SOURCE(DRAWTAG_OBJECT);
 		stage_drawObjects(STAGE(scene), &scene->view);
+		DRAW_SOURCE(DRAWTAG_ACTOR);
 		stage_drawActors(STAGE(scene), &scene->view, 0);
+		DRAW_SOURCE(DRAWTAG_BULLET);
 		stage_drawBullets(STAGE(scene), &scene->view);
+		DRAW_SOURCE(DRAWTAG_PARTICLE);
 		stage_drawParticles(STAGE(scene), &scene->view);
+		DRAW_SOURCE(DRAWTAG_ITEM);
 		stage_drawItems(STAGE(scene), &scene->view);
+		DRAW_SOURCE(DRAWTAG_OTHER);
 		if (scene->fogOn == 1) {
 			stage_setFog(STAGE(scene), &scene->fogColour, BITS(scene->fogParams[0]), BITS(scene->fogParams[1]), BITS(scene->fogParams[2]));
 			glEnable(GL_FOG);
@@ -52,8 +61,11 @@ void THISCALL (match_drawFrame)(Scene *scene)
 	}
 	glClear(GL_DEPTH_BUFFER_BIT);
 	ViewVolume_reset(&scene->view);
+	DRAW_SOURCE(DRAWTAG_ACTOR_VIEW);
 	stage_drawActors(STAGE(scene), &scene->view, 1);
+	DRAW_SOURCE(DRAWTAG_OTHER);
 	ViewVolume_draw(&scene->view, scene->renderMode, scene->clockFraction);
+	DRAW_TAG(DRAWTAG_OTHER);
 	if (scene->scriptMode != 0) {
 		if (scene->scriptMode == 2) {
 			glClearDepth(1.0);
@@ -63,6 +75,7 @@ void THISCALL (match_drawFrame)(Scene *scene)
 		script_notifyObject(STAGE(scene), 0, 0, gfx_getWidth(), height);
 	}
 	gfx_setMatchProjection(0, 1.0f);
+	DRAW_TAG(DRAWTAG_HUD);
 
 	if (scene->hudHidden == 0) {
 		if (scene->scriptMode == 0) {
