@@ -20,7 +20,8 @@ if [ "$TARGET" = macos ]; then
 	clang -c $FLAGS -o $OUT/obj/gl_play.o host/sdl/gl_play.c
 	clang++ -c -std=c++17 $FLAGS -o $OUT/obj/axis_audio.o host/sdl/axis_audio.cpp
 	clang++ -c -std=c++17 $FLAGS -Wno-unused-variable -o $OUT/obj/main.o host/sdl/main.cpp
-	clang++ $ARCH -o $OUT/AxisSDL $OUT/obj/main.o $OUT/obj/gl_play.o $OUT/obj/axis_audio.o $OUT/obj/libaxis64.a 		-L$SDL/lib -lSDL3 -Wl,-rpath,@executable_path
+	clang++ -c -std=c++17 $FLAGS -o $OUT/obj/launcher.o host/sdl/launcher.cpp
+	clang++ $ARCH -o $OUT/AxisSDL $OUT/obj/main.o $OUT/obj/launcher.o $OUT/obj/gl_play.o $OUT/obj/axis_audio.o $OUT/obj/libaxis64.a 		-L$SDL/lib -lSDL3 -Wl,-rpath,@executable_path
 	cp -L $SDL/lib/libSDL3.0.dylib $OUT/
 	lipo -info $OUT/AxisSDL
 	otool -L $OUT/AxisSDL
@@ -32,7 +33,7 @@ windows)
 	SDL=${SDL3_MINGW:-C:/Users/Alexander/Tools/sdl3/SDL3-3.4.20/x86_64-w64-mingw32}
 	LIB=build/libaxis64_windows.a
 	OUT=build/sdl/windows; EXE=AxisSDL.exe; SDLLIB=$SDL/lib/libSDL3.dll.a
-	SYSLIBS="-lws2_32 -lwinmm -lole32 -loleaut32 -Wl,--subsystem,windows"
+	SYSLIBS="-lws2_32 -lwinmm -lole32 -loleaut32 -ladvapi32 -Wl,--subsystem,windows"
 	;;
 linux)
 	T=x86_64-linux-gnu.2.38   # (the SDL3 built on Ubuntu 24.04 needs glibc 2.38; an older one: SDL3 built against it)
@@ -51,7 +52,8 @@ FLAGS="-O2 -g -Wall -Wno-unused-function -Wno-ignored-attributes -I$SDL/include"
 $CC -c $FLAGS -o $OUT/obj/gl_play.o host/sdl/gl_play.c
 $CXX -c -std=c++17 $FLAGS -o $OUT/obj/axis_audio.o host/sdl/axis_audio.cpp
 $CXX -c -std=c++17 $FLAGS -Wno-unused-variable -o $OUT/obj/main.o host/sdl/main.cpp
-$CXX -o $OUT/$EXE $OUT/obj/main.o $OUT/obj/gl_play.o $OUT/obj/axis_audio.o $LIB $SDLLIB $SYSLIBS
+$CXX -c -std=c++17 $FLAGS -o $OUT/obj/launcher.o host/sdl/launcher.cpp
+$CXX -o $OUT/$EXE $OUT/obj/main.o $OUT/obj/launcher.o $OUT/obj/gl_play.o $OUT/obj/axis_audio.o $LIB $SDLLIB $SYSLIBS
 [ "$TARGET" = windows ] && cp $SDL/bin/SDL3.dll $OUT/
 [ "$TARGET" = linux ] && cp $SDL/lib/libSDL3.so.0.4.20 $OUT/libSDL3.so.0
 ls -la $OUT
