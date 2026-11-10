@@ -762,6 +762,13 @@ bool launcher_run(const std::string &gameDir) {
 		}
 		draw();
 	}
+	// (the press's click heard out before its stream closes: the original's sndPlaySound goes on while the game
+	// starts - here the streams would cut it off at once; at most half a second, then the device's last buffer)
+	for (Uint64 until = SDL_GetTicks() + 500; SDL_GetTicks() < until; SDL_Delay(10)) {
+		bool queued = false;
+		for (Sound &s : g_snd) if (s.stream && SDL_GetAudioStreamQueued(s.stream) > 0) queued = true;
+		if (!queued) { SDL_Delay(40); break; }
+	}
 	for (Sound &s : g_snd) { if (s.stream) SDL_DestroyAudioStream(s.stream); SDL_free(s.buf); s = Sound(); }
 	for (auto &row : g_pics) for (SDL_Texture *&t : row) { if (t) SDL_DestroyTexture(t); t = nullptr; }
 	if (g_back) SDL_DestroyTexture(g_back);
