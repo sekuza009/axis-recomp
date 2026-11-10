@@ -220,16 +220,17 @@ void fragment() {
 }
 )";
 
-// (the lit map surfaces' lights: Godot's own wrapped diffuse - scene_forward_lights' DIFFUSE_LAMBERT_WRAP, the
-// roughness 0.8 as the wrap - but the lights' sum held under light_cap, as the game's lighting is clamped at full
-// white: past light_knee of the cap it rolls off towards it. DIFFUSE_LIGHT is the sum so far (rolled off), so each light
-// unrolls it, adds its own and rolls the sum off again - the same whatever the lights' order. No specular, as the game.
-// point_facing false lights a surface by the point lights whatever way it faces, as the game's do (shading.c kind 2:
-// by distance alone) - a check: per pixel, without the game's per-vertex smoothing, it gave hard white blobs (HeadQuarters))
+// (the lit map surfaces' lights, as the game's (shading.c shape_getShadingColorBufferBy): a directional light by how
+// much the normal faces it, (1 - n.dir) / 2 - full facing it, half at right angles, none only facing straight away
+// (Godot's wrapped diffuse gave about half that, nothing a little past right angles: the directional maps were dark);
+// a point light by its distance alone, whatever way the surface faces (kind 2) - per pixel that shows as round pools
+// on big faces, so here (per pixel: PER_PIXEL) a point light takes the wrapped facing too. The sum held under light_cap, as
+// the game clamps at full white: past light_knee of the cap it rolls off towards it. DIFFUSE_LIGHT is the sum so far
+// (rolled off), so each light unrolls it, adds its own and rolls the sum off again - the same whatever the lights'
+// order. No specular, as the game)
 const char *k_map_light = R"(
 uniform float light_cap = 1.0;
 uniform float light_knee = 0.6;
-uniform bool point_facing = true;
 vec3 cap_unroll(vec3 c) {
 	float k = light_cap * light_knee, s = max(light_cap - k, 1e-4);
 	vec3 x = clamp((c - k) / s, 0.0, 0.999);
@@ -240,10 +241,27 @@ vec3 cap_roll(vec3 r) {
 	return mix(r, k + s * (1.0 - exp(-(r - k) / s)), step(k, r));
 }
 void light() {
-	const float wrap = 0.8;
-	float nl = max(0.0, (dot(NORMAL, LIGHT) + wrap) / ((1.0 + wrap) * (1.0 + wrap)));
-	if (!LIGHT_IS_DIRECTIONAL && !point_facing) nl = 1.0;
+	float nl = 1.0;
+	if (LIGHT_IS_DIRECTIONAL)
+		nl = 0.5 * (1.0 + dot(NORMAL, LIGHT));
+#ifdef PER_PIXEL
+	else
+		nl = max(0.0, (dot(NORMAL, LIGHT) + 0.8) / 3.24);
+#endif
 	DIFFUSE_LIGHT = cap_roll(cap_unroll(DIFFUSE_LIGHT) + LIGHT_COLOR * ATTENUATION * nl / PI);
+}
+)";
+
+// (the map lit as the game lights it (vertex_lighting): the game's own lit colour - its lights, per vertex, on its
+// models' base colours - as the surface, and from Godot what the game has not got: the Sun's shadow, darkening a
+// surface by how much it faces the Sun where the shadow falls on it (shadow_strength), and the ambient occlusion (SSAO's
+// light affect). One directional light only (remaster_world.gd: the Sun - shadowless on a map without a directional
+// light of its own); no ambient (the game's colour has it))
+const char *k_game_light = R"(
+uniform float shadow_strength = 0.5;
+void light() {
+	if (LIGHT_IS_DIRECTIONAL)
+		DIFFUSE_LIGHT += vec3(1.0 - shadow_strength * clamp(dot(NORMAL, LIGHT), 0.0, 1.0) * (1.0 - ATTENUATION));
 }
 )";
 
@@ -310,6 +328,10 @@ void AxisReplay::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_map_viewport"), &AxisReplay::get_map_viewport);
 	ClassDB::bind_method(D_METHOD("set_original_light", "amount"), &AxisReplay::set_original_light);
 	ClassDB::bind_method(D_METHOD("get_original_light"), &AxisReplay::get_original_light);
+	ClassDB::bind_method(D_METHOD("set_vertex_lighting", "on"), &AxisReplay::set_vertex_lighting);
+	ClassDB::bind_method(D_METHOD("get_vertex_lighting"), &AxisReplay::get_vertex_lighting);
+	ClassDB::bind_method(D_METHOD("set_shadow_strength", "amount"), &AxisReplay::set_shadow_strength);
+	ClassDB::bind_method(D_METHOD("get_shadow_strength"), &AxisReplay::get_shadow_strength);
 	ClassDB::bind_method(D_METHOD("set_light_cap", "cap"), &AxisReplay::set_light_cap);
 	ClassDB::bind_method(D_METHOD("get_light_cap"), &AxisReplay::get_light_cap);
 	ClassDB::bind_method(D_METHOD("build_map_meshes"), &AxisReplay::build_map_meshes);
@@ -323,6 +345,8 @@ void AxisReplay::_bind_methods() {
 	ADD_GROUP("Remaster picture", "");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "picture_mode", PROPERTY_HINT_ENUM, "Original,Original lighting,Remaster"), "set_picture_mode", "get_picture_mode");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "original_light", PROPERTY_HINT_RANGE, "0,1.5,0.01"), "set_original_light", "get_original_light");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "vertex_lighting"), "set_vertex_lighting", "get_vertex_lighting");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "shadow_strength", PROPERTY_HINT_RANGE, "0,1,0.01"), "set_shadow_strength", "get_shadow_strength");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "light_cap", PROPERTY_HINT_RANGE, "0,8,0.01"), "set_light_cap", "get_light_cap");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "godot_kinds", PROPERTY_HINT_FLAGS, "Other,Sky,Ground,Map objects,Actors,Actor view,Bullets,Particles,Items,Markers,HUD"), "set_godot_kinds", "get_godot_kinds");
 	ADD_GROUP("Remaster view", "");
@@ -1046,6 +1070,12 @@ Array AxisReplay::get_world_samples(int mask, int count) const {
 
 // ---- the map as Godot's mesh (main thread) ----
 
+void AxisReplay::set_shadow_strength(float v) {
+	shadowStrength = v;
+	for (auto &kv : mapMaterials)
+		if (kv.second.is_valid()) kv.second->set_shader_parameter("shadow_strength", v);
+}
+
 void AxisReplay::set_light_cap(float v) {
 	lightCap = v;
 	for (auto &kv : mapMaterials)
@@ -1064,15 +1094,16 @@ bool AxisReplay::frame_effects() const {
 
 Ref<ShaderMaterial> AxisReplay::map_material(uint32_t texture, uint32_t env, int blendClass, int cull, int priority, bool weapon) {
 	const int lit = pictureMode == 2 && blendClass < 2 ? 1 : 0;   // (effects are unlit: they give light, not take it)
+	const int vtx = lit && vertexLighting ? 1 : 0;   // (per vertex: the game lights its vertices and blends between them)
 	const uint64_t key = (uint64_t)texture | (uint64_t)(env & 0xffff) << 32 | (uint64_t)blendClass << 48 | (uint64_t)lit << 51 |
-	                     (uint64_t)cull << 52 | (uint64_t)(priority + 128) << 54 | (uint64_t)weapon << 63;
+	                     (uint64_t)cull << 52 | (uint64_t)(priority + 128) << 54 | (uint64_t)vtx << 62 | (uint64_t)weapon << 63;
 	auto it = mapMaterials.find(key);
 	if (it != mapMaterials.end()) return it->second;
-	Ref<Shader> &sh = mapShaders[lit][blendClass][cull][weapon ? 1 : 0];
+	Ref<Shader> &sh = mapShaders[lit][blendClass][cull][weapon ? 1 : 0][vtx];
 	if (sh.is_null()) {
 		static const char *blend[5] = { "", "", ", blend_mix, depth_draw_never", ", blend_add, depth_draw_never", ", blend_add, depth_draw_never" };
 		static const char *culls[4] = { "cull_disabled", "cull_back", "cull_front", "cull_disabled" };
-		String code = String("shader_type spatial;\nrender_mode ") + culls[cull] + (lit ? (getenv("AXIS_VERTEX_LIGHT") ? ", diffuse_lambert_wrap, vertex_lighting" : ", diffuse_lambert_wrap") : ", unshaded") + blend[blendClass] + ";\n" + k_map_common;
+		String code = String("shader_type spatial;\nrender_mode ") + culls[cull] + (lit ? (vtx ? ", ambient_light_disabled" : ", diffuse_lambert_wrap") : ", unshaded") + blend[blendClass] + ";\n" + k_map_common;
 		if (weapon)   // (the first-person weapon, as the game draws it over a cleared depth buffer: its depth squeezed to just
 		              // in front of the near plane - in order within itself, in front of the world; Godot's depth is reversed)
 			code += String("void vertex() {\n\tPOSITION = PROJECTION_MATRIX * MODELVIEW_MATRIX * vec4(VERTEX, 1.0);\n\tPOSITION.z = mix(POSITION.z, POSITION.w, 0.995);\n}\n");
@@ -1080,9 +1111,12 @@ Ref<ShaderMaterial> AxisReplay::map_material(uint32_t texture, uint32_t env, int
 			code += String("#define EFFECT_CLASS ") + String::num_int64(blendClass) + String(k_map_effect);
 		else if (!lit)
 			code += String("void fragment() {\n\tvec4 o = game_colour(COLOR, UV);\n\tALBEDO = pow(o.rgb, vec3(2.2));\n") + (blendClass ? "\tALPHA = o.a;\n\tALPHA_SCISSOR_THRESHOLD = 0.5;\n" : "") + "}\n";
+		else if (vtx)
+			code += String(k_game_light) + String("void fragment() {\n\tvec4 o = game_colour(COLOR, UV);\n\tALBEDO = pow(o.rgb, vec3(2.2));\n") +
+			        (blendClass ? "\tALPHA = o.a;\n\tALPHA_SCISSOR_THRESHOLD = 0.5;\n" : "") + "}\n";
 		else   // (lit by Godot: the texture as the surface, the game's own lighting kept as a glow of original_light; wrapped
 		       // diffuse light as the game's - half light at right angles to a light, none only facing away)
-			code += String(getenv("AXIS_BUILTIN_LIGHT") || getenv("AXIS_VERTEX_LIGHT") ? "" : k_map_light)   /* (AXIS_BUILTIN_LIGHT: a check - Godot's own diffuse, no cap) */
+			code += String(getenv("AXIS_BUILTIN_LIGHT") ? "" : String("#define PER_PIXEL\n") + k_map_light)   /* (AXIS_BUILTIN_LIGHT: a check - Godot's own diffuse, no cap) */
 			         + String("void fragment() {\n\tvec4 t = texture_only(UV);\n\tvec4 o = game_colour(COLOR, UV);\n\tALBEDO = pow(t.rgb, vec3(2.2));\n"
 			               "\tEMISSION = pow(o.rgb, vec3(2.2)) * original_light;\n\tROUGHNESS = 0.8;\n") + (blendClass ? "\tALPHA = o.a;\n\tALPHA_SCISSOR_THRESHOLD = 0.5;\n" : "") + "}\n";
 		sh.instantiate();
@@ -1094,7 +1128,7 @@ Ref<ShaderMaterial> AxisReplay::map_material(uint32_t texture, uint32_t env, int
 	m->set_shader_parameter("env", env == 0x1E01 ? 1 : env == 0x2101 ? 2 : 0);
 	m->set_shader_parameter("textured", texture != 0);
 	m->set_shader_parameter("original_light", originalLight);
-	if (lit) m->set_shader_parameter("light_cap", lightCap);
+	if (lit) m->set_shader_parameter(vtx ? "shadow_strength" : "light_cap", vtx ? shadowStrength : lightCap);
 	m->set_render_priority(priority);
 	if (texture) {
 		Ref<Texture2DRD> &t = texShown[texture - 1];

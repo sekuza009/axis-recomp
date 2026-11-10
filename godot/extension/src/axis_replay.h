@@ -62,6 +62,8 @@ public:
 	int pictureMode = 0;
 	bool mapViewport = false;   // (remaster_view.gd's viewport and its effect are there)
 	float originalLight = 0.6f;
+	bool vertexLighting = true;   // (the map lit as the game lights it, per vertex, with Godot's shadows: k_game_light)
+	float shadowStrength = 0.5f;
 	float lightCap = 1.0f;   // (the lit map surfaces' lights summed no higher than this: k_map_light)
 	// what Godot draws in picture modes 1 and 2, by kind (1 << tag, src/render/draw_tags.h): the ground, map objects,
 	// actors and items by default (the actors' view pass, over a cleared depth buffer, and the effects stay the game's)
@@ -77,6 +79,10 @@ public:
 	bool get_map_viewport() const { return mapViewport; }
 	void set_original_light(float v);
 	float get_original_light() const { return originalLight; }
+	void set_vertex_lighting(bool on) { vertexLighting = on; }   // (the next frame's meshes take it: materials by key)
+	bool get_vertex_lighting() const { return vertexLighting; }
+	void set_shadow_strength(float v);
+	float get_shadow_strength() const { return shadowStrength; }
 	void set_light_cap(float v);
 	float get_light_cap() const { return lightCap; }
 	// this frame's world of the kinds Godot draws, in the world's space: meshes of at most 256 surfaces each (Godot's
@@ -167,7 +173,7 @@ protected:
 	std::unordered_map<uint32_t, RID> texRids;   // (render thread -> main thread)
 	std::unordered_map<uint32_t, Ref<Texture2DRD>> texShown;
 	std::unordered_map<uint64_t, Ref<ShaderMaterial>> mapMaterials;
-	Ref<Shader> mapShaders[2][5][4][2];   // [original lighting / remaster][the class: godot_class()][the culling][weapon]
+	Ref<Shader> mapShaders[2][5][4][2][2];   // [original lighting / remaster][the class: godot_class()][the culling][weapon][per vertex]
 	Ref<ShaderMaterial> map_material(uint32_t texture, uint32_t env, int blendClass, int cull, int priority = 0, bool weapon = false);
 	Ref<Shader> skyShaders[4];   // [no blending / alpha / additive (source alpha) / additive (one)]
 	std::unordered_map<uint64_t, Ref<ShaderMaterial>> skyMaterials;

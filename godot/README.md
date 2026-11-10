@@ -241,6 +241,30 @@ sess5/map_survey.sh drives all 32, survey_sheet.py makes the contact sheets).
   light, and only the lit result reaches Godot: Godot's lit surfaces have the texture alone as their colour. The fix is
   the base colours sent from the game (the 64-bit build) for Godot's albedo.
 
+## The remaster lit as the game lights it (the default since 2026-11-10)
+
+Relighting the map with Godot's lights from the game's kept missing: the models' base colours (the game multiplies its
+light with each vertex's own colour; only the lit result reaches Godot), the normals (some models' stored normals point
+against their faces' winding, from which the remaster's are made - Gigantic-Core and JudgmentChamber wanted their
+directional lights turned, the rest not), and the game's lights are made for per-vertex lighting (per pixel a point
+light near a big face shows as a round pool, HeadQuarters). And the game's directional light is far wider than
+Godot's diffuse: (1 - n.dir) / 2 (shading.c: full facing it, half at right angles, none only facing straight away).
+
+So by default (`remaster_world.gd per_vertex_lighting`, AxisReplay `vertex_lighting`; `AXIS_VERTEX_LIGHT=0/1` for
+checks) the lit map surfaces take **the game's own lit colour** - its lights per vertex on its base colours - and Godot
+adds what the game has not got: **the Sun's shadow**, darkening a surface by how much it faces the Sun where the shadow
+falls (`shadow_strength`, 0.5), and **ambient occlusion** (SSAO's light affect); no Godot ambient (`k_game_light`).
+One directional light then: the map's first as the Sun (`turn_directional_lights` false: the game's direction), the
+others and the point lights not used; a map without a directional light keeps the Sun shadowless. The brightness is
+then the original's by construction (Gigantic-Core 0.133 / 0.133, Catacomb 0.231 / 0.231, Valhalla 0.301 / 0.294,
+TubbyLand 0.276 / 0.276); the shadows show where the map blocks its Sun (Abyss' rocks).
+
+Godot's per-vertex shading (`vertex_lighting` render mode) was tried first: it ignores a material's light() function, so
+neither the game's formulas nor the cap could be used with it.
+
+The other mode (per_vertex_lighting off) relights per pixel: `k_map_light` with the game's directional formula, the
+point lights with Godot's wrapped facing (per pixel the game's facing-free point lights gave hard blobs), the cap below.
+
 ## Bright light in the remaster (2026-11-10)
 
 The remaster's over-bright patches had three causes; checked with the survey (`sess5/map_survey.sh`, all 32; the

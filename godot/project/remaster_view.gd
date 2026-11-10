@@ -169,6 +169,11 @@ func update(frame: Vector2i) -> void:
 		var keep: float = world.original_light_with_map_lights if world.map_has_lights else world.original_light_without
 		if absf(replay.original_light - keep) > 0.001:
 			replay.original_light = keep
+		var vtx: bool = world.per_vertex_lighting if OS.get_environment("AXIS_VERTEX_LIGHT") == "" else OS.get_environment("AXIS_VERTEX_LIGHT") == "1"
+		if replay.vertex_lighting != vtx:
+			replay.vertex_lighting = vtx
+		if absf(replay.shadow_strength - world.shadow_strength) > 0.001:
+			replay.shadow_strength = world.shadow_strength
 		var cap: float = world.light_cap if OS.get_environment("AXIS_LIGHT_CAP") == "" else OS.get_environment("AXIS_LIGHT_CAP").to_float()
 		if absf(replay.light_cap - cap) > 0.001:
 			replay.light_cap = cap

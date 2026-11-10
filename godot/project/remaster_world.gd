@@ -26,7 +26,14 @@ extends Node3D
 ## lights of its own (Godot gives their light again), more when it has none (the Sun alone would leave it dark)
 @export_range(0.0, 1.5, 0.01) var original_light_with_map_lights := 0.3
 @export_range(0.0, 1.5, 0.01) var original_light_without := 0.6
-## the lights on a lit map surface summed no higher than this (AxisReplay.light_cap), rolled off towards it: the game
+## the map lit as the game lights it (AxisReplay.vertex_lighting): the game's own lit colour - per vertex, with its
+## models' base colours - with Godot's Sun shadow and ambient occlusion on it; one directional light then (the Sun:
+## the map's first, or shadowless where the map has none), no point lights. Off: the map lit by Godot's lights from
+## the game's (per pixel: round pools where a light is near a big face, the models' base colours not known)
+@export var per_vertex_lighting := true
+## (per vertex) how much the Sun's shadow darkens a surface facing it (AxisReplay.shadow_strength)
+@export_range(0.0, 1.0, 0.01) var shadow_strength := 0.5
+## (per pixel only) the lights on a lit map surface summed no higher than this (AxisReplay.light_cap), rolled off towards it: the game
 ## clamps its lighting at full white, Godot would add lights without end (hard white patches where many overlap)
 @export_range(0.0, 8.0, 0.01) var light_cap := 1.0
 var map_has_lights := false   # (apply_lights: the frame's map pool has directional or point lights)
@@ -77,6 +84,8 @@ func apply_lights(lights: Array, scale: float = 1.0, eye := Vector3.ZERO) -> voi
 					if l.pool == 0 and l.direction.length_squared() > 0.0:
 						var d: Vector3 = l.direction.normalized()
 						var up := Vector3.UP if absf(d.dot(Vector3.UP)) < 0.99 else Vector3.RIGHT
+						if map_dir and per_vertex_lighting:
+							continue   # (one directional light, per vertex: the Sun's shadow alone)
 						var s: DirectionalLight3D = $Sun if not map_dir else _sun(dirs)
 						if map_dir:
 							dirs += 1
@@ -85,8 +94,9 @@ func apply_lights(lights: Array, scale: float = 1.0, eye := Vector3.ZERO) -> voi
 						s.light_color = l.colour
 						s.light_energy = map_directional_energy
 						s.visible = true
+						s.shadow_enabled = true
 				2, 3:   # point lights
-					if used >= max_point_lights or l.radius <= 0.0:
+					if per_vertex_lighting or used >= max_point_lights or l.radius <= 0.0:
 						continue
 					var o := _omni(used)
 					used += 1
@@ -103,6 +113,11 @@ func apply_lights(lights: Array, scale: float = 1.0, eye := Vector3.ZERO) -> voi
 		$Sun.transform.basis = _sun_basis
 		$Sun.light_color = _sun_colour
 		$Sun.light_energy = _sun_energy if sun_without_map_light else 0.0
+		if per_vertex_lighting:   # (per vertex the Sun is the one light the map's surfaces take: no shadow of a sun
+			$Sun.light_energy = maxf($Sun.light_energy, 1.0)   # the map has not got)
+			$Sun.shadow_enabled = false
+		else:
+			$Sun.shadow_enabled = true
 	if OS.get_environment("AXIS_LIGHT_TEST") != "" and used < max_point_lights:   # (a check: a strong light at the camera)
 		var o := _omni(used)
 		used += 1
