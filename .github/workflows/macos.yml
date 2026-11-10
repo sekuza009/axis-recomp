@@ -64,6 +64,4 @@ jobs:
       - uses: actions/upload-artifact@v5
         with:
           name: AxisSDL-macos
-          path: |
-            build/sdl/macos/AxisSDL
-            build/sdl/macos/libSDL3.0.dylib
+          path: build/sdl/macos/AxisSDL-macos.zip
