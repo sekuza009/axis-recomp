@@ -10,8 +10,8 @@
 #   macos-x86_64 / macos-arm64 - macOS 11+ on Intel / Apple Silicon: build/libaxis64_<arch>.dylib and
 #               build/axis64_test_macos_<arch> (host64_test loading it with dlopen); macos - both, then
 #               build/libaxis64.dylib, the universal library (tools/lipo.py).
-# The Linux and macOS libraries export only the host API (standalone/axis64.map; hidden symbols). Needs build/fn_syms.h
-# (python tools/hooktable.py build/fn_syms.h - standalone/build.sh runs it).
+# The Linux and macOS libraries export only the host API (standalone/axis64.map; hidden symbols)
+# (no 32-bit build needed: tools/mkfn64.py reads the function list from recomp.c).
 set -e
 cd "$(dirname "$0")/.."
 TARGET=${1:-linux}
