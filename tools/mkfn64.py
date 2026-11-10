@@ -1,4 +1,5 @@
-"""mkfn64.py: the 64-bit build's function names and table (PORTING.md, stage 6), from build/fn_syms.h (tools/hooktable.py):
+"""mkfn64.py: the 64-bit build's function names and table (PORTING.md, stage 6), from the rebuilt functions' list
+(tools/hooktable.py's hooks(), read from recomp.c - so no 32-bit build is needed first):
 
 - build/fn_syms64.h: each rebuilt function by its symbol, as fn_syms.h has it for the 32-bit builds - here the plain C
   name (no stdcall decoration), with the platform's label prefix (__USER_LABEL_PREFIX__: none on Linux and Windows
@@ -6,10 +7,13 @@
 - build/fn_table64.c: every function the game can hold as a value - FN(name), its original address - with its C
   function, in address order, for fn_ptr (standalone/arena.c); also the jump stubs the data points at (FN_VIA in
   src/data, the compiler's stubs of the original that only jump on), each with the function it jumps to."""
-import os, re
+import os, re, sys
 
 R = os.path.normpath(os.path.join(os.path.dirname(os.path.abspath(__file__)), '..'))
-syms = re.findall(r'extern void FN_(\w+)\(void\) __asm__\("_(\w+?)(?:@\d+)?"\);', open(os.path.join(R, 'build', 'fn_syms.h')).read())
+sys.path.insert(0, os.path.join(R, 'tools'))
+import hooktable
+syms = [(n, n) for _, n in sorted(hooktable.hooks())]   # (in address order, as fn_syms.h lists them)
+os.makedirs(os.path.join(R, 'build'), exist_ok=True)
 addrs = dict((n, int(a, 16)) for n, a in re.findall(r'#define FNADDR_(\w+) (0x[0-9a-f]+)', open(os.path.join(R, 'src', 'fn_addrs.h')).read()))
 out = ['/* fn_syms64.h (tools/mkfn64.py): the rebuilt functions by symbol, for the 64-bit build (AXIS_64) */',
        '#define FN64_STR_(x) #x', '#define FN64_STR(x) FN64_STR_(x)']
