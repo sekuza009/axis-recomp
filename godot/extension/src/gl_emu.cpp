@@ -34,7 +34,7 @@ const struct { const char *name; Plain kind; } k_names[] = {
 	{ "gluOrtho2D", P_ORTHO2D }, { "gluPerspective", P_PERSPECTIVE },
 };
 enum { OP_COLOR4UBV = 64, OP_FOGFV, OP_LOADMATRIX, OP_MULTMATRIX, OP_TEXCOORD2FV, OP_VERTEX3FV, OP_VERTEX4FV,
-	OP_PIXELSTORE, OP_DRAW, OP_TEXIMAGE, OP_MIPMAPS, OP_TEXPARAMI, OP_TAG, OP_CAMERA, OP_LIGHTS, OP_DEPTHMASK };
+	OP_PIXELSTORE, OP_DRAW, OP_TEXIMAGE, OP_MIPMAPS, OP_TEXPARAMI, OP_TAG, OP_CAMERA, OP_LIGHTS };
 
 float F(uint32_t w) { float f; memcpy(&f, &w, 4); return f; }
 double D(const uint32_t *w) { double d; memcpy(&d, w, 8); return d; }
@@ -82,14 +82,14 @@ int levels_for(int w, int h) {
 } // namespace
 
 bool EmuPipe::operator==(const EmuPipe &o) const {
-	return prim == o.prim && blend == o.blend && (!blend || (src == o.src && dst == o.dst)) && depthTest == o.depthTest && (!depthTest || depthWrite == o.depthWrite) &&
+	return prim == o.prim && blend == o.blend && (!blend || (src == o.src && dst == o.dst)) && depthTest == o.depthTest &&
 	       (!depthTest || depthFunc == o.depthFunc) && cull == o.cull && (!cull || (cullFace == o.cullFace)) && frontFace == o.frontFace &&
 	       offset == o.offset && (!offset || (offsetFactor == o.offsetFactor && offsetUnits == o.offsetUnits));
 }
 uint64_t EmuPipe::hash() const {
 	uint64_t h = prim | (uint64_t)blend << 2 | (uint64_t)depthTest << 3 | (uint64_t)cull << 4 | (uint64_t)offset << 5;
 	if (blend) h |= (uint64_t)(src & 0x1f) << 6 | (uint64_t)(dst & 0x1f) << 11;
-	if (depthTest) h |= (uint64_t)(depthFunc & 7) << 16 | (uint64_t)(depthWrite & 1) << 63;
+	if (depthTest) h |= (uint64_t)(depthFunc & 7) << 16;
 	if (cull) h |= (uint64_t)(cullFace & 0xf) << 19;
 	h |= (uint64_t)(frontFace & 1) << 23;
 	if (offset) { uint32_t a, b; memcpy(&a, &offsetFactor, 4); memcpy(&b, &offsetUnits, 4); h ^= (uint64_t)a << 24 ^ (uint64_t)b << 40; }
@@ -145,7 +145,7 @@ void GLEmu::restart() {
 	mode = 0;
 	color[0] = color[1] = color[2] = color[3] = 1;
 	texcoord[0] = texcoord[1] = 0;
-	texture2d = blend = depthTest = cull = fog = polyOffset = false; depthWrite = true;
+	texture2d = blend = depthTest = cull = fog = polyOffset = false;
 	blendSrc = 1; blendDst = 0; depthFunc = 0x201; cullFace = 0x405; frontFace = 0x901; envMode = 0x2100; bound = 0;
 	fogMode = 0x0800; fogColor[0] = fogColor[1] = fogColor[2] = fogColor[3] = 0; fogStart = 0; fogEnd = 1; fogDensity = 1;
 	offsetFactor = offsetUnits = 0;
@@ -188,7 +188,7 @@ void GLEmu::emit(int prim, const EmuVertex *v, int n) {
 	EmuBatch b;
 	b.pipe.prim = (uint8_t)prim;
 	b.pipe.blend = blend; b.pipe.src = (uint16_t)blendSrc; b.pipe.dst = (uint16_t)blendDst;
-	b.pipe.depthTest = depthTest; b.pipe.depthFunc = (uint16_t)depthFunc; b.pipe.depthWrite = depthWrite ? 1 : 0;
+	b.pipe.depthTest = depthTest; b.pipe.depthFunc = (uint16_t)depthFunc;
 	b.pipe.cull = cull && prim == 0; b.pipe.cullFace = (uint16_t)cullFace; b.pipe.frontFace = (uint16_t)frontFace;
 	b.pipe.offset = polyOffset && prim == 0; b.pipe.offsetFactor = offsetFactor; b.pipe.offsetUnits = offsetUnits;
 	b.texture = 0;
@@ -578,10 +578,6 @@ void GLEmu::run_words(const uint32_t *words, size_t n, int width, int height) {
 			t.version++;
 			break;
 		}
-		case OP_DEPTHMASK:   // (depth writes: outside glBegin, as GL - the game's billboards write none)
-			depthWrite = p[0] != 0;
-			p += 1;
-			break;
 		case OP_TAG: {   // what is drawn from here: the primitives already complete within a glBegin keep the old tag
 			if (beginMode >= 0) {
 				const size_t per = beginMode == 4 ? 3 : beginMode == 7 ? 4 : beginMode == 1 ? 2 : beginMode == 0 ? 1 : 0;

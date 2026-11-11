@@ -668,9 +668,10 @@ void AxisReplay::upload_texture(uint32_t key, const EmuTexture &t) {
 
 // the texture's uniform set for a batch's sampling (made once per filter / wrap combination)
 RID AxisReplay::set_for(GTex &g, const EmuBatch &b) {
+	if (!g.tex.is_valid() || !rd->texture_is_valid(g.tex)) return whiteSet;   // (a texture gone: untextured, not unbound)
 	const uint64_t key = (uint64_t)(b.minFilter & 0xffff) | (uint64_t)(b.magFilter & 0xffff) << 16 | (uint64_t)(b.wrapS & 0xffff) << 32 | (uint64_t)(b.wrapT & 0xffff) << 48;
 	auto it = g.sets.find(key);
-	if (it != g.sets.end()) return it->second;
+	if (it != g.sets.end() && rd->uniform_set_is_valid(it->second)) return it->second;
 	Ref<RDUniform> u;
 	u.instantiate();
 	u->set_uniform_type(RenderingDevice::UNIFORM_TYPE_SAMPLER_WITH_TEXTURE);
@@ -680,6 +681,7 @@ RID AxisReplay::set_for(GTex &g, const EmuBatch &b) {
 	TypedArray<RDUniform> us;
 	us.push_back(u);
 	RID set = rd->uniform_set_create(us, shader, 1);
+	if (!set.is_valid()) return whiteSet;
 	g.sets[key] = set;
 	return set;
 }
@@ -704,7 +706,7 @@ RID AxisReplay::pipeline_for(const EmuPipe &p) {
 	Ref<RDPipelineDepthStencilState> ds;
 	ds.instantiate();
 	ds->set_enable_depth_test(p.depthTest);
-	ds->set_enable_depth_write(p.depthTest && p.depthWrite);
+	ds->set_enable_depth_write(p.depthTest);
 	ds->set_depth_compare_operator((RenderingDevice::CompareOperator)((p.depthFunc - 0x200) & 7));
 	Ref<RDPipelineColorBlendStateAttachment> a;
 	a.instantiate();
@@ -765,6 +767,10 @@ void AxisReplay::_render() {
 }
 
 RID AxisReplay::godot_map_set(const RID &p_color) {
+	// (Godot's picture is remade when the map's view changes size - the window resized from the launcher's, a picture
+	// mode switched: a texture gone binds nothing - the logs' "not a valid texture", then draws without a uniform set,
+	// a crash in the end. Then white, and the failed set not kept)
+	if (!p_color.is_valid() || !rd->texture_is_valid(p_color)) return whiteSet2;
 	auto it = godotSets.find(p_color.get_id());
 	if (it != godotSets.end() && rd->uniform_set_is_valid(it->second)) return it->second;
 	Ref<RDUniform> u;
@@ -776,6 +782,7 @@ RID AxisReplay::godot_map_set(const RID &p_color) {
 	TypedArray<RDUniform> us;
 	us.push_back(u);
 	const RID s = rd->uniform_set_create(us, shader, 2);
+	if (!s.is_valid()) return whiteSet2;
 	godotSets[p_color.get_id()] = s;
 	return s;
 }

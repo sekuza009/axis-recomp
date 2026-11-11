@@ -243,6 +243,13 @@ sess5/map_survey.sh drives all 32, survey_sheet.py makes the contact sheets).
 
 ## Boxes round smoke and shots near walls (2026-11-11)
 
+**Undone the same day** (the player saw crashes and wanted it ruled out): the billboards' depth writes are the
+original's again - the game library, the recorder's OP_DEPTHMASK and both players' handling removed; the boxes in
+walls are back as in the original. The remaster's coverage-masked paste and soft particles stay. The crashes' logs
+showed something else too - the game pass binding a texture that was gone ("not a valid texture", then draws
+without a uniform set): the bindings are now checked (godot_map_set, set_for: a texture gone draws white or
+untextured, a failed set is not kept).
+
 Boosting or firing near a wall cut a square into it - in the original too (the player's screenshots, Valhalla). The game
 draws its see-through things back to front in one list: the map's glass and panel triangles and the camera-facing
 squares of smoke, glows and shot flares - with depth writes on for all. A wall triangle sorted after a smoke square then
