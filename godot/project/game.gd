@@ -36,7 +36,8 @@ func _ready() -> void:
 	var args := OS.get_cmdline_user_args()
 	var cfg := ConfigFile.new()
 	if cfg.load(SETTINGS) == OK:
-		$Game.picture_mode = clampi(int(cfg.get_value("picture", "mode", $Game.picture_mode)), 0, 2)
+		var m := int(cfg.get_value("picture", "mode", $Game.picture_mode))
+		$Game.picture_mode = m if m == 0 or m == 1 else 0   # (the remaster, 2, no longer offered: the original)
 		$Game.look_enabled = bool(cfg.get_value("picture", "look", $Game.look_enabled))
 		print("remaster settings: picture ", $Game.picture_mode, ", look ", $Game.look_enabled)
 	if OS.get_environment("AXIS_PERF_LOG") != "":

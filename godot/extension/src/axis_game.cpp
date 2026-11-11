@@ -379,8 +379,10 @@ void AxisGame::_input(const Ref<InputEvent> &p_event) {
 		return;
 	}
 	if (k.is_valid() && k->get_physical_keycode() == KEY_F12 && k->is_ctrl_pressed()) {   // Ctrl+F12: the picture -
-		if (k->is_pressed() && !k->is_echo()) {                                              // original, original lighting, remaster
-			pictureMode = (pictureMode + 1) % 3;
+		if (k->is_pressed() && !k->is_echo()) {                                              // original, original lighting
+			// (the remaster's lighting, mode 2, taken out of the cycle on 2026-11-11 at the player's wish - its code kept,
+			// --picture 2 still shows it for checks)
+			pictureMode = pictureMode == 0 ? 1 : 0;
 			static const char *names[3] = { "the original", "the original lighting (Godot's map)", "the remaster (Godot's lights)" };
 			UtilityFunctions::print("AxisGame: the picture: ", names[pictureMode]);
 		}

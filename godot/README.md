@@ -241,6 +241,12 @@ sess5/map_survey.sh drives all 32, survey_sheet.py makes the contact sheets).
   light, and only the lit result reaches Godot: Godot's lit surfaces have the texture alone as their colour. The fix is
   the base colours sent from the game (the 64-bit build) for Godot's albedo.
 
+## The remaster's lighting taken out (2026-11-11)
+
+At the player's wish the remaster's picture (mode 2: Godot lighting the map) is no longer offered: Ctrl+F12 switches
+the original and the original lighting only, and a saved choice of the remaster starts in the original. Its code is
+kept (`--picture 2` shows it, for checks); everything below about it describes that code.
+
 ## Boxes round smoke and shots near walls (2026-11-11)
 
 **Undone the same day** (the player saw crashes and wanted it ruled out): the billboards' depth writes are the
