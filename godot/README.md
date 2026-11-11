@@ -255,10 +255,12 @@ The particles' glows: the game library sends a light pool 3 (64-bit build, objec
 the particle's colour and alpha at each booster thrust puff (kinds 5 .. 7), muzzle flash (10 .. 18) and shot in flight
 (20 .. 26: the tracers, beams); remaster_world.gd `particle_glows`, `booster_glow_energy` (2), `muzzle_glow_energy` (1),
 `shot_glow_energy` (1.5): soft lights like the dynamic highlights. Their colour is the particle's sprite's
-(axis_replay.cpp particle_glow_colours): the particle triangles drawn within 4 m of a glow, their texture sampled at a
-coarse mip level (times the vertex colour), weighted by alpha and brightness - the hue, its strength the settings - so a
+(axis_replay.cpp particle_glow_colours): the particle triangles drawn within 4 m of a glow, their texture sampled at full size
+at seven points inside each (times the vertex colour; a coarse mip level mixed in the sheet's neighbouring cells - the
+PLA-16's flash came out pink), weighted by alpha and brightness - the hue, its strength the settings - so a
 plasma shot glows its sprite's colour whatever the weapon (the game's records say white for nearly all). A particle
-the game did not draw (too far from the camera) keeps white. The tracer lines themselves the game draws in screen
+the game did not draw (too far from the camera) keeps white. Checked with the PLA-16 (item 8, a new profile's slot 3) on Abyss: its muzzle flash and plasma shot
+glow e5e6ff, the bluish white of its sprite (game.gd `AXIS_SHOT_KIND=<particle kind>`: the shot waits for one near). The tracer lines themselves the game draws in screen
 space (lines), over Godot's picture. Checked in play (sess5/dyn_play.sh, game.gd `AXIS_SHOT_LIGHTS=<n>`: the held
 frame's shot waits for that many action lights; `AXIS_EFFECT_STATS`): a muzzle flash lights the player's own gun.
 

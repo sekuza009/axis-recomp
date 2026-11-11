@@ -220,6 +220,13 @@ func _process(_delta: float) -> void:
 ## (a check: AXIS_SHOT_LIGHTS=<n> - the held frame's shot waits, past its frame, for n lights of the action at least:
 ## explosions and impacts (pool 1) and the particles' glows (pool 3) - the muzzle flashes, shots and booster puffs)
 func action_enough() -> bool:
+	var kind := OS.get_environment("AXIS_SHOT_KIND").to_int()   # (or a particle of that kind glowing within 30 m)
+	if kind > 0 and remaster and remaster.map_cam:
+		var eye: Vector3 = remaster.map_cam.global_position / remaster.WORLD_SCALE
+		for l in game.get_lights():
+			if l.pool == 3 and int(l.direction.x) == kind and (l.position as Vector3).distance_to(eye) < 3000.0:
+				return true
+		return false
 	var need := OS.get_environment("AXIS_SHOT_LIGHTS").to_int()
 	if need <= 0:
 		return true
@@ -317,6 +324,9 @@ func shoot_modes() -> void:
 			if l.pool == 1 and (l.kind == 2 or l.kind == 3):
 				dyn += 1
 		print("AxisGame: at the shot ", dyn, " dynamic lights")
+		for l in game.get_lights():
+			if l.pool == 3:
+				print("AxisGame: glow of particle ", int(l.direction.x), " colour ", (l.colour as Color).to_html(true), " at ", l.position)
 		var target: Object = remaster.world   # ("game.<setting>": the AxisGame's own - the look's)
 		if prop.begins_with("game."):
 			target = game

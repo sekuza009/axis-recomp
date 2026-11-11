@@ -1016,7 +1016,7 @@ struct Unproject {
 Unproject unprojector(const GLEmu &e);
 
 // the particles' glows (light pool 3, in order) coloured as the particles look: the particle triangles (tag 7) drawn
-// within a few metres of each glow, their texture sampled at a coarse mip level at their corners and centre (times the
+// within a few metres of each glow, their texture sampled at full size at seven points inside each (times the
 // vertex colour, as the texture environment combines them), weighted by alpha and brightness - a plasma shot's glow
 // its sprite's green or blue, whatever the weapon. The hue only (brightest channel 1): the glow settings give the
 // strength. Alpha 0: none found (the glow keeps the particle's own colour)
@@ -1035,9 +1035,7 @@ std::vector<Color> particle_glow_colours(const GLEmu &e) {
 			if (c.kind != EmuCmd::BATCH || b.tag != 7 || b.pipe.prim != 0 || b.count < 3) continue;
 			auto it = b.texture ? e.textures.find(b.texture - 1) : e.textures.end();
 			const EmuTexture *tex = it != e.textures.end() && !it->second.levels.empty() ? &it->second : nullptr;
-			size_t lv = 0;
-			if (tex)
-				while (lv + 1 < tex->sizes.size() && std::max(tex->sizes[lv].first, tex->sizes[lv].second) > 32) lv++;
+			const size_t lv = 0;   // (full size: the sprites are small cells of one sheet - a coarse level mixes in the neighbours)
 			auto sample = [&](float s, float tt) {
 				if (!tex) return Color(1, 1, 1, 1);
 				const int w = tex->sizes[lv].first, h = tex->sizes[lv].second;
@@ -1053,10 +1051,16 @@ std::vector<Color> particle_glow_colours(const GLEmu &e) {
 				const Vector3 at = (u.world(*v[0], b, nullptr) + u.world(*v[1], b, nullptr) + u.world(*v[2], b, nullptr)) / 3.0f;
 				Vector3 rgb;
 				float w = 0;
-				for (int k = 0; k < 4; k++) {
-					const float s = k < 3 ? v[k]->uv[0] : (v[0]->uv[0] + v[1]->uv[0] + v[2]->uv[0]) / 3.0f;
-					const float tt = k < 3 ? v[k]->uv[1] : (v[0]->uv[1] + v[1]->uv[1] + v[2]->uv[1]) / 3.0f;
-					const EmuVertex &cv = *v[k < 3 ? k : 0];
+				// (points well inside the triangle - its centre and towards each corner - not on its edges)
+				static const float bary[7][3] = { { 1 / 3.0f, 1 / 3.0f, 1 / 3.0f }, { 0.6f, 0.2f, 0.2f }, { 0.2f, 0.6f, 0.2f }, { 0.2f, 0.2f, 0.6f },
+				                                  { 0.45f, 0.45f, 0.1f }, { 0.45f, 0.1f, 0.45f }, { 0.1f, 0.45f, 0.45f } };
+				for (int k = 0; k < 7; k++) {
+					const float *wb = bary[k];
+					const float s = wb[0] * v[0]->uv[0] + wb[1] * v[1]->uv[0] + wb[2] * v[2]->uv[0];
+					const float tt = wb[0] * v[0]->uv[1] + wb[1] * v[1]->uv[1] + wb[2] * v[2]->uv[1];
+					EmuVertex mix = *v[0];
+					for (int j = 0; j < 4; j++) mix.col[j] = wb[0] * v[0]->col[j] + wb[1] * v[1]->col[j] + wb[2] * v[2]->col[j];
+					const EmuVertex &cv = mix;
 					const Color tc = sample(s, tt);
 					const Color c = b.env == 0x1E01 ? tc : Color(tc.r * cv.col[0], tc.g * cv.col[1], tc.b * cv.col[2], tc.a * cv.col[3]);
 					const float weight = c.a * std::max(c.r, std::max(c.g, c.b));
