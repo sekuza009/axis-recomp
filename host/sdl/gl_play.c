@@ -25,7 +25,7 @@ typedef uint8_t u8;
 	X(void, glBegin, (u32)) X(void, glBindTexture, (u32, u32)) X(void, glBlendFunc, (u32, u32)) X(void, glClear, (u32)) \
 	X(void, glClearColor, (float, float, float, float)) X(void, glClearDepth, (double)) X(void, glColor3ub, (u8, u8, u8)) \
 	X(void, glColor4f, (float, float, float, float)) X(void, glColor4ub, (u8, u8, u8, u8)) X(void, glCullFace, (u32)) \
-	X(void, glDepthFunc, (u32)) X(void, glDepthMask, (u8)) X(void, glDisable, (u32)) X(void, glDisableClientState, (u32)) X(void, glEnable, (u32)) \
+	X(void, glDepthFunc, (u32)) X(void, glDisable, (u32)) X(void, glDisableClientState, (u32)) X(void, glEnable, (u32)) \
 	X(void, glEnableClientState, (u32)) X(void, glEnd, (void)) X(void, glFogf, (u32, float)) X(void, glFogi, (u32, int)) \
 	X(void, glFrontFace, (u32)) X(void, glHint, (u32, u32)) X(void, glLoadIdentity, (void)) X(void, glMatrixMode, (u32)) \
 	X(void, glPolygonMode, (u32, u32)) X(void, glPolygonOffset, (float, float)) X(void, glPopMatrix, (void)) \
@@ -63,7 +63,7 @@ static const char *const k_names[P_COUNT] = {
 static int g_kind[64];   /* op -> P_*, -1 unknown */
 static int g_plainOps;
 enum { OP_COLOR4UBV = 64, OP_FOGFV, OP_LOADMATRIX, OP_MULTMATRIX, OP_TEXCOORD2FV, OP_VERTEX3FV, OP_VERTEX4FV, OP_PIXELSTORE,
-       OP_DRAW, OP_TEXIMAGE, OP_MIPMAPS, OP_TEXPARAMI, OP_TAG, OP_CAMERA, OP_LIGHTS, OP_DEPTHMASK };   /* (tags, camera: the Godot remaster's notes) */
+       OP_DRAW, OP_TEXIMAGE, OP_MIPMAPS, OP_TEXPARAMI, OP_TAG, OP_CAMERA, OP_LIGHTS };   /* (tags, camera: the Godot remaster's notes) */
 
 int gl_play_init(void *(*getProc)(const char *name), void *(*getGlu)(const char *name), const unsigned char *header,
                  unsigned headerBytes, char *error, int room)
@@ -349,7 +349,6 @@ void gl_play_frame(const unsigned *words, unsigned count, int width, int height,
 		case OP_TAG: p += 1; break;       /* (what the drawing is: nothing to draw here) */
 		case OP_CAMERA: p += 32; break;
 		case OP_LIGHTS: p += n; break;
-		case OP_DEPTHMASK: p_glDepthMask((u8)(p[0] != 0)); p += 1; break;
 		case OP_DRAW: {   /* the arrays' contents as recorded (tightly packed), then the indices drawn */
 			u32 mode = p[0], cnt = p[1], itype = p[2], nv = p[3];
 			p += 4;
