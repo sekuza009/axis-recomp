@@ -241,6 +241,15 @@ sess5/map_survey.sh drives all 32, survey_sheet.py makes the contact sheets).
   light, and only the lit result reaches Godot: Godot's lit surfaces have the texture alone as their colour. The fix is
   the base colours sent from the game (the 64-bit build) for Godot's albedo.
 
+## The Linux build: quitting (2026-11-10)
+
+The Linux export crashed on every quit (a segmentation fault after the game had ended: an exit handler - C++ statics'
+- jumped into a library Godot had already unloaded; gdb under WSL: `__run_exit_handlers` into an unmapped address;
+the remaster not involved, Original mode the same). The extension now keeps itself mapped to the process's end
+(register_types.cpp: dlopen of itself with RTLD_NODELETE) and loads the game library so too (host_posix.c): it quits
+cleanly. Windows was not affected. Under WSL without a GPU Godot runs on llvmpipe (slow, but the title and the
+remaster draw).
+
 ## The look pass checked on the remaster (2026-11-10)
 
 With the remaster now as bright as the original, the look (game.tscn's AxisGame: bloom 0.4, contrast 1.06, saturation

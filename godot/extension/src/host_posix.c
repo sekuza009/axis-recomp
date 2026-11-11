@@ -13,7 +13,9 @@
 int host_load(const char *library, const char *game_dir, AxisFunctions *f, char *error, int room)
 {
 	setenv("AXIS_GAME_DIR", game_dir, 1);   /* (the library's files, settings and logs: the game folder) */
-	void *m = dlopen(library, RTLD_NOW | RTLD_LOCAL);
+	/* (kept mapped to the process's end: its exit handlers run after Godot has let go of it - unmapped, quitting
+	   crashed in the exit handlers on Linux) */
+	void *m = dlopen(library, RTLD_NOW | RTLD_LOCAL | RTLD_NODELETE);
 	if (!m) {
 		snprintf(error, (size_t)room, "cannot load %s (%s)", library, dlerror());
 		return 0;
