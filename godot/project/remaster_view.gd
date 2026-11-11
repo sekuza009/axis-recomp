@@ -254,7 +254,7 @@ func report(frame: Vector2i) -> String:
 			parts.append("%s %d" % [TAG_NAMES[t], stats[t]])
 	var lights := {}
 	for l in replay.get_lights():
-		var k := "%s %s" % [["map", "dynamic", "actor"][l.pool], ["ambient", "directional", "point", "point (1/d^2)"][l.kind]]
+		var k := "%s %s" % [["map", "dynamic", "actor", "particle glow"][l.pool], ["ambient", "directional", "point", "point (1/d^2)"][l.kind]]
 		lights[k] = lights.get(k, 0) + 1
 	parts.append("lights %s" % [lights])
 	return "camera: fov %.2f, aspect %.4f, viewport %s in %s, near %.2f, far %.1f, view det %.3f, off-axis %s; Godot's Camera3D against the game: %d points, mean %.3f px, median %.3f, 95%% %.3f, 99%% %.3f, worst %.3f; triangles: %s" % [

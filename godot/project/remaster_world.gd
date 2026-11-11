@@ -47,7 +47,13 @@ var map_has_sky := false
 @export_range(0, 5) var shadow_filter := 2
 var _shadow_applied := ""
 @export var dynamic_highlights := true
-@export_range(0.0, 4.0, 0.01) var dynamic_highlight_energy := 0.5   # (remaster_view.update_sky: the frame drew a sky)
+@export_range(0.0, 4.0, 0.01) var dynamic_highlight_energy := 0.5
+## glows the game has not got (its light pool 3, objects.c draw_particleGlows): a soft light of the particle's colour
+## at each booster thrust puff, muzzle flash and shot in flight (the tracers), fading with it
+@export var particle_glows := true
+@export_range(0.0, 4.0, 0.01) var booster_glow_energy := 2.0
+@export_range(0.0, 4.0, 0.01) var muzzle_glow_energy := 1.0
+@export_range(0.0, 4.0, 0.01) var shot_glow_energy := 1.5   # (remaster_view.update_sky: the frame drew a sky)
 ## (per pixel only) the lights on a lit map surface summed no higher than this (AxisReplay.light_cap), rolled off towards it: the game
 ## clamps its lighting at full white, Godot would add lights without end (hard white patches where many overlap)
 @export_range(0.0, 8.0, 0.01) var light_cap := 1.0
@@ -80,7 +86,7 @@ func apply_lights(lights: Array, scale: float = 1.0, eye := Vector3.ZERO) -> voi
 	# the point lights nearest the eye first (Metropolis has 511 of its own: max_point_lights of them, the nearest)
 	var points := []
 	for l in lights:
-		if l.pool != 2 and (l.kind == 2 or l.kind == 3) and l.radius > 0.0 and (not per_vertex_lighting or (dynamic_highlights and l.pool == 1)):
+		if l.pool != 2 and (l.kind == 2 or l.kind == 3) and l.radius > 0.0 and _point_used(l):
 			points.append(l)   # (per vertex the map's point lights are the game's own, in its colour: of Godot's only the dynamic ones)
 		if l.pool == 0 and l.kind >= 1:
 			map_has_lights = true
@@ -118,7 +124,7 @@ func apply_lights(lights: Array, scale: float = 1.0, eye := Vector3.ZERO) -> voi
 						s.visible = true
 						s.shadow_enabled = not per_vertex_lighting or map_has_sky or not shadows_need_sky
 				2, 3:   # point lights
-					if (per_vertex_lighting and (l.pool != 1 or not dynamic_highlights)) or used >= max_point_lights or l.radius <= 0.0:
+					if not _point_used(l) or used >= max_point_lights or l.radius <= 0.0:
 						continue
 					var o := _omni(used)
 					used += 1
@@ -127,8 +133,11 @@ func apply_lights(lights: Array, scale: float = 1.0, eye := Vector3.ZERO) -> voi
 					# the game's kind 2 is full out to about half its radius, then fades to nothing at it: Godot's
 					# attenuation 0 (constant, with a smooth edge) is that; kind 3 falls off with the distance squared
 					o.omni_attenuation = 0.0 if l.kind == 2 else 2.0
-					o.light_color = l.colour
+					o.light_color = Color(l.colour.r, l.colour.g, l.colour.b)
 					o.light_energy = map_point_energy if l.pool == 0 else (dynamic_highlight_energy if per_vertex_lighting else dynamic_energy)
+					if l.pool == 3:   # (a particle's glow: by what it is - its kind in the direction's x - and its fading alpha)
+						var k := int(l.direction.x)
+						o.light_energy = (booster_glow_energy if k <= 7 else muzzle_glow_energy if k <= 18 else shot_glow_energy) * l.colour.a
 					o.shadow_enabled = dynamic_shadows and l.pool == 1
 					o.visible = true
 	if not map_dir:   # (no directional light of the map's: the Sun as placed, or none)
@@ -157,6 +166,13 @@ func apply_lights(lights: Array, scale: float = 1.0, eye := Vector3.ZERO) -> voi
 		_suns[i].visible = false
 	for i in range(used, _omnis.size()):
 		_omnis[i].visible = false
+
+## whether a point light of the game's becomes one of Godot's: per vertex the map's own are the game's alone (in its
+## colour), so only the dynamic ones (dynamic_highlights) and the particles' glows (particle_glows)
+func _point_used(l: Dictionary) -> bool:
+	if l.pool == 3:
+		return particle_glows
+	return not per_vertex_lighting or (dynamic_highlights and l.pool == 1)
 
 func _sun(i: int) -> DirectionalLight3D:
 	while _suns.size() <= i:

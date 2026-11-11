@@ -241,6 +241,23 @@ sess5/map_survey.sh drives all 32, survey_sheet.py makes the contact sheets).
   light, and only the lit result reaches Godot: Godot's lit surfaces have the texture alone as their colour. The fix is
   the base colours sent from the game (the 64-bit build) for Godot's albedo.
 
+## Metropolis at 120, and the particles' glows (2026-11-10)
+
+Metropolis' ~490 surfaces a frame were nearly all (474) effect runs of a few triangles: the map's see-through
+scenery (window lights, signs) queued by the game as transparent triangles, sorted back to front - a run per change of
+material. Additive runs (order makes no difference) and the map's own see-through runs (ground, map objects: static,
+of different materials seldom over one another) of one material now share one surface at their first run's place;
+particles, items and mechs keep the game's order (`AXIS_NO_ADDITIVE_MERGE=1`: as before). Metropolis 155 surfaces,
+the update 3.3 ms, 120 fps (was ~100); against Original lighting (the game's own order) the remaster differs as much as
+before on Metropolis, IllusionCity, Asgard, Netsphere and Valhalla (Valhalla's stars twinkle).
+
+The particles' glows: the game library sends a light pool 3 (64-bit build, objects.c draw_particleGlows) - a light of
+the particle's colour and alpha at each booster thrust puff (kinds 5 .. 7), muzzle flash (10 .. 18) and shot in flight
+(20 .. 26: the tracers, beams); remaster_world.gd `particle_glows`, `booster_glow_energy` (2), `muzzle_glow_energy` (1),
+`shot_glow_energy` (1.5): soft lights like the dynamic highlights. The tracer lines themselves the game draws in screen
+space (lines), over Godot's picture. Checked in play (sess5/dyn_play.sh, game.gd `AXIS_SHOT_LIGHTS=<n>`: the held
+frame's shot waits for that many action lights; `AXIS_EFFECT_STATS`): a muzzle flash lights the player's own gun.
+
 ## The Linux build: quitting (2026-11-10)
 
 The Linux export crashed on every quit (a segmentation fault after the game had ended: an exit handler - C++ statics'

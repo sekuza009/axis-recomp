@@ -1151,7 +1151,7 @@ TypedArray<ArrayMesh> AxisReplay::build_map_meshes() {
 	static const bool timed = getenv("AXIS_BUILD_TIMES") != nullptr;   // (a check: the build's stages, every 120 frames)
 	static int timedFrames = 0;
 	static double tStage[4] = { 0, 0, 0, 0 };
-	static int64_t tVerts = 0, tSurfaces = 0, tSame = 0, tSameVerts = 0, tFxSurf = 0, tFxVerts = 0;
+	static int64_t tVerts = 0, tSurfaces = 0, tSame = 0, tSameVerts = 0, tFxSurf = 0, tFxVerts = 0, tGroups = 0;
 	static std::unordered_map<uint64_t, uint64_t> lastHash;
 	auto now = []() { return std::chrono::duration<double, std::milli>(std::chrono::steady_clock::now().time_since_epoch()).count(); };
 	double t0 = timed ? now() : 0.0;
@@ -1177,6 +1177,7 @@ TypedArray<ArrayMesh> AxisReplay::build_map_meshes() {
 	auto packc = [](const std::vector<Color> &a) { PackedColorArray p; p.resize((int64_t)a.size()); if (!a.empty()) memcpy(p.ptrw(), a.data(), a.size() * sizeof(Color)); return p; };
 	weaponMesh = -1;
 	const bool effects = frame_effects();
+	static const bool mergeAdditive = getenv("AXIS_NO_ADDITIVE_MERGE") == nullptr;   // (a check: each run its own surface, as before)
 	int runs = 0;
 	uint64_t lastEffect = ~0ull;
 	std::unordered_map<uint64_t, Surface> surfaces;
@@ -1196,7 +1197,12 @@ TypedArray<ArrayMesh> AxisReplay::build_map_meshes() {
 		if (blendClass >= 2) {   // (effects: a surface per run of one material, in the game's order - it sorts them back to front)
 			if (key != lastEffect) { runs++; lastEffect = key; }
 			run = runs;
-			key = (uint64_t)run << 40 ^ key ^ (1ull << 63);
+			// (additive ones (3, 4) all of one material in one surface, at their first run's place: adding is the same in
+			// any order - Metropolis' city lights were some 470 runs of a few triangles each, each a surface to make)
+			// and the map's own see-through parts (ground and map objects: windows, signs, glows) all of one material so too -
+			// static scenery, of different materials seldom over one another; the particles, items and mechs keep the order
+			const bool merge = mergeAdditive && (blendClass != 2 || b.tag == 2 || b.tag == 3);
+			key = !merge ? (uint64_t)run << 40 ^ key ^ (1ull << 63) : key ^ (1ull << 62);
 		}
 		auto it = surfaces.find(key);
 		if (it == surfaces.end()) {
@@ -1278,9 +1284,9 @@ TypedArray<ArrayMesh> AxisReplay::build_map_meshes() {
 		int dyn = 0;
 		std::map<uint64_t, int> kinds;   // (the dynamic lights by kind, colour and radius)
 		for (const EmuLight &l : emu.lights)
-			if (l.pool == 1) { dyn++; kinds[(uint64_t)l.kind << 56 | (uint64_t)(l.colour & 0xffffff) << 24 | (uint64_t)(uint32_t)l.radius]++; }
+			if (l.pool == 1 || l.pool == 3) { dyn += l.pool == 1; kinds[(uint64_t)l.pool << 60 | (uint64_t)(l.pool == 3 ? (int)l.dir[0] : 0) << 48 | (uint64_t)l.kind << 56 | (uint64_t)(l.colour & 0xffffff) << 24 | (uint64_t)(uint32_t)l.radius]++; }
 		for (auto &kv : kinds)
-			st += String("\n  light: kind ") + String::num_int64(kv.first >> 56) + " colour " + String::num_int64((kv.first >> 24) & 0xffffff, 16) +
+			st += String("\n  light: pool ") + String::num_int64(kv.first >> 60) + " particle " + String::num_int64((kv.first >> 48) & 0xff) + " kind " + String::num_int64((kv.first >> 56) & 0xf) + " colour " + String::num_int64((kv.first >> 24) & 0xffffff, 16) +
 			      " radius " + String::num_int64(kv.first & 0xffffff) + " x" + String::num_int64(kv.second);
 		st += String("\n  dynamic lights ") + String::num_int64(dyn);
 		UtilityFunctions::print(st);
@@ -1374,11 +1380,23 @@ TypedArray<ArrayMesh> AxisReplay::build_map_meshes() {
 		}
 		lastHash.swap(hashes);
 		tSurfaces += (int64_t)order.size();
+		{	// (how many surfaces would stay if those differing only in their texture (of one size and filtering) were merged)
+			std::unordered_map<uint64_t, int> groups;
+			for (uint64_t key : order) {
+				const Surface &s = surfaces[key];
+				uint64_t g = (uint64_t)s.blend << 60 | (uint64_t)s.cull << 56 | (uint64_t)(s.env & 0xffff) << 40 | (uint64_t)s.weapon << 39 | (uint64_t)(s.run & 0x7f) << 32;
+				auto it = s.texture ? emu.textures.find(s.texture - 1) : emu.textures.end();
+				if (it != emu.textures.end() && !it->second.sizes.empty())
+					g |= (uint64_t)it->second.sizes[0].first << 16 | (uint64_t)it->second.sizes[0].second << 4 | (uint64_t)(it->second.mipped ? 1 : 0);
+				groups[s.blend >= 2 ? (g | (uint64_t)s.run << 20) : g]++;
+			}
+			tGroups += (int64_t)groups.size();
+		}
 		if (++timedFrames == 120) {
 			UtilityFunctions::print("build_map_meshes (ms a frame): textures ", tStage[0] / 120, ", gather ", tStage[1] / 120, ", smooth ", tStage[2] / 120,
 			                        ", meshes ", tStage[3] / 120, "; ", tVerts / 120, " vertices, ", tSurfaces / 120, " surfaces; unchanged from the frame before ",
-			                        tSame / 120, " surfaces, ", tSameVerts / 120, " vertices; effects ", tFxSurf / 120, " surfaces, ", tFxVerts / 120, " vertices");
-			timedFrames = 0; tVerts = tSurfaces = tSame = tSameVerts = tFxSurf = tFxVerts = 0;
+			                        tSame / 120, " surfaces, ", tSameVerts / 120, " vertices; merged by texture size ", tGroups / 120, " surfaces; effects ", tFxSurf / 120, " surfaces, ", tFxVerts / 120, " vertices");
+			timedFrames = 0; tVerts = tSurfaces = tSame = tSameVerts = tFxSurf = tFxVerts = tGroups = 0;
 			for (double &x : tStage) x = 0;
 		}
 	}

@@ -172,7 +172,7 @@ func _process(_delta: float) -> void:
 	if game == null or not game.is_running():
 		return
 	var f := game.get_game_frames()
-	if mode_shot_frame >= 0 and f >= mode_shot_frame:
+	if mode_shot_frame >= 0 and f >= mode_shot_frame and action_enough():
 		mode_shot_frame = -1
 		shoot_modes()
 		return
@@ -216,6 +216,18 @@ func _process(_delta: float) -> void:
 		print("AxisGame: quitting after ", f, " frames")
 		game.stop_recording()
 		get_tree().quit()
+
+## (a check: AXIS_SHOT_LIGHTS=<n> - the held frame's shot waits, past its frame, for n lights of the action at least:
+## explosions and impacts (pool 1) and the particles' glows (pool 3) - the muzzle flashes, shots and booster puffs)
+func action_enough() -> bool:
+	var need := OS.get_environment("AXIS_SHOT_LIGHTS").to_int()
+	if need <= 0:
+		return true
+	var n := 0
+	for l in game.get_lights():
+		if l.pool == 1 or l.pool == 3:
+			n += 1
+	return n >= need
 
 func perf_frame(delta: float, upd_ms: float) -> void:
 	var map_rid: RID = remaster.map_sub.get_viewport_rid() if remaster.map_sub else RID()
