@@ -118,7 +118,7 @@ static void r_gluPerspective(double f, double a, double n, double z) { put_op(39
 /* ---- the calls with pointers, draws, textures (glrec.c's ops from 64) */
 enum { OP_COLOR4UBV = 64, OP_FOGFV, OP_LOADMATRIX, OP_MULTMATRIX, OP_TEXCOORD2FV, OP_VERTEX3FV, OP_VERTEX4FV,
        OP_PIXELSTORE, OP_DRAW, OP_TEXIMAGE, OP_MIPMAPS, OP_TEXPARAMI,
-       OP_TAG, OP_CAMERA, OP_LIGHTS };   /* (the remaster's notes, nothing to draw: src/render/draw_tags.h - readers skip them) */
+       OP_TAG, OP_CAMERA, OP_LIGHTS, OP_DEPTHMASK };   /* (the remaster's notes, nothing to draw: src/render/draw_tags.h - readers skip them) */
 
 /* ---- what the drawing is (src/render/draw_tags.h): the kind records are queued under, a tag op when the drawing's
    kind changes, the camera of each view volume drawn (its projection and view matrices) */
@@ -150,6 +150,12 @@ void glrec64_lights(int pool, const void *records, int count)
 		put_bytes(f + 8, 8);      /* kind, colour */
 		put_bytes(f + 0x10, 28);  /* position, direction, radius */
 	}
+}
+/* depth writes on / off (OP_DEPTHMASK: the players set glDepthMask) */
+void glrec64_depthMask(int on)
+{
+	put_op(OP_DEPTHMASK, 1);
+	put((u32)(on ? 1 : 0));
 }
 /* (a check for the Godot remaster: AXIS_MAP_INDEX=<n>, the skirmish round played on map n; -1 none - src/menu/menu_misc.c) */
 int glrec64_mapOverride(int count)
