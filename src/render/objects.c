@@ -62,7 +62,8 @@ void draw_particleGlows(Stage *stage)
 			continue;
 		u8 *f = rec + n++ * 0x2c;
 		memset(f, 0, 0x2c);
-		const int kind = 2;
+		const int kind = 2, used = 1;   /* (+4: in use - glrec64_lights sends only those) */
+		memcpy(f + 4, &used, 4);
 		const float kf = (float)k;
 		memcpy(f + 8, &kind, 4);
 		memcpy(f + 0xc, &p->colour, 4);
