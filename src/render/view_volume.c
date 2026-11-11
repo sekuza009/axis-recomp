@@ -792,6 +792,10 @@ void THISCALL (ViewVolume_draw)(u8 *vv, int mode, float b)
 	cur = -1;
 	glDisable(0xb44);
 	glDisable(GL_FOG);
+	/* (the 64-bit build: the billboards - smoke, glows, a shot's flare - write no depth. The original writes it with
+	   them, and a see-through wall or glass triangle sorted after one then failed the depth test over the whole of the
+	   billboard's square, clear parts too: a box cut into the wall round the booster's smoke or a shot near it) */
+	DRAW_DEPTHMASK(0);
 	glBegin(GL_QUADS);
 	const float *a = VV->triangleOrderCount > 0 ? (AP(const float, VV->triangleOrder)) : NULL;
 	const float *q = VV->quadOrderACount > 0 ? (AP(const float, VV->quadOrderA)) : NULL;
@@ -799,6 +803,7 @@ void THISCALL (ViewVolume_draw)(u8 *vv, int mode, float b)
 		if (a && (!q || !(fld_m(&a[1]) >= fld_m(&q[1])))) {
 			if (drawingTriangles != 1) {
 				glEnd();
+				DRAW_DEPTHMASK(1);
 				if (fog)
 					glEnable(GL_FOG);
 				glBegin(4);
@@ -822,6 +827,7 @@ void THISCALL (ViewVolume_draw)(u8 *vv, int mode, float b)
 			if (drawingTriangles != 0) {
 				glEnd();
 				glDisable(GL_FOG);
+				DRAW_DEPTHMASK(0);
 				glBegin(GL_QUADS);
 				drawingTriangles = 0;
 			}
@@ -842,6 +848,7 @@ void THISCALL (ViewVolume_draw)(u8 *vv, int mode, float b)
 		}
 	}
 	glEnd();
+	DRAW_DEPTHMASK(1);
 	glDisable(GL_TEXTURE_2D);
 	identity_matrices();
 	glDisable(GL_FOG);

@@ -24,7 +24,8 @@ extern int g_drawSource;                                       /* the kind recor
 void glrec64_tag(int kind);                                    /* a tag op (when it changes) */
 void glrec64_camera(const float *projection, const float *view);
 void glrec64_lights(int pool, const void *records, int count);   /* a light pool's records in use (Factor, 0x2c bytes) */
-void draw_particleGlows(Stage *stage);   /* (objects.c) pool 3: a glow at each booster puff, muzzle flash and shot in flight */
+void draw_particleGlows(Stage *stage);
+void glrec64_depthMask(int on);   /* depth writes on / off (the game never sets them: view_volume.c's billboards) */   /* (objects.c) pool 3: a glow at each booster puff, muzzle flash and shot in flight */
 #define DRAW_SOURCE(k) (g_drawSource = (k))
 /* the stage's light pools, once per frame before the world: 0 the map's (from the map file), 1 the dynamic ones (the
    actors' glow, the particles that give light: refilled each frame), 2 the actors' own (ambient and from above) */
@@ -34,9 +35,11 @@ void draw_particleGlows(Stage *stage);   /* (objects.c) pool 3: a glow at each b
                          draw_particleGlows(st))
 #define DRAW_TAG(k) glrec64_tag(k)
 #define DRAW_CAMERA(p, v) glrec64_camera(p, v)
+#define DRAW_DEPTHMASK(on) glrec64_depthMask(on)
 #else
 #define DRAW_SOURCE(k) ((void)0)
 #define DRAW_TAG(k) ((void)0)
 #define DRAW_CAMERA(p, v) ((void)0)
 #define DRAW_LIGHTS(st) ((void)0)
+#define DRAW_DEPTHMASK(on) ((void)0)
 #endif
