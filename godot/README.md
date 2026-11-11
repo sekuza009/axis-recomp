@@ -241,6 +241,19 @@ sess5/map_survey.sh drives all 32, survey_sheet.py makes the contact sheets).
   light, and only the lit result reaches Godot: Godot's lit surfaces have the texture alone as their colour. The fix is
   the base colours sent from the game (the 64-bit build) for Godot's albedo.
 
+## Boxes round smoke and shots near walls (2026-11-11)
+
+Boosting or firing near a wall cut a square into it - in the original too (the player's screenshots, Valhalla). The game
+draws its see-through things back to front in one list: the map's glass and panel triangles and the camera-facing
+squares of smoke, glows and shot flares - with depth writes on for all. A wall triangle sorted after a smoke square then
+failed the depth test over the whole square, its clear parts too: a box showing what lies behind the wall. The 64-bit
+build now turns depth writes off for those squares (view_volume.c, draw_tags.h DRAW_DEPTHMASK; the recorder's new op
+OP_DEPTHMASK, 79; the Godot build's emulator EmuPipe.depthWrite and AxisSDL's player glDepthMask); the 32-bit builds
+as the original. Two more for the remaster: its game pass pasted Godot's picture over an effect's whole square,
+unblended - wiping the game's own drawing under its clear surround (now mixed in by the sprite's own coverage:
+k_fragment flags 16 / 32); and the particles and bullets Godot draws are soft (`soft_particles`: faded over 1.5 m before
+the surface behind and from 1 to 4 m from the eye - no hard line where a puff meets a wall).
+
 ## Three faults the play test found (2026-11-11)
 
 - **Hit marks multiplied** on walls: Godot sampled every map texture repeated, linear, mipmapped; the game draws per

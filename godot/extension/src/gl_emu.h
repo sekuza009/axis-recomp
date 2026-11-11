@@ -23,6 +23,7 @@ struct EmuPipe {
 	uint8_t blend = 0;
 	uint16_t src = 1, dst = 0;   // GL blend factors
 	uint8_t depthTest = 0;
+	uint8_t depthWrite = 1;   // (glDepthMask: OP_DEPTHMASK)
 	uint16_t depthFunc = 0x201;
 	uint8_t cull = 0;
 	uint16_t cullFace = 0x405, frontFace = 0x901;
@@ -112,6 +113,7 @@ private:
 	int depth[3], mode;
 	float color[4], texcoord[2];
 	bool texture2d, blend, depthTest, cull, fog, polyOffset;
+	bool depthWrite = true;   // (glDepthMask: OP_DEPTHMASK)
 	uint32_t blendSrc, blendDst, depthFunc, cullFace, frontFace, envMode, bound;
 	uint32_t fogMode;
 	float fogColor[4], fogStart, fogEnd, fogDensity, offsetFactor, offsetUnits;

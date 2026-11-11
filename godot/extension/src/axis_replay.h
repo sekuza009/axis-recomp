@@ -64,6 +64,10 @@ public:
 	float originalLight = 0.6f;
 	bool vertexLighting = true;   // (the map lit as the game lights it, per vertex, with Godot's shadows: k_game_light)
 	float shadowStrength = 0.5f;
+	bool softParticles = true;   // (the particles and bullets faded at walls and by the eye: k_map_effect SOFT)
+	void apply_soft(const Ref<ShaderMaterial> &m) const;
+	void set_soft_particles(bool on);
+	bool get_soft_particles() const { return softParticles; }
 	bool glowsAsSprites = true;   // (the particles' glows coloured as their sprites: particle_glow_colours)
 	float lightCap = 1.0f;   // (the lit map surfaces' lights summed no higher than this: k_map_light)
 	// what Godot draws in picture modes 1 and 2, by kind (1 << tag, src/render/draw_tags.h): the ground, map objects,
@@ -176,7 +180,7 @@ protected:
 	std::unordered_map<uint32_t, RID> texRids;   // (render thread -> main thread)
 	std::unordered_map<uint32_t, Ref<Texture2DRD>> texShown;
 	std::unordered_map<uint64_t, Ref<ShaderMaterial>> mapMaterials;
-	Ref<Shader> mapShaders[2][5][4][2][2][8];   // [original lighting / remaster][the class: godot_class()][the culling][weapon][per vertex][sampler_class]
+	Ref<Shader> mapShaders[2][5][4][2][2][16];   // [original lighting / remaster][the class: godot_class()][the culling][weapon][per vertex][sampler_class & 7 | soft particle << 3]
 	Ref<ShaderMaterial> map_material(uint32_t texture, uint32_t env, int blendClass, int cull, int priority = 0, bool weapon = false);
 	Ref<Shader> skyShaders[4];   // [no blending / alpha / additive (source alpha) / additive (one)]
 	std::unordered_map<uint64_t, Ref<ShaderMaterial>> skyMaterials;

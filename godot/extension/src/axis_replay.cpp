@@ -21,7 +21,9 @@
 
 #include <cstring>
 #include <chrono>
+#include <godot_cpp/classes/image.hpp>
 #include <map>
+#include <set>
 #include <cstdlib>
 
 using namespace godot;
@@ -60,6 +62,16 @@ const vec3 k_tags[11] = vec3[](vec3(0.5), vec3(0.3, 0.5, 1.0), vec3(0.2, 0.9, 0.
 void main() {
 	if ((pc.flags & 8u) != 0u) {   // a map surface: Godot's colour where the game's map is seen (its own depth test, as before)
 		frag = vec4(pow(clamp(texelFetch(godot_map, ivec2(gl_FragCoord.xy), 0).rgb, 0.0, 1.0), vec3(1.0 / 2.2)), 1.0);
+		if ((pc.flags & 16u) != 0u) {   // an effect Godot drew: its picture only where the sprite covers - its opacity,
+			vec4 c = v_col;              // or for an additive one its brightness - not over its whole quad: that wiped the
+			if ((pc.flags & 1u) != 0u) { // game's own drawing under the sprite's clear surround - a box round each one
+				vec4 t = texture(tex, v_uv);
+				if (pc.env == 0x1E01u) c = t;
+				else if (pc.env == 0x2101u) c.rgb = mix(c.rgb, t.rgb, t.a);
+				else c *= t;
+			}
+			frag.a = clamp((pc.flags & 32u) != 0u ? max(c.r, max(c.g, c.b)) * c.a : c.a, 0.0, 1.0);
+		}
 		return;
 	}
 	vec4 c = v_col;
@@ -210,8 +222,31 @@ vec4 texture_only(vec2 uv) { return tex_at(uv); }
 // near it over other effects (they are not in the screen texture))
 const char *k_map_effect = R"(
 uniform sampler2D behind : hint_screen_texture, filter_nearest;
+#ifdef SOFT
+// (soft particles - the particles and bullets only: the game's flat camera-facing quads of smoke and glow were cut
+// along a hard line where they passed into a wall, and one right by the camera filled the view as a box. Faded out
+// over soft_distance (metres) before the surface behind them, and from near_fade_start to near_fade_end from the eye)
+uniform sampler2D scene_depth : hint_depth_texture, filter_nearest;
+uniform float soft_distance = 1.5;
+uniform float near_fade_start = 1.0;
+uniform float near_fade_end = 4.0;
+#endif
 void fragment() {
 	vec4 o = game_colour(COLOR, UV);
+#ifdef SOFT
+	{
+		float z = texture(scene_depth, SCREEN_UV).r;
+		vec4 sv = INV_PROJECTION_MATRIX * vec4(SCREEN_UV * 2.0 - 1.0, z, 1.0);
+		float scene = -sv.z / sv.w, self = -VERTEX.z;
+		float fade = clamp((scene - self) / soft_distance, 0.0, 1.0) *
+		             clamp((self - near_fade_start) / max(near_fade_end - near_fade_start, 0.001), 0.0, 1.0);
+#if EFFECT_CLASS == 4
+		o.rgb *= fade;
+#else
+		o.a *= fade;
+#endif
+	}
+#endif
 	vec3 D = max(texture(behind, SCREEN_UV).rgb, vec3(0.0));
 	vec3 d = pow(min(D, vec3(1.0)), vec3(1.0 / 2.2));
 #if EFFECT_CLASS == 2
@@ -346,6 +381,8 @@ void AxisReplay::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_original_light"), &AxisReplay::get_original_light);
 	ClassDB::bind_method(D_METHOD("set_vertex_lighting", "on"), &AxisReplay::set_vertex_lighting);
 	ClassDB::bind_method(D_METHOD("get_vertex_lighting"), &AxisReplay::get_vertex_lighting);
+	ClassDB::bind_method(D_METHOD("set_soft_particles", "on"), &AxisReplay::set_soft_particles);
+	ClassDB::bind_method(D_METHOD("get_soft_particles"), &AxisReplay::get_soft_particles);
 	ClassDB::bind_method(D_METHOD("set_shadow_strength", "amount"), &AxisReplay::set_shadow_strength);
 	ClassDB::bind_method(D_METHOD("get_shadow_strength"), &AxisReplay::get_shadow_strength);
 	ClassDB::bind_method(D_METHOD("set_light_cap", "cap"), &AxisReplay::set_light_cap);
@@ -364,6 +401,7 @@ void AxisReplay::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "original_light", PROPERTY_HINT_RANGE, "0,1.5,0.01"), "set_original_light", "get_original_light");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "vertex_lighting"), "set_vertex_lighting", "get_vertex_lighting");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "shadow_strength", PROPERTY_HINT_RANGE, "0,1,0.01"), "set_shadow_strength", "get_shadow_strength");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "soft_particles"), "set_soft_particles", "get_soft_particles");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "light_cap", PROPERTY_HINT_RANGE, "0,8,0.01"), "set_light_cap", "get_light_cap");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "godot_kinds", PROPERTY_HINT_FLAGS, "Other,Sky,Ground,Map objects,Actors,Actor view,Bullets,Particles,Items,Markers,HUD"), "set_godot_kinds", "get_godot_kinds");
 	ADD_GROUP("Remaster view", "");
@@ -666,7 +704,7 @@ RID AxisReplay::pipeline_for(const EmuPipe &p) {
 	Ref<RDPipelineDepthStencilState> ds;
 	ds.instantiate();
 	ds->set_enable_depth_test(p.depthTest);
-	ds->set_enable_depth_write(p.depthTest);
+	ds->set_enable_depth_write(p.depthTest && p.depthWrite);
 	ds->set_depth_compare_operator((RenderingDevice::CompareOperator)((p.depthFunc - 0x200) & 7));
 	Ref<RDPipelineColorBlendStateAttachment> a;
 	a.instantiate();
@@ -786,9 +824,11 @@ void AxisReplay::draw_cmds(const Pending &p, const RID &gColor, const RID &gDept
 		const EmuBatch &b = c.batch;
 		if (b.count == 0 || b.scissor[2] <= 0 || b.scissor[3] <= 0) continue;
 		if (dl < 0) dl = rd->draw_list_begin(framebuffer);
-		if (fromGodot) {   // (unblended: Godot's colour replaces - its picture has the blending done already)
-			EmuPipe gp = b.pipe;
+		const int fxClass = fromGodot ? godot_class(b, p.kinds, p.effects) : -1;
+		if (fromGodot) {   // (unblended: Godot's colour replaces - its picture has the blending done already; an effect's
+			EmuPipe gp = b.pipe;   // mixed in by its own coverage, k_fragment)
 			gp.blend = 0;
+			if (fxClass >= 2) { gp.blend = 1; gp.src = 0x302; gp.dst = 0x303; }
 			rd->draw_list_bind_render_pipeline(dl, pipeline_for(gp));
 		} else
 			rd->draw_list_bind_render_pipeline(dl, pipeline_for(b.pipe));
@@ -802,7 +842,8 @@ void AxisReplay::draw_cmds(const Pending &p, const RID &gColor, const RID &gDept
 		}
 		rd->draw_list_bind_uniform_set(dl, set, 1);
 		rd->draw_list_enable_scissor(dl, Rect2(b.scissor[0], b.scissor[1], b.scissor[2], b.scissor[3]));
-		Push push = { b.first, (textured ? 1u : 0u) | (b.fog ? 2u : 0u) | (p.tagView ? 4u : 0u) | (fromGodot ? 8u : 0u), b.env, b.tag,
+		Push push = { b.first, (textured ? 1u : 0u) | (b.fog ? 2u : 0u) | (p.tagView ? 4u : 0u) | (fromGodot ? 8u : 0u) |
+		                       (fxClass >= 2 ? 16u : 0u) | (fxClass >= 3 ? 32u : 0u), b.env, b.tag,
 		              { b.fogColor[0], b.fogColor[1], b.fogColor[2], b.fogColor[3] } };
 		rd->draw_list_set_push_constant(dl, bytes(&push, sizeof push), sizeof push);
 		rd->draw_list_draw(dl, false, 1, b.count);
@@ -1177,6 +1218,18 @@ Array AxisReplay::get_world_samples(int mask, int count) const {
 
 // ---- the map as Godot's mesh (main thread) ----
 
+void AxisReplay::apply_soft(const Ref<ShaderMaterial> &m) const {
+	m->set_shader_parameter("soft_distance", softParticles ? 1.5f : 0.0001f);
+	m->set_shader_parameter("near_fade_start", softParticles ? 1.0f : 0.0f);
+	m->set_shader_parameter("near_fade_end", softParticles ? 4.0f : 0.0001f);
+}
+
+void AxisReplay::set_soft_particles(bool on) {
+	softParticles = on;
+	for (auto &kv : mapMaterials)
+		if (kv.second.is_valid() && ((kv.first >> 28) & 1)) apply_soft(kv.second);
+}
+
 void AxisReplay::set_shadow_strength(float v) {
 	shadowStrength = v;
 	for (auto &kv : mapMaterials)
@@ -1213,6 +1266,7 @@ static int sampler_class(const EmuBatch &b) {
 
 Ref<ShaderMaterial> AxisReplay::map_material(uint32_t texture, uint32_t env, int blendClass, int cull, int priority, bool weapon) {
 	const int sampFull = (int)(texture >> 24) & 15;   // (sampler_class, packed above the texture name)
+	const int soft = blendClass >= 2 && ((texture >> 28) & 1) ? 1 : 0;   // (a particle or bullet: faded at walls and the eye)
 	const int samp = sampFull & 7;   // (the shader's sampler hints; 8, the border, is a uniform)
 	const int lit = pictureMode == 2 && blendClass < 2 ? 1 : 0;   // (effects are unlit: they give light, not take it)
 	const int vtx = lit && vertexLighting ? 1 : 0;   // (per vertex: the game lights its vertices and blends between them)
@@ -1220,7 +1274,7 @@ Ref<ShaderMaterial> AxisReplay::map_material(uint32_t texture, uint32_t env, int
 	                     (uint64_t)cull << 52 | (uint64_t)(priority + 128) << 54 | (uint64_t)vtx << 62 | (uint64_t)weapon << 63;
 	auto it = mapMaterials.find(key);
 	if (it != mapMaterials.end()) return it->second;
-	Ref<Shader> &sh = mapShaders[lit][blendClass][cull][weapon ? 1 : 0][vtx][samp];
+	Ref<Shader> &sh = mapShaders[lit][blendClass][cull][weapon ? 1 : 0][vtx][samp | soft << 3];
 	if (sh.is_null()) {
 		static const char *blend[5] = { "", "", ", blend_mix, depth_draw_never", ", blend_add, depth_draw_never", ", blend_add, depth_draw_never" };
 		static const char *culls[4] = { "cull_disabled", "cull_back", "cull_front", "cull_disabled" };
@@ -1232,7 +1286,7 @@ Ref<ShaderMaterial> AxisReplay::map_material(uint32_t texture, uint32_t env, int
 		              // in front of the near plane - in order within itself, in front of the world; Godot's depth is reversed)
 			code += String("void vertex() {\n\tPOSITION = PROJECTION_MATRIX * MODELVIEW_MATRIX * vec4(VERTEX, 1.0);\n\tPOSITION.z = mix(POSITION.z, POSITION.w, 0.995);\n}\n");
 		if (blendClass >= 2)   // (an effect: blended by Godot in the game's order, as the game blends: k_map_effect)
-			code += String("#define EFFECT_CLASS ") + String::num_int64(blendClass) + String(k_map_effect);
+			code += String(soft ? "#define SOFT\n" : "") + String("#define EFFECT_CLASS ") + String::num_int64(blendClass) + String(k_map_effect);
 		else if (!lit)
 			code += String("void fragment() {\n\tvec4 o = game_colour(COLOR, UV);\n\tALBEDO = pow(o.rgb, vec3(2.2));\n") + (blendClass ? "\tALPHA = o.a;\n\tALPHA_SCISSOR_THRESHOLD = 0.5;\n" : "") + "}\n";
 		else if (vtx)
@@ -1253,6 +1307,7 @@ Ref<ShaderMaterial> AxisReplay::map_material(uint32_t texture, uint32_t env, int
 	m->set_shader_parameter("textured", texture != 0);
 	m->set_shader_parameter("original_light", originalLight);
 	m->set_shader_parameter("border", (sampFull & 8) != 0);
+	if (soft) apply_soft(m);
 	if (lit) m->set_shader_parameter(vtx ? "shadow_strength" : "light_cap", vtx ? shadowStrength : lightCap);
 	m->set_render_priority(priority);
 	texture &= 0xffffff;
@@ -1296,6 +1351,7 @@ TypedArray<ArrayMesh> AxisReplay::build_map_meshes() {
 	weaponMesh = -1;
 	firstShadowless = 0;
 	const bool effects = frame_effects();
+	static const bool softParticles = getenv("AXIS_HARD_PARTICLES") == nullptr;   // (a check: the particles cut hard, as the game)
 	static const bool mergeAdditive = getenv("AXIS_NO_ADDITIVE_MERGE") == nullptr;   // (a check: each run its own surface, as before)
 	std::vector<std::pair<uint64_t, Rect2>> effectRuns;   // (each effect batch: its material, its box on screen)
 	std::unordered_map<uint64_t, std::pair<uint64_t, size_t>> openEffects;   // (a material's last surface, its last batch)
@@ -1312,7 +1368,8 @@ TypedArray<ArrayMesh> AxisReplay::build_map_meshes() {
 		// its culled face kept (0 none, 1 back, 2 front)
 		const int cull = !b.pipe.cull ? 0 : b.pipe.cullFace == 0x404 ? 2 : b.pipe.cullFace == 0x405 ? 1 : 3;
 		const bool turn = b.pipe.frontFace == 0x901;
-		const uint32_t texSamp = (b.texture & 0xffffff) | (uint32_t)sampler_class(b) << 24;   // (the texture with its sampling)
+		const uint32_t texSamp = (b.texture & 0xffffff) | (uint32_t)sampler_class(b) << 24 |
+		                         (uint32_t)(blendClass >= 2 && (b.tag == 6 || b.tag == 7) && softParticles ? 1 : 0) << 28;   // (the texture with its sampling; soft)
 		uint64_t key = (uint64_t)texSamp | (uint64_t)(b.env & 0xffff) << 32 | (uint64_t)blendClass << 48 | (uint64_t)cull << 56 |
 		               (uint64_t)(b.tag == 5) << 61;
 		int run = 0;
@@ -1376,6 +1433,22 @@ TypedArray<ArrayMesh> AxisReplay::build_map_meshes() {
 		}
 	}
 	double t2 = timed ? now() : 0.0;
+	if (getenv("AXIS_DUMP_TEXTURES")) {   // (a check: the particles' textures (tag 7) saved once each, RGBA, to that folder)
+		static std::set<uint32_t> dumped;
+		for (const EmuCmd &c : emu.cmds) {
+			const EmuBatch &bb = c.batch;
+			if (c.kind != EmuCmd::BATCH || bb.tag != 7 || !bb.texture || dumped.count(bb.texture)) continue;
+			auto it = emu.textures.find(bb.texture - 1);
+			if (it == emu.textures.end() || it->second.levels.empty()) continue;
+			dumped.insert(bb.texture);
+			const int w = it->second.sizes[0].first, h = it->second.sizes[0].second;
+			PackedByteArray px;
+			px.resize((int64_t)w * h * 4);
+			memcpy(px.ptrw(), it->second.levels[0].data(), (size_t)w * h * 4);
+			Ref<Image> img = Image::create_from_data(w, h, false, Image::FORMAT_RGBA8, px);
+			img->save_png(String(getenv("AXIS_DUMP_TEXTURES")) + "/tex" + String::num_int64(bb.texture) + ".png");
+		}
+	}
 	static int fxStatsCounter = 0;
 	if (getenv("AXIS_EFFECT_STATS") && (fxStatsCounter++ % 60) == 0) {   // (a check: the frame's effects - by kind, texture, blend - and the dynamic lights)
 		struct Fx { int tag, blend, runs = 0; uint32_t tex, tw = 0, th = 0; int64_t verts = 0; double col[4] = { 0, 0, 0, 0 }; Vector3 lo, hi; };
