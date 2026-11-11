@@ -199,6 +199,7 @@ func update(frame: Vector2i) -> void:
 func update_sky(frame: Vector2i, map_on: bool) -> void:
 	var built: Array = replay.build_sky_meshes() if map_on else []
 	var on := built.size() > 0
+	world.map_has_sky = on
 	sky_sub.render_target_update_mode = SubViewport.UPDATE_ALWAYS if on else SubViewport.UPDATE_DISABLED
 	sky_back.visible = on
 	var env: Environment = world.get_node("Environment").environment

@@ -266,6 +266,13 @@ others and the point lights not used; a map without a directional light keeps th
 then the original's by construction (Gigantic-Core 0.133 / 0.133, Catacomb 0.231 / 0.231, Valhalla 0.301 / 0.294,
 TubbyLand 0.276 / 0.276); the shadows show where the map blocks its Sun (Abyss' rocks).
 
+Shadow strength, checked on every map at one held frame each with 0, 0.25, 0.5, 0.75 and 1 (`AXIS_SHADOW_SET`;
+scratchpad shadows/table.txt): on the enclosed maps (no sky drawn) the roof shadows the whole arena - Midgard's wall
+black at 1.0, Bloodbath, Gigantic-Core, Asgard darkened throughout - so there the Sun casts none
+(`shadows_need_sky`, their directional light is the game's fill light). On the open maps 0.5 is kept: Abyss' cliffs
+and Metropolis' ledges shaded, Centropolis' walls over its floor (0.203 -> 0.165; at 1.0 0.113, too dark); about a dozen
+maps have no directional light and so no Sun shadow at all.
+
 Godot's per-vertex shading (`vertex_lighting` render mode) was tried first: it ignores a material's light() function, so
 neither the game's formulas nor the cap could be used with it.
 

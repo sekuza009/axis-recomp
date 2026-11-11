@@ -33,6 +33,10 @@ extends Node3D
 @export var per_vertex_lighting := true
 ## (per vertex) how much the Sun's shadow darkens a surface facing it (AxisReplay.shadow_strength)
 @export_range(0.0, 1.0, 0.01) var shadow_strength := 0.5
+## (per vertex) the Sun's shadow only on a map open to the sky (one the game draws a sky for): an enclosed map's
+## directional light is the game's fill light - its roof would shadow the whole arena (Midgard's walls black at 1.0)
+@export var shadows_need_sky := true
+var map_has_sky := false   # (remaster_view.update_sky: the frame drew a sky)
 ## (per pixel only) the lights on a lit map surface summed no higher than this (AxisReplay.light_cap), rolled off towards it: the game
 ## clamps its lighting at full white, Godot would add lights without end (hard white patches where many overlap)
 @export_range(0.0, 8.0, 0.01) var light_cap := 1.0
@@ -94,7 +98,7 @@ func apply_lights(lights: Array, scale: float = 1.0, eye := Vector3.ZERO) -> voi
 						s.light_color = l.colour
 						s.light_energy = map_directional_energy
 						s.visible = true
-						s.shadow_enabled = true
+						s.shadow_enabled = not per_vertex_lighting or map_has_sky or not shadows_need_sky
 				2, 3:   # point lights
 					if per_vertex_lighting or used >= max_point_lights or l.radius <= 0.0:
 						continue
