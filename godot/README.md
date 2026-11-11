@@ -289,7 +289,7 @@ before on Metropolis, IllusionCity, Asgard, Netsphere and Valhalla (Valhalla's s
 
 The particles' glows: the game library sends a light pool 3 (64-bit build, objects.c draw_particleGlows) - a light of
 the particle's colour and alpha at each booster thrust puff (kinds 5 .. 7), muzzle flash (10 .. 18) and shot in flight
-(20 .. 26: the tracers, beams); remaster_world.gd `particle_glows`, `booster_glow_energy` (2), `muzzle_glow_energy` (1),
+(20 .. 26: the tracers, beams); remaster_world.gd `particle_glows`, `booster_glow_energy` (0 since 2026-11-11: no booster glow), `muzzle_glow_energy` (1),
 `shot_glow_energy` (1.5): soft lights like the dynamic highlights. Their colour is the particle's sprite's
 (axis_replay.cpp particle_glow_colours): the particle triangles drawn within 4 m of a glow, their texture sampled at full size
 at seven points inside each (times the vertex colour; a coarse mip level mixed in the sheet's neighbouring cells - the

@@ -51,7 +51,8 @@ var _shadow_applied := ""
 ## glows the game has not got (its light pool 3, objects.c draw_particleGlows): a soft light of the particle's colour
 ## at each booster thrust puff, muzzle flash and shot in flight (the tracers), fading with it
 @export var particle_glows := true
-@export_range(0.0, 4.0, 0.01) var booster_glow_energy := 1.0
+## (0: the booster puffs give no glow - off by choice, 2026-11-11; the muzzle flashes and shots still do)
+@export_range(0.0, 4.0, 0.01) var booster_glow_energy := 0.0
 @export_range(0.0, 4.0, 0.01) var muzzle_glow_energy := 1.0
 @export_range(0.0, 4.0, 0.01) var shot_glow_energy := 1.5   # (remaster_view.update_sky: the frame drew a sky)
 ## (per pixel only) the lights on a lit map surface summed no higher than this (AxisReplay.light_cap), rolled off towards it: the game
@@ -170,8 +171,8 @@ func apply_lights(lights: Array, scale: float = 1.0, eye := Vector3.ZERO) -> voi
 ## whether a point light of the game's becomes one of Godot's: per vertex the map's own are the game's alone (in its
 ## colour), so only the dynamic ones (dynamic_highlights) and the particles' glows (particle_glows)
 func _point_used(l: Dictionary) -> bool:
-	if l.pool == 3:
-		return particle_glows
+	if l.pool == 3:   # (a glow at strength 0 is no light at all: the booster puffs, kinds 5 .. 7, by default)
+		return particle_glows and not (int(l.direction.x) <= 7 and booster_glow_energy <= 0.0)
 	return not per_vertex_lighting or (dynamic_highlights and l.pool == 1)
 
 func _sun(i: int) -> DirectionalLight3D:
