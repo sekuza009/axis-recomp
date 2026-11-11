@@ -62,8 +62,8 @@ func apply_lights(lights: Array, scale: float = 1.0, eye := Vector3.ZERO) -> voi
 	# the point lights nearest the eye first (Metropolis has 511 of its own: max_point_lights of them, the nearest)
 	var points := []
 	for l in lights:
-		if l.pool != 2 and (l.kind == 2 or l.kind == 3) and l.radius > 0.0:
-			points.append(l)
+		if not per_vertex_lighting and l.pool != 2 and (l.kind == 2 or l.kind == 3) and l.radius > 0.0:
+			points.append(l)   # (per vertex the point lights are the game's own, in its colour: none of Godot's)
 		if l.pool == 0 and l.kind >= 1:
 			map_has_lights = true
 	if points.size() > max_point_lights:

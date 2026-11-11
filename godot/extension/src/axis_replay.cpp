@@ -20,6 +20,7 @@
 #include <godot_cpp/classes/render_scene_buffers_rd.hpp>
 
 #include <cstring>
+#include <chrono>
 #include <cstdlib>
 
 using namespace godot;
@@ -319,7 +320,7 @@ void AxisReplay::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_camera_view"), &AxisReplay::get_camera_view);
 	ClassDB::bind_method(D_METHOD("get_tag_stats"), &AxisReplay::get_tag_stats);
 	ClassDB::bind_method(D_METHOD("get_camera_viewport"), &AxisReplay::get_camera_viewport);
-	ClassDB::bind_method(D_METHOD("get_lights"), &AxisReplay::get_lights);
+	ClassDB::bind_method(D_METHOD("get_lights", "points"), &AxisReplay::get_lights, DEFVAL(true));
 	ClassDB::bind_method(D_METHOD("get_world_triangles", "mask"), &AxisReplay::get_world_triangles);
 	ClassDB::bind_method(D_METHOD("get_world_samples", "mask", "count"), &AxisReplay::get_world_samples);
 	ClassDB::bind_method(D_METHOD("set_picture_mode", "mode"), &AxisReplay::set_picture_mode);
@@ -920,9 +921,10 @@ Transform3D AxisReplay::get_camera_view() const {
 	return Transform3D(Basis(Vector3(m[0], m[1], m[2]), Vector3(m[4], m[5], m[6]), Vector3(m[8], m[9], m[10])), Vector3(m[12], m[13], m[14]));   // (Basis from columns)
 }
 
-Array AxisReplay::get_lights() const {
+Array AxisReplay::get_lights(bool points) const {
 	Array out;
 	for (const EmuLight &l : emu.lights) {
+		if (!points && (l.kind == 2 || l.kind == 3)) continue;   // (without the point lights: Metropolis has 511)
 		Dictionary d;
 		d["pool"] = l.pool;
 		d["kind"] = l.kind;
@@ -1140,6 +1142,13 @@ Ref<ShaderMaterial> AxisReplay::map_material(uint32_t texture, uint32_t env, int
 }
 
 TypedArray<ArrayMesh> AxisReplay::build_map_meshes() {
+	static const bool timed = getenv("AXIS_BUILD_TIMES") != nullptr;   // (a check: the build's stages, every 120 frames)
+	static int timedFrames = 0;
+	static double tStage[4] = { 0, 0, 0, 0 };
+	static int64_t tVerts = 0, tSurfaces = 0, tSame = 0, tSameVerts = 0;
+	static std::unordered_map<uint64_t, uint64_t> lastHash;
+	auto now = []() { return std::chrono::duration<double, std::milli>(std::chrono::steady_clock::now().time_since_epoch()).count(); };
+	double t0 = timed ? now() : 0.0;
 	TypedArray<ArrayMesh> meshes;
 	Ref<ArrayMesh> mesh;
 	const Unproject u = unprojector(emu);
@@ -1152,8 +1161,14 @@ TypedArray<ArrayMesh> AxisReplay::build_map_meshes() {
 			if (r.is_valid() && kv.second->get_texture_rd_rid() != r) kv.second->set_texture_rd_rid(r);
 		}
 	}
+	double t1 = timed ? now() : 0.0;
 	// the batches of the kinds Godot draws (godotKinds: the ground, map objects, actors, items), by material
-	struct Surface { PackedVector3Array v, n; PackedVector2Array uv; PackedColorArray col; uint32_t texture, env; int blend, cull, run; bool weapon; };
+	// (built in plain vectors, copied into Godot's packed arrays once a surface: appending to those one at a time was
+	// most of the build's time)
+	struct Surface { std::vector<Vector3> v, n; std::vector<Vector2> uv; std::vector<Color> col; uint32_t texture, env; int blend, cull, run; bool weapon; };
+	auto pack3 = [](const std::vector<Vector3> &a) { PackedVector3Array p; p.resize((int64_t)a.size()); if (!a.empty()) memcpy(p.ptrw(), a.data(), a.size() * sizeof(Vector3)); return p; };
+	auto pack2 = [](const std::vector<Vector2> &a) { PackedVector2Array p; p.resize((int64_t)a.size()); if (!a.empty()) memcpy(p.ptrw(), a.data(), a.size() * sizeof(Vector2)); return p; };
+	auto packc = [](const std::vector<Color> &a) { PackedColorArray p; p.resize((int64_t)a.size()); if (!a.empty()) memcpy(p.ptrw(), a.data(), a.size() * sizeof(Color)); return p; };
 	weaponMesh = -1;
 	const bool effects = frame_effects();
 	int runs = 0;
@@ -1204,6 +1219,7 @@ TypedArray<ArrayMesh> AxisReplay::build_map_meshes() {
 			}
 		}
 	}
+	double t2 = timed ? now() : 0.0;
 	if (getenv("AXIS_MAP_STATS")) {   // (a check: the map's batches and their depth state)
 		String st;
 		for (const EmuCmd &c : emu.cmds) {
@@ -1222,36 +1238,37 @@ TypedArray<ArrayMesh> AxisReplay::build_map_meshes() {
 	// smooth normals: each vertex's the sum of the faces that share its position and lie within 60 degrees of its own
 	// face (the mechs' curved armour shaded smoothly under Godot's lights; a box's edges kept sharp)
 	for (uint64_t key : order) {
+		if (vertexLighting) break;   // (lit as the game lights it: the normals only tell the Sun's side - the faces' will do)
 		Surface &s = surfaces[key];
 		if (s.blend >= 2) continue;   // (effects are unlit)
-		const int64_t n = s.v.size();
+		const int64_t n = (int64_t)s.v.size();
 		std::unordered_map<uint64_t, std::vector<int64_t>> at;
 		auto cell = [](const Vector3 &p) {
 			const int64_t x = (int64_t)Math::round(p.x * 8.0f), y = (int64_t)Math::round(p.y * 8.0f), z = (int64_t)Math::round(p.z * 8.0f);
 			return (uint64_t)(x * 73856093) ^ (uint64_t)(y * 19349663) ^ (uint64_t)(z * 83492791);
 		};
 		for (int64_t i = 0; i < n; i++) at[cell(s.v[i])].push_back(i);
-		PackedVector3Array smooth;
-		smooth.resize(n);
+		std::vector<Vector3> smooth((size_t)n);
 		for (int64_t i = 0; i < n; i++) {
 			const Vector3 f = s.n[i];
 			Vector3 sum;
 			for (int64_t j : at[cell(s.v[i])])
 				if (s.v[j].distance_squared_to(s.v[i]) < 0.02f && s.n[j].dot(f) > 0.5f) sum += s.n[j];
-			smooth.set(i, sum.length_squared() > 0 ? sum.normalized() : f);
+			smooth[i] = sum.length_squared() > 0 ? sum.normalized() : f;
 		}
 		s.n = smooth;
 	}
+	double t3 = timed ? now() : 0.0;
 	Ref<ArrayMesh> weapon;   // (the weapon's surfaces in a mesh of their own: it casts no shadow - its squeezed depth would
 	                         // spoil the shadow maps)
 	for (uint64_t key : order) {
 		Surface &s = surfaces[key];
 		Array arrays;
 		arrays.resize(Mesh::ARRAY_MAX);
-		arrays[Mesh::ARRAY_VERTEX] = s.v;
-		arrays[Mesh::ARRAY_NORMAL] = s.n;
-		arrays[Mesh::ARRAY_TEX_UV] = s.uv;
-		arrays[Mesh::ARRAY_COLOR] = s.col;
+		arrays[Mesh::ARRAY_VERTEX] = pack3(s.v);
+		arrays[Mesh::ARRAY_NORMAL] = pack3(s.n);
+		arrays[Mesh::ARRAY_TEX_UV] = pack2(s.uv);
+		arrays[Mesh::ARRAY_COLOR] = packc(s.col);
 		if (s.weapon) {
 			if (weapon.is_null()) weapon.instantiate();
 			if (weapon->get_surface_count() < 256) {
@@ -1272,6 +1289,32 @@ TypedArray<ArrayMesh> AxisReplay::build_map_meshes() {
 	if (weapon.is_valid()) {
 		weaponMesh = (int)meshes.size();
 		meshes.push_back(weapon);
+	}
+	if (timed) {
+		const double t4 = now();
+		tStage[0] += t1 - t0; tStage[1] += t2 - t1; tStage[2] += t3 - t2; tStage[3] += t4 - t3;
+		std::unordered_map<uint64_t, uint64_t> hashes;
+		for (uint64_t key : order) {
+			const Surface &s = surfaces[key];
+			tVerts += (int64_t)s.v.size();
+			uint64_t h = 1469598103934665603ull;
+			auto mixin = [&h](const void *data, size_t n) { const uint8_t *b = (const uint8_t *)data; for (size_t i = 0; i < n; i++) h = (h ^ b[i]) * 1099511628211ull; };
+			mixin(s.v.data(), s.v.size() * sizeof(Vector3));
+			mixin(s.col.data(), s.col.size() * sizeof(Color));
+			mixin(s.uv.data(), s.uv.size() * sizeof(Vector2));
+			hashes[key] = h;
+			auto it = lastHash.find(key);
+			if (it != lastHash.end() && it->second == h) { tSame++; tSameVerts += (int64_t)s.v.size(); }
+		}
+		lastHash.swap(hashes);
+		tSurfaces += (int64_t)order.size();
+		if (++timedFrames == 120) {
+			UtilityFunctions::print("build_map_meshes (ms a frame): textures ", tStage[0] / 120, ", gather ", tStage[1] / 120, ", smooth ", tStage[2] / 120,
+			                        ", meshes ", tStage[3] / 120, "; ", tVerts / 120, " vertices, ", tSurfaces / 120, " surfaces; unchanged from the frame before ",
+			                        tSame / 120, " surfaces, ", tSameVerts / 120, " vertices");
+			timedFrames = 0; tVerts = tSurfaces = tSame = tSameVerts = 0;
+			for (double &x : tStage) x = 0;
+		}
 	}
 	return meshes;
 }

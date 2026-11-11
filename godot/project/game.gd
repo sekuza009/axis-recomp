@@ -26,6 +26,11 @@ const SETTINGS := "user://remaster.cfg"
 var remember := true
 var saved_picture := -1
 var saved_look := true
+## (a check: AXIS_PERF_LOG=<file> - every second the frames shown, the frame time's mean and worst, the remaster's
+## update (the map's meshes built from the frame, main thread) and the GPU's time for the map's and the window's views)
+var perf_log: FileAccess = null
+var perf := { "t": 0.0, "n": 0, "sum": 0.0, "worst": 0.0, "upd": 0.0, "updw": 0.0, "gmap": 0.0, "gwin": 0.0 }
+var perf_parts := { "build": 0.0, "assign": 0.0, "lights": 0.0, "sky": 0.0 }
 
 func _ready() -> void:
 	var args := OS.get_cmdline_user_args()
@@ -34,6 +39,9 @@ func _ready() -> void:
 		$Game.picture_mode = clampi(int(cfg.get_value("picture", "mode", $Game.picture_mode)), 0, 2)
 		$Game.look_enabled = bool(cfg.get_value("picture", "look", $Game.look_enabled))
 		print("remaster settings: picture ", $Game.picture_mode, ", look ", $Game.look_enabled)
+	if OS.get_environment("AXIS_PERF_LOG") != "":
+		perf_log = FileAccess.open(OS.get_environment("AXIS_PERF_LOG"), FileAccess.WRITE)
+		RenderingServer.viewport_set_measure_render_time(get_viewport().get_viewport_rid(), true)
 	remember = args.find("--picture") < 0 and args.find("--shot-modes") < 0 and args.find("--no-look") < 0
 	saved_picture = $Game.picture_mode
 	saved_look = $Game.look_enabled
@@ -169,7 +177,10 @@ func _process(_delta: float) -> void:
 		shoot_modes()
 		return
 	if remaster:
+		var t0 := Time.get_ticks_usec()
 		remaster.update(game.get_game_size())
+		if perf_log:
+			perf_frame(_delta, (Time.get_ticks_usec() - t0) / 1000.0)
 		if camera_report and f >= next_report:
 			next_report = f + 300
 			camera_report.store_line("frame %d: %s" % [f, remaster.report(game.get_game_size())])
@@ -205,6 +216,30 @@ func _process(_delta: float) -> void:
 		print("AxisGame: quitting after ", f, " frames")
 		game.stop_recording()
 		get_tree().quit()
+
+func perf_frame(delta: float, upd_ms: float) -> void:
+	var map_rid: RID = remaster.map_sub.get_viewport_rid() if remaster.map_sub else RID()
+	if map_rid.is_valid():
+		RenderingServer.viewport_set_measure_render_time(map_rid, true)
+		perf.gmap += RenderingServer.viewport_get_measured_render_time_gpu(map_rid)
+	perf.gwin += RenderingServer.viewport_get_measured_render_time_gpu(get_viewport().get_viewport_rid())
+	perf.n += 1
+	perf.sum += delta * 1000.0
+	perf.worst = maxf(perf.worst, delta * 1000.0)
+	perf.upd += upd_ms
+	perf.updw = maxf(perf.updw, upd_ms)
+	perf.t += delta
+	for k in perf_parts:
+		perf_parts[k] += remaster.timing[k]
+	if perf.t >= 1.0:
+		var n: float = perf.n
+		perf_log.store_line("picture %d  fps %d  frame %.1f ms (worst %.1f)  update %.1f ms (worst %.1f)  gpu map %.1f ms, window %.1f ms  [build %.1f, assign %.1f, lights %.1f, sky %.1f]" %
+			[game.picture_mode, perf.n, perf.sum / n, perf.worst, perf.upd / n, perf.updw, perf.gmap / n, perf.gwin / n,
+			 perf_parts.build / n, perf_parts.assign / n, perf_parts.lights / n, perf_parts.sky / n])
+		for k in perf_parts:
+			perf_parts[k] = 0.0
+		perf_log.flush()
+		perf = { "t": 0.0, "n": 0, "sum": 0.0, "worst": 0.0, "upd": 0.0, "updw": 0.0, "gmap": 0.0, "gwin": 0.0 }
 
 ## the frame shown as the original shows it: when the window is the game's size (full screen at the desktop's size,
 ## the game's own setting) pixel for pixel, the game window's one extra row above the screen (it starts at y -1);

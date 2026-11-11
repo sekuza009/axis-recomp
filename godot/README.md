@@ -241,6 +241,18 @@ sess5/map_survey.sh drives all 32, survey_sheet.py makes the contact sheets).
   light, and only the lit result reaches Godot: Godot's lit surfaces have the texture alone as their colour. The fix is
   the base colours sent from the game (the 64-bit build) for Godot's albedo.
 
+## The remaster's cost (2026-11-10)
+
+Measured with the release export on a 120 Hz screen (`AXIS_PERF_LOG=<file>`: every second the frames, the frame time,
+the remaster's update and its parts, the GPU's time; `AXIS_BUILD_TIMES=1`: build_map_meshes' stages;
+scratchpad sess5/perf_run.sh). Metropolis was 73 fps in the remaster (the original 120): the update took 9 ms - 6 ms
+building the map's meshes, 2.4 ms the lights (its 511 point lights sorted in GDScript each frame). Now, lit as the game
+lights it, the point lights are not fetched at all (`get_lights(false)`) and the normals not smoothed (only the Sun's
+side is wanted): Metropolis about 100 fps (update 5 ms: 0.75 gathering the frame's 16000 vertices, 3.2 making its ~490
+small surfaces - the cost is per surface), Valhalla, Centropolis, Abyss, IllusionCity, Cube and Midgard 120 (update
+0.5 .. 1.7 ms, the GPU 2 .. 2.4 ms). Keeping last frame's surfaces would help little: about a quarter of them are
+unchanged frame to frame (the static ones; the many small ones - effects, mechs, items - change).
+
 ## The picture mode kept (2026-11-10)
 
 The picture mode (Ctrl+F12) and the remaster look (Ctrl+F11) are kept between sessions in `user://remaster.cfg`

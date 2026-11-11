@@ -150,11 +150,16 @@ func apply_camera(frame: Vector2i, c: Camera3D = null, s: SubViewport = null, k:
 	return true
 
 ## per frame: Godot's map in picture modes 1 and 2; the overlay's camera and mesh when it is on
+var timing := { "build": 0.0, "assign": 0.0, "lights": 0.0, "sky": 0.0 }   # (the last update's parts, ms: game.gd's perf log)
+
 func update(frame: Vector2i) -> void:
+	var t0 := Time.get_ticks_usec()
 	var map_on := replay != null and replay.picture_mode > 0 and apply_camera(frame, map_cam, map_sub, WORLD_SCALE)
 	map_sub.render_target_update_mode = SubViewport.UPDATE_ALWAYS if map_on else SubViewport.UPDATE_DISABLED
 	if map_on:
 		var built: Array = replay.build_map_meshes()
+		var t1 := Time.get_ticks_usec()
+		timing.build = (t1 - t0) / 1000.0
 		while map_meshes.size() < built.size():
 			var mi := MeshInstance3D.new()
 			map_sub.add_child(mi)
@@ -165,7 +170,10 @@ func update(frame: Vector2i) -> void:
 			map_meshes[i].mesh = built[i] if i < built.size() else null
 			# (the first-person weapon casts no shadow: its depth is squeezed in front of the near plane)
 			map_meshes[i].cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF if i == weapon else GeometryInstance3D.SHADOW_CASTING_SETTING_ON
-		world.apply_lights(replay.get_lights(), WORLD_SCALE, map_cam.global_position)
+		var t2 := Time.get_ticks_usec()
+		timing.assign = (t2 - t1) / 1000.0
+		world.apply_lights(replay.get_lights(not world.per_vertex_lighting), WORLD_SCALE, map_cam.global_position)
+		timing.lights = (Time.get_ticks_usec() - t2) / 1000.0
 		var keep: float = world.original_light_with_map_lights if world.map_has_lights else world.original_light_without
 		if absf(replay.original_light - keep) > 0.001:
 			replay.original_light = keep
@@ -177,7 +185,9 @@ func update(frame: Vector2i) -> void:
 		var cap: float = world.light_cap if OS.get_environment("AXIS_LIGHT_CAP") == "" else OS.get_environment("AXIS_LIGHT_CAP").to_float()
 		if absf(replay.light_cap - cap) > 0.001:
 			replay.light_cap = cap
+	var t3 := Time.get_ticks_usec()
 	update_sky(frame, map_on)
+	timing.sky = (Time.get_ticks_usec() - t3) / 1000.0
 	var on := replay != null and replay.overlay and apply_camera(frame)
 	shown.visible = on
 	if not on:
