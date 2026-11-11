@@ -248,6 +248,12 @@ sess5/map_survey.sh drives all 32, survey_sheet.py makes the contact sheets).
   across a wall's triangle: repeated, one mark became hundreds. The materials now take the draw's sampling
   (axis_replay.cpp `sampler_class`: nearest / linear by the magnifying filter, mipmapped by the minifying one, clamped
   unless both wraps repeat; packed above the texture name in the surface and material keys).
+- **Flat boxes on walls and floors** (the player's screenshots, Valhalla): GL_CLAMP (0x2900) gives the border colour,
+  transparent black, past 0 .. 1 - the hit marks' coordinates run -5.5 .. 24.7 over a wall's triangle. Clamped to the
+  edge instead (as first fixed above, and as the emulator's samplers always did - Original mode too, fainter there)
+  the mark's last texels were smeared over the whole triangle: a flat slab on each panel. Now the emulator's sampler
+  for GL_CLAMP clamps to a transparent black border, and the map materials (sampler_class 8, `border` uniform) treat
+  past 0 .. 1 as transparent. AxisSDL was not affected (a real GL driver, GL_CLAMP as it is).
 - **Faint dark boxes** around sprites (booster smoke, glows, marks) on maps with a sky: Godot casts a see-through
   surface's shadow as if solid - each quad threw a rectangle. The effects are now in meshes of their own that cast
   no shadow (`get_first_shadowless_mesh`). Some of what the shadow-strength survey showed was this: Centropolis' dark

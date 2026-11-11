@@ -189,11 +189,17 @@ uniform sampler2D tex : filter_linear_mipmap, repeat_enable;
 uniform bool textured = true;
 uniform int env = 0;
 uniform float original_light = 0.6;
+uniform bool border = false;   // (the draw's wrap GL_CLAMP: past 0 .. 1 the border, transparent black)
+vec4 tex_at(vec2 uv) {
+	if (!textured) return vec4(1.0);
+	if (border && (any(lessThan(uv, vec2(0.0))) || any(greaterThan(uv, vec2(1.0))))) return vec4(0.0);
+	return texture(tex, uv);
+}
 vec4 game_colour(vec4 c, vec2 uv) {
-	vec4 t = textured ? texture(tex, uv) : vec4(1.0);
+	vec4 t = tex_at(uv);
 	return env == 1 ? t : env == 2 ? vec4(mix(c.rgb, t.rgb, t.a), c.a) : c * t;
 }
-vec4 texture_only(vec2 uv) { return textured ? texture(tex, uv) : vec4(1.0); }
+vec4 texture_only(vec2 uv) { return tex_at(uv); }
 )";
 
 // (the effects blended as the game blends them, in its gamma: Godot blends in linear light, where a faint, bright,
@@ -579,8 +585,16 @@ RID AxisReplay::sampler_for(int minF, int magF, int wrapS, int wrapT) {
 	s->set_mag_filter(magF == 0x2601 ? RenderingDevice::SAMPLER_FILTER_LINEAR : RenderingDevice::SAMPLER_FILTER_NEAREST);
 	s->set_mip_filter(mipLinear ? RenderingDevice::SAMPLER_FILTER_LINEAR : RenderingDevice::SAMPLER_FILTER_NEAREST);
 	if (!mip) s->set_max_lod(0);   // (no mipmapping: the base level only, as GL)
-	s->set_repeat_u(wrapS == 0x2901 ? RenderingDevice::SAMPLER_REPEAT_MODE_REPEAT : RenderingDevice::SAMPLER_REPEAT_MODE_CLAMP_TO_EDGE);
-	s->set_repeat_v(wrapT == 0x2901 ? RenderingDevice::SAMPLER_REPEAT_MODE_REPEAT : RenderingDevice::SAMPLER_REPEAT_MODE_CLAMP_TO_EDGE);
+	// (GL_CLAMP (0x2900) past the edge gives the border colour, transparent black: a hit mark's coordinates run far
+	// past 0 .. 1 over a wall's triangle - clamped to the edge its last texels were smeared over the whole triangle,
+	// flat boxes on the walls and floors. GL_CLAMP_TO_EDGE (0x812f) and the rest: to the edge)
+	auto repeat_mode = [](int wrap) {
+		return wrap == 0x2901 ? RenderingDevice::SAMPLER_REPEAT_MODE_REPEAT : wrap == 0x2900 ? RenderingDevice::SAMPLER_REPEAT_MODE_CLAMP_TO_BORDER :
+		                        RenderingDevice::SAMPLER_REPEAT_MODE_CLAMP_TO_EDGE;
+	};
+	s->set_repeat_u(repeat_mode(wrapS));
+	s->set_repeat_v(repeat_mode(wrapT));
+	s->set_border_color(RenderingDevice::SAMPLER_BORDER_COLOR_FLOAT_TRANSPARENT_BLACK);
 	RID r = rd->sampler_create(s);
 	samplers[key] = r;
 	return r;
@@ -1193,11 +1207,13 @@ bool AxisReplay::frame_effects() const {
 static int sampler_class(const EmuBatch &b) {
 	const int minF = b.minFilter ? b.minFilter : 0x2702, magF = b.magFilter ? b.magFilter : 0x2601;
 	const int ws = b.wrapS ? b.wrapS : 0x2901, wt = b.wrapT ? b.wrapT : 0x2901;
-	return (magF == 0x2600 ? 1 : 0) | (minF >= 0x2700 && minF <= 0x2703 ? 2 : 0) | (ws != 0x2901 || wt != 0x2901 ? 4 : 0);
+	return (magF == 0x2600 ? 1 : 0) | (minF >= 0x2700 && minF <= 0x2703 ? 2 : 0) | (ws != 0x2901 || wt != 0x2901 ? 4 : 0) |
+	       (ws == 0x2900 || wt == 0x2900 ? 8 : 0);   // (8: GL_CLAMP - the border transparent, k_map_common)
 }
 
 Ref<ShaderMaterial> AxisReplay::map_material(uint32_t texture, uint32_t env, int blendClass, int cull, int priority, bool weapon) {
-	const int samp = (int)(texture >> 24) & 7;   // (sampler_class, packed above the texture name)
+	const int sampFull = (int)(texture >> 24) & 15;   // (sampler_class, packed above the texture name)
+	const int samp = sampFull & 7;   // (the shader's sampler hints; 8, the border, is a uniform)
 	const int lit = pictureMode == 2 && blendClass < 2 ? 1 : 0;   // (effects are unlit: they give light, not take it)
 	const int vtx = lit && vertexLighting ? 1 : 0;   // (per vertex: the game lights its vertices and blends between them)
 	const uint64_t key = (uint64_t)texture | (uint64_t)(env & 0xffff) << 32 | (uint64_t)blendClass << 48 | (uint64_t)lit << 51 |
@@ -1236,6 +1252,7 @@ Ref<ShaderMaterial> AxisReplay::map_material(uint32_t texture, uint32_t env, int
 	m->set_shader_parameter("env", env == 0x1E01 ? 1 : env == 0x2101 ? 2 : 0);
 	m->set_shader_parameter("textured", texture != 0);
 	m->set_shader_parameter("original_light", originalLight);
+	m->set_shader_parameter("border", (sampFull & 8) != 0);
 	if (lit) m->set_shader_parameter(vtx ? "shadow_strength" : "light_cap", vtx ? shadowStrength : lightCap);
 	m->set_render_priority(priority);
 	texture &= 0xffffff;
