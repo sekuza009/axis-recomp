@@ -253,5 +253,19 @@ func shoot_modes() -> void:
 		if img:
 			img.save_png("%s_m%d.png" % [mode_shot_prefix, m])
 			print("AxisGame: picture mode ", m, " saved")
+	# (a check: AXIS_SHADOW_SET=0,0.5,1 - the remaster at the same frame with each shadow strength, <prefix>_s<n>.png,
+	# n the strength in hundredths)
+	var set := OS.get_environment("AXIS_SHADOW_SET")
+	if set != "" and remaster:
+		game.picture_mode = 2
+		for v in set.split(","):
+			remaster.world.shadow_strength = float(v)
+			for _k in 4:
+				remaster.update(game.get_game_size())
+				game.redraw()
+				await get_tree().process_frame
+			var img := get_viewport().get_texture().get_image()
+			if img:
+				img.save_png("%s_s%03d.png" % [mode_shot_prefix, int(round(float(v) * 100.0))])
 	game.stop_recording()
 	get_tree().quit()
