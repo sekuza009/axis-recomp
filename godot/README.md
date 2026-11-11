@@ -241,6 +241,15 @@ sess5/map_survey.sh drives all 32, survey_sheet.py makes the contact sheets).
   light, and only the lit result reaches Godot: Godot's lit surfaces have the texture alone as their colour. The fix is
   the base colours sent from the game (the 64-bit build) for Godot's albedo.
 
+## The look pass checked on the remaster (2026-11-10)
+
+With the remaster now as bright as the original, the look (game.tscn's AxisGame: bloom 0.4, contrast 1.06, saturation
+1.08, vignette 0.2, sharpen 0.25) was compared off / on / bloom 0.8 on IllusionCity, Abyss, Netsphere and Valhalla
+(`AXIS_WORLD_SET=game.<setting>=...`: the AxisGame's own settings): it does what it should - a little more contrast and
+crispness, the glows and clouds sharper; bloom 0.8 adds little. Netsphere's white floor lost its texture to white
+(1.6 % of the picture clipped): the bloom threshold raised from 0.85 to 0.92 (0.5 %; Longinus' clouds, FinalLab as
+before; 0.97 no better).
+
 ## The Sun's shadow quality (2026-11-10)
 
 remaster_world.gd `sun_shadow_softness` (the Sun's angular size: Godot's soft penumbra), `sun_shadow_distance`,

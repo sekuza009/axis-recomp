@@ -305,9 +305,13 @@ func shoot_modes() -> void:
 			if l.pool == 1 and (l.kind == 2 or l.kind == 3):
 				dyn += 1
 		print("AxisGame: at the shot ", dyn, " dynamic lights")
-		var keep = remaster.world.get(prop)
+		var target: Object = remaster.world   # ("game.<setting>": the AxisGame's own - the look's)
+		if prop.begins_with("game."):
+			target = game
+			prop = prop.substr(5)
+		var keep = target.get(prop)
 		for v in set.split(","):
-			remaster.world.set(prop, float(v))
+			target.set(prop, float(v))
 			for _k in 4:
 				remaster.update(game.get_game_size())
 				game.redraw()
@@ -315,6 +319,6 @@ func shoot_modes() -> void:
 			var img := get_viewport().get_texture().get_image()
 			if img:
 				img.save_png("%s_%s%03d.png" % [mode_shot_prefix, tag, int(round(float(v) * 100.0))])
-		remaster.world.set(prop, keep)
+		target.set(prop, keep)
 	game.stop_recording()
 	get_tree().quit()
