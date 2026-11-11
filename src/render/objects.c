@@ -2,6 +2,7 @@
    pass (each list walked up to its count, read again after every entry); also a map object's frame (mapObject_frame)
    and the frame's camera (stage_setupView). */
 #include "../game.h"
+#include "draw_tags.h"
 #include <string.h>
 #define ST ((Stage *)s)   /* the stage (s in each function) by its fields (src/scene.fields) */
 
@@ -44,6 +45,35 @@ void THISCALL (stage_drawActors)(Stage *stage, void *view, int pass)
 }
 
 /* 0x479af0 (stage_drawParticles): every active particle */
+#ifdef AXIS_64
+/* (the Godot remaster, 64-bit build only: the glowing particles as a light pool of their own, 3 - the game lights
+   none of them but explosions and impacts (pool 1): a light record (Factor: kind 2, the particle's colour with its
+   alpha, its position, a radius by what it is) at each booster thrust puff (kinds 5 .. 7), muzzle flash (10 .. 18) and
+   shot in flight (20 .. 26: the tracers and beams), the particle's kind in the record's direction x (draw_tags.h)) */
+void draw_particleGlows(Stage *stage)
+{
+	static u8 rec[256 * 0x2c];
+	int n = 0;
+	for (int i = 0; i < stage->particleCount && n < 256; i++) {
+		const Particle *p = &stage->particles[i];
+		const int k = p->kind;
+		const float radius = k >= 5 && k <= 7 ? 700.0f : k >= 10 && k <= 18 ? 1500.0f : k >= 20 && k <= 26 ? 1000.0f : 0.0f;
+		if (p->active != 1 || radius == 0.0f)
+			continue;
+		u8 *f = rec + n++ * 0x2c;
+		memset(f, 0, 0x2c);
+		const int kind = 2;
+		const float kf = (float)k;
+		memcpy(f + 8, &kind, 4);
+		memcpy(f + 0xc, &p->colour, 4);
+		memcpy(f + 0x10, p->pos, 12);
+		memcpy(f + 0x1c, &kf, 4);
+		memcpy(f + 0x28, &radius, 4);
+	}
+	glrec64_lights(3, rec, n);
+}
+#endif
+
 void THISCALL (stage_drawParticles)(Stage *stage, void *view)
 {
 	for (int i = 0; i < stage->particleCount; i++)
