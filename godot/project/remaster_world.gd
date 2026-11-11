@@ -39,6 +39,13 @@ extends Node3D
 var map_has_sky := false
 ## (per vertex) the dynamic lights - explosions, muzzle flashes, the mechs' glow - as Godot's too: a soft glow per pixel
 ## on the surfaces' textures, over the game's own per-vertex light of them (dynamic_highlight_energy)
+## the Sun's shadow: its penumbra (the light's angular size, degrees: 0 hard edges), how far it reaches (metres; the
+## world is the game's units x 0.01), the shadow map's size and Godot's soft shadow filter (0 hard .. 5 ultra)
+@export_range(0.0, 5.0, 0.1) var sun_shadow_softness := 1.0
+@export_range(20.0, 1000.0, 1.0) var sun_shadow_distance := 300.0
+@export_enum("2048:2048", "4096:4096", "8192:8192") var shadow_map_size := 4096
+@export_range(0, 5) var shadow_filter := 2
+var _shadow_applied := ""
 @export var dynamic_highlights := true
 @export_range(0.0, 4.0, 0.01) var dynamic_highlight_energy := 0.5   # (remaster_view.update_sky: the frame drew a sky)
 ## (per pixel only) the lights on a lit map surface summed no higher than this (AxisReplay.light_cap), rolled off towards it: the game
@@ -62,6 +69,13 @@ func _ready() -> void:
 ## the frame's lights (AxisReplay.get_lights())
 func apply_lights(lights: Array, scale: float = 1.0, eye := Vector3.ZERO) -> void:
 	var env: Environment = $Environment.environment
+	var shadow_key := "%s %s %d %d" % [sun_shadow_softness, sun_shadow_distance, shadow_map_size, shadow_filter]
+	if shadow_key != _shadow_applied:   # (the Sun's shadow settings, when they change)
+		_shadow_applied = shadow_key
+		$Sun.light_angular_distance = sun_shadow_softness
+		$Sun.directional_shadow_max_distance = sun_shadow_distance
+		RenderingServer.directional_shadow_atlas_set_size(shadow_map_size, true)
+		RenderingServer.directional_soft_shadow_filter_set_quality(shadow_filter)
 	map_has_lights = false
 	# the point lights nearest the eye first (Metropolis has 511 of its own: max_point_lights of them, the nearest)
 	var points := []

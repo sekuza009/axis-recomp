@@ -241,6 +241,15 @@ sess5/map_survey.sh drives all 32, survey_sheet.py makes the contact sheets).
   light, and only the lit result reaches Godot: Godot's lit surfaces have the texture alone as their colour. The fix is
   the base colours sent from the game (the 64-bit build) for Godot's albedo.
 
+## The Sun's shadow quality (2026-11-10)
+
+remaster_world.gd `sun_shadow_softness` (the Sun's angular size: Godot's soft penumbra), `sun_shadow_distance`,
+`shadow_map_size`, `shadow_filter`, compared on Abyss, Centropolis and Metropolis at one held frame each
+(`AXIS_WORLD_SET`, enlarged where the shadow differs most): softness the one that shows - at 0 the edges are hard and
+stepped (Metropolis' wall) with dark specks on Abyss' rock, 1.0 natural, 2.0 smeared - so 1.0 (0.3 .. 0.5 ms more on
+the GPU, the frame rates unchanged); the distance must stay 300 m (at 60 or 150 the far walls' shadows go - the maps are
+large); the map size (2048 .. 8192) and the filter (0 .. 5) show no difference here: 4096 and 2 kept.
+
 ## Dynamic highlights (2026-11-10)
 
 Lit as the game lights it, the game's dynamic lights (pool 1: explosions, muzzle flashes, the mechs' glow) are also
