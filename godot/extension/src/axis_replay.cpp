@@ -347,6 +347,7 @@ void AxisReplay::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("build_map_meshes"), &AxisReplay::build_map_meshes);
 	ClassDB::bind_method(D_METHOD("build_sky_meshes"), &AxisReplay::build_sky_meshes);
 	ClassDB::bind_method(D_METHOD("get_weapon_mesh_index"), &AxisReplay::get_weapon_mesh_index);
+	ClassDB::bind_method(D_METHOD("get_first_shadowless_mesh"), &AxisReplay::get_first_shadowless_mesh);
 	ClassDB::bind_method(D_METHOD("get_clear_colour"), &AxisReplay::get_clear_colour);
 	ClassDB::bind_method(D_METHOD("redraw"), &AxisReplay::redraw);
 	ClassDB::bind_method(D_METHOD("dump_batches"), &AxisReplay::dump_batches);
@@ -1184,18 +1185,33 @@ bool AxisReplay::frame_effects() const {
 	return pictureMode == 2 && mapViewport;   // (the sky is Godot's too then: build_sky_meshes)
 }
 
+// (the game's sampling of a draw, as Godot's sampler hints: 1 nearest (its magnifying filter), 2 mipmapped (its
+// minifying filter one of the mipmap ones), 4 clamped (either wrap not GL_REPEAT); unset ones are GL's defaults -
+// nearest-mipmap-linear, linear, repeat. A hit mark's coordinates run far past 0 .. 1 on a wall's triangle: clamped, one
+// mark; repeated, as Godot drew every map texture, a mark tiled over the whole triangle. A sprite of the particle sheet
+// sampled with mip levels and linear filtering it was not drawn with took in its neighbours' dark edges: a faint box)
+static int sampler_class(const EmuBatch &b) {
+	const int minF = b.minFilter ? b.minFilter : 0x2702, magF = b.magFilter ? b.magFilter : 0x2601;
+	const int ws = b.wrapS ? b.wrapS : 0x2901, wt = b.wrapT ? b.wrapT : 0x2901;
+	return (magF == 0x2600 ? 1 : 0) | (minF >= 0x2700 && minF <= 0x2703 ? 2 : 0) | (ws != 0x2901 || wt != 0x2901 ? 4 : 0);
+}
+
 Ref<ShaderMaterial> AxisReplay::map_material(uint32_t texture, uint32_t env, int blendClass, int cull, int priority, bool weapon) {
+	const int samp = (int)(texture >> 24) & 7;   // (sampler_class, packed above the texture name)
 	const int lit = pictureMode == 2 && blendClass < 2 ? 1 : 0;   // (effects are unlit: they give light, not take it)
 	const int vtx = lit && vertexLighting ? 1 : 0;   // (per vertex: the game lights its vertices and blends between them)
 	const uint64_t key = (uint64_t)texture | (uint64_t)(env & 0xffff) << 32 | (uint64_t)blendClass << 48 | (uint64_t)lit << 51 |
 	                     (uint64_t)cull << 52 | (uint64_t)(priority + 128) << 54 | (uint64_t)vtx << 62 | (uint64_t)weapon << 63;
 	auto it = mapMaterials.find(key);
 	if (it != mapMaterials.end()) return it->second;
-	Ref<Shader> &sh = mapShaders[lit][blendClass][cull][weapon ? 1 : 0][vtx];
+	Ref<Shader> &sh = mapShaders[lit][blendClass][cull][weapon ? 1 : 0][vtx][samp];
 	if (sh.is_null()) {
 		static const char *blend[5] = { "", "", ", blend_mix, depth_draw_never", ", blend_add, depth_draw_never", ", blend_add, depth_draw_never" };
 		static const char *culls[4] = { "cull_disabled", "cull_back", "cull_front", "cull_disabled" };
-		String code = String("shader_type spatial;\nrender_mode ") + culls[cull] + (lit ? (vtx ? ", ambient_light_disabled" : ", diffuse_lambert_wrap") : ", unshaded") + blend[blendClass] + ";\n" + k_map_common;
+		String code = String("shader_type spatial;\nrender_mode ") + culls[cull] + (lit ? (vtx ? ", ambient_light_disabled" : ", diffuse_lambert_wrap") : ", unshaded") + blend[blendClass] + ";\n" +
+		              String(k_map_common).replace("filter_linear_mipmap, repeat_enable", String(samp & 1 ? (samp & 2 ? "filter_nearest_mipmap" : "filter_nearest") :
+		                                                                                          (samp & 2 ? "filter_linear_mipmap" : "filter_linear")) +
+		                                                                                   (samp & 4 ? ", repeat_disable" : ", repeat_enable"));
 		if (weapon)   // (the first-person weapon, as the game draws it over a cleared depth buffer: its depth squeezed to just
 		              // in front of the near plane - in order within itself, in front of the world; Godot's depth is reversed)
 			code += String("void vertex() {\n\tPOSITION = PROJECTION_MATRIX * MODELVIEW_MATRIX * vec4(VERTEX, 1.0);\n\tPOSITION.z = mix(POSITION.z, POSITION.w, 0.995);\n}\n");
@@ -1222,6 +1238,7 @@ Ref<ShaderMaterial> AxisReplay::map_material(uint32_t texture, uint32_t env, int
 	m->set_shader_parameter("original_light", originalLight);
 	if (lit) m->set_shader_parameter(vtx ? "shadow_strength" : "light_cap", vtx ? shadowStrength : lightCap);
 	m->set_render_priority(priority);
+	texture &= 0xffffff;
 	if (texture) {
 		Ref<Texture2DRD> &t = texShown[texture - 1];
 		if (t.is_null()) t.instantiate();
@@ -1260,8 +1277,11 @@ TypedArray<ArrayMesh> AxisReplay::build_map_meshes() {
 	auto pack2 = [](const std::vector<Vector2> &a) { PackedVector2Array p; p.resize((int64_t)a.size()); if (!a.empty()) memcpy(p.ptrw(), a.data(), a.size() * sizeof(Vector2)); return p; };
 	auto packc = [](const std::vector<Color> &a) { PackedColorArray p; p.resize((int64_t)a.size()); if (!a.empty()) memcpy(p.ptrw(), a.data(), a.size() * sizeof(Color)); return p; };
 	weaponMesh = -1;
+	firstShadowless = 0;
 	const bool effects = frame_effects();
 	static const bool mergeAdditive = getenv("AXIS_NO_ADDITIVE_MERGE") == nullptr;   // (a check: each run its own surface, as before)
+	std::vector<std::pair<uint64_t, Rect2>> effectRuns;   // (each effect batch: its material, its box on screen)
+	std::unordered_map<uint64_t, std::pair<uint64_t, size_t>> openEffects;   // (a material's last surface, its last batch)
 	int runs = 0;
 	uint64_t lastEffect = ~0ull;
 	std::unordered_map<uint64_t, Surface> surfaces;
@@ -1275,23 +1295,46 @@ TypedArray<ArrayMesh> AxisReplay::build_map_meshes() {
 		// its culled face kept (0 none, 1 back, 2 front)
 		const int cull = !b.pipe.cull ? 0 : b.pipe.cullFace == 0x404 ? 2 : b.pipe.cullFace == 0x405 ? 1 : 3;
 		const bool turn = b.pipe.frontFace == 0x901;
-		uint64_t key = (uint64_t)b.texture | (uint64_t)(b.env & 0xffff) << 32 | (uint64_t)blendClass << 48 | (uint64_t)cull << 56 |
+		const uint32_t texSamp = (b.texture & 0xffffff) | (uint32_t)sampler_class(b) << 24;   // (the texture with its sampling)
+		uint64_t key = (uint64_t)texSamp | (uint64_t)(b.env & 0xffff) << 32 | (uint64_t)blendClass << 48 | (uint64_t)cull << 56 |
 		               (uint64_t)(b.tag == 5) << 61;
 		int run = 0;
 		if (blendClass >= 2) {   // (effects: a surface per run of one material, in the game's order - it sorts them back to front)
-			if (key != lastEffect) { runs++; lastEffect = key; }
-			run = runs;
-			// (additive ones (3, 4) all of one material in one surface, at their first run's place: adding is the same in
-			// any order - Metropolis' city lights were some 470 runs of a few triangles each, each a surface to make)
-			// and the map's own see-through parts (ground and map objects: windows, signs, glows) all of one material so too -
-			// static scenery, of different materials seldom over one another; the particles, items and mechs keep the order
-			const bool merge = mergeAdditive && (blendClass != 2 || b.tag == 2 || b.tag == 3);
-			key = !merge ? (uint64_t)run << 40 ^ key ^ (1ull << 63) : key ^ (1ull << 62);
+			// a batch joins its material's last surface when nothing of another material drawn since then overlaps it on
+			// screen - the order between them cannot show; else it starts a run of its own, in the game's order.
+			// Metropolis' city lights were some 470 runs of a few triangles each, each a surface to make, seldom over
+			// one another; merging them all regardless put a see-through truss in front of the glass before it (Valhalla)
+			Rect2 box;
+			bool boxed = false, behind = false;
+			for (uint32_t i = 0; i < b.count; i++) {
+				const EmuVertex &v = emu.verts[b.first + i];
+				if (v.pos[3] <= 0.0f) { behind = true; break; }
+				const Vector2 sp(v.pos[0] / v.pos[3], v.pos[1] / v.pos[3]);
+				if (!boxed) { box = Rect2(sp, Vector2()); boxed = true; } else box.expand_to(sp);
+			}
+			if (behind || !boxed) box = Rect2(-1e9, -1e9, 2e9, 2e9);   // (a point behind the eye: anywhere)
+			auto open = openEffects.find(key);
+			bool join = mergeAdditive && open != openEffects.end();
+			if (join)
+				for (size_t j = open->second.second + 1; j < effectRuns.size() && join; j++)
+					if (effectRuns[j].first != key && effectRuns[j].second.intersects(box)) join = false;
+			uint64_t surfaceKey;
+			if (join) {
+				surfaceKey = open->second.first;
+				run = surfaces[surfaceKey].run;
+				open->second.second = effectRuns.size();
+			} else {
+				run = ++runs;
+				surfaceKey = (uint64_t)run << 40 ^ key ^ (1ull << 63);
+				openEffects[key] = { surfaceKey, effectRuns.size() };
+			}
+			effectRuns.push_back({ key, box });
+			key = surfaceKey;
 		}
 		auto it = surfaces.find(key);
 		if (it == surfaces.end()) {
 			it = surfaces.emplace(key, Surface()).first;
-			it->second.texture = b.texture;
+			it->second.texture = texSamp;
 			it->second.env = b.env;
 			it->second.blend = blendClass;
 			it->second.cull = cull;
@@ -1365,6 +1408,24 @@ TypedArray<ArrayMesh> AxisReplay::build_map_meshes() {
 				      String::num_int64((kv.first >> 47) & 1) + " " + String::num_int64((kv.first >> 32) & 0xfff, 16) + "/" + String::num_int64((kv.first >> 20) & 0xfff, 16) +
 				      " persp " + String::num_int64((kv.first >> 19) & 1) + " tex " + String::num_int64(kv.first & 0x7ffff) + " verts " + String::num_int64(kv.second);
 		}
+		{	// (the particles' sampling: per texture its filters, wrap and how far its coordinates range)
+			struct Sm { int minF, magF, ws, wt, n = 0; float lo = 1e9f, hi = -1e9f; };
+			std::map<uint32_t, Sm> sm;
+			for (const EmuCmd &c : emu.cmds) {
+				const EmuBatch &bb = c.batch;
+				if (c.kind != EmuCmd::BATCH || bb.tag != 7 || bb.pipe.prim != 0) continue;
+				Sm &x = sm[bb.texture];
+				x.minF = bb.minFilter; x.magF = bb.magFilter; x.ws = bb.wrapS; x.wt = bb.wrapT; x.n += (int)bb.count;
+				for (uint32_t i = 0; i < bb.count; i++) {
+					const EmuVertex &v = emu.verts[bb.first + i];
+					x.lo = std::min(x.lo, std::min(v.uv[0], v.uv[1])); x.hi = std::max(x.hi, std::max(v.uv[0], v.uv[1]));
+				}
+			}
+			for (auto &kv : sm)
+				st += String("\n  sampling: tex ") + String::num_int64(kv.first) + " min " + String::num_int64(kv.second.minF, 16) + " mag " +
+				      String::num_int64(kv.second.magF, 16) + " wrap " + String::num_int64(kv.second.ws, 16) + "/" + String::num_int64(kv.second.wt, 16) +
+				      " uv " + String::num(kv.second.lo, 2) + " .. " + String::num(kv.second.hi, 2) + " verts " + String::num_int64(kv.second.n);
+		}
 		int dyn = 0;
 		std::map<uint64_t, int> kinds;   // (the dynamic lights by kind, colour and radius)
 		for (const EmuLight &l : emu.lights)
@@ -1428,8 +1489,15 @@ TypedArray<ArrayMesh> AxisReplay::build_map_meshes() {
 	double t3 = timed ? now() : 0.0;
 	Ref<ArrayMesh> weapon;   // (the weapon's surfaces in a mesh of their own: it casts no shadow - its squeezed depth would
 	                         // spoil the shadow maps)
+	// (two passes: the solid and cut-out surfaces first, in meshes that cast the Sun's shadow; then the effects in meshes of
+	// their own that cast none (firstShadowless on): Godot casts a transparent surface's shadow as if it were solid - each
+	// smoke puff, glow or hit mark threw a faint rectangle on what was behind it)
+	for (int pass = 0; pass < 2; pass++) {
+	if (pass == 1) { firstShadowless = (int)meshes.size(); mesh = Ref<ArrayMesh>(); }
 	for (uint64_t key : order) {
 		Surface &s = surfaces[key];
+		if ((s.blend >= 2) != (pass == 1) && !s.weapon) continue;
+		if (s.weapon && pass == 1) continue;
 		Array arrays;
 		arrays.resize(Mesh::ARRAY_MAX);
 		arrays[Mesh::ARRAY_VERTEX] = pack3(s.v);
@@ -1452,6 +1520,7 @@ TypedArray<ArrayMesh> AxisReplay::build_map_meshes() {
 		// (effects drawn in the game's order: Godot's render priority, -128 .. 127, by run)
 		const int priority = s.run <= 0 ? 0 : runs <= 255 ? -128 + s.run : -128 + (int)((int64_t)s.run * 255 / (runs + 1));
 		mesh->surface_set_material(mesh->get_surface_count() - 1, map_material(s.texture, s.env, s.blend, s.cull, priority));
+	}
 	}
 	if (weapon.is_valid()) {
 		weaponMesh = (int)meshes.size();
@@ -1481,7 +1550,7 @@ TypedArray<ArrayMesh> AxisReplay::build_map_meshes() {
 			for (uint64_t key : order) {
 				const Surface &s = surfaces[key];
 				uint64_t g = (uint64_t)s.blend << 60 | (uint64_t)s.cull << 56 | (uint64_t)(s.env & 0xffff) << 40 | (uint64_t)s.weapon << 39 | (uint64_t)(s.run & 0x7f) << 32;
-				auto it = s.texture ? emu.textures.find(s.texture - 1) : emu.textures.end();
+				auto it = (s.texture & 0xffffff) ? emu.textures.find((s.texture & 0xffffff) - 1) : emu.textures.end();
 				if (it != emu.textures.end() && !it->second.sizes.empty())
 					g |= (uint64_t)it->second.sizes[0].first << 16 | (uint64_t)it->second.sizes[0].second << 4 | (uint64_t)(it->second.mipped ? 1 : 0);
 				groups[s.blend >= 2 ? (g | (uint64_t)s.run << 20) : g]++;

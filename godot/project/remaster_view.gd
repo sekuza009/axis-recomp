@@ -165,11 +165,12 @@ func update(frame: Vector2i) -> void:
 			map_sub.add_child(mi)
 			mi.scale = Vector3.ONE * WORLD_SCALE
 			map_meshes.append(mi)
-		var weapon: int = replay.get_weapon_mesh_index()
+		var shadowless: int = replay.get_first_shadowless_mesh()
 		for i in map_meshes.size():
 			map_meshes[i].mesh = built[i] if i < built.size() else null
-			# (the first-person weapon casts no shadow: its depth is squeezed in front of the near plane)
-			map_meshes[i].cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF if i == weapon else GeometryInstance3D.SHADOW_CASTING_SETTING_ON
+			# (no shadow from the effects - Godot would cast a see-through sprite's as a solid rectangle - nor from the
+			# first-person weapon, its depth squeezed in front of the near plane)
+			map_meshes[i].cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF if i >= shadowless else GeometryInstance3D.SHADOW_CASTING_SETTING_ON
 		var t2 := Time.get_ticks_usec()
 		timing.assign = (t2 - t1) / 1000.0
 		var pv: bool = world.per_vertex_lighting

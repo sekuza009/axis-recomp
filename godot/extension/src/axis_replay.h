@@ -71,6 +71,8 @@ public:
 	int godotKinds = (1 << 2) | (1 << 3) | (1 << 4) | (1 << 5) | (1 << 6) | (1 << 7) | (1 << 8);
 	int weaponMesh = -1;   // (build_map_meshes: the mesh of the actors' view pass - the first-person weapon - or -1)
 	int get_weapon_mesh_index() const { return weaponMesh; }
+	int firstShadowless = 0;   // (build_map_meshes: the meshes from this one on cast no shadow - the effects, the weapon)
+	int get_first_shadowless_mesh() const { return firstShadowless; }
 	bool frame_effects() const;   // (picture mode 2 and no sky in the frame: Godot draws the see-through and additive parts too)
 	void set_godot_kinds(int v) { godotKinds = v; }
 	int get_godot_kinds() const { return godotKinds; }
@@ -174,7 +176,7 @@ protected:
 	std::unordered_map<uint32_t, RID> texRids;   // (render thread -> main thread)
 	std::unordered_map<uint32_t, Ref<Texture2DRD>> texShown;
 	std::unordered_map<uint64_t, Ref<ShaderMaterial>> mapMaterials;
-	Ref<Shader> mapShaders[2][5][4][2][2];   // [original lighting / remaster][the class: godot_class()][the culling][weapon][per vertex]
+	Ref<Shader> mapShaders[2][5][4][2][2][8];   // [original lighting / remaster][the class: godot_class()][the culling][weapon][per vertex][sampler_class]
 	Ref<ShaderMaterial> map_material(uint32_t texture, uint32_t env, int blendClass, int cull, int priority = 0, bool weapon = false);
 	Ref<Shader> skyShaders[4];   // [no blending / alpha / additive (source alpha) / additive (one)]
 	std::unordered_map<uint64_t, Ref<ShaderMaterial>> skyMaterials;

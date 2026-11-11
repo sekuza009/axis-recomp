@@ -241,6 +241,23 @@ sess5/map_survey.sh drives all 32, survey_sheet.py makes the contact sheets).
   light, and only the lit result reaches Godot: Godot's lit surfaces have the texture alone as their colour. The fix is
   the base colours sent from the game (the 64-bit build) for Godot's albedo.
 
+## Three faults the play test found (2026-11-11)
+
+- **Hit marks multiplied** on walls: Godot sampled every map texture repeated, linear, mipmapped; the game draws per
+  draw with its own filters and wrap - the hit marks' texture (tex 2) clamped (GL_CLAMP), its coordinates -5.5 .. 24.7
+  across a wall's triangle: repeated, one mark became hundreds. The materials now take the draw's sampling
+  (axis_replay.cpp `sampler_class`: nearest / linear by the magnifying filter, mipmapped by the minifying one, clamped
+  unless both wraps repeat; packed above the texture name in the surface and material keys).
+- **Faint dark boxes** around sprites (booster smoke, glows, marks) on maps with a sky: Godot casts a see-through
+  surface's shadow as if solid - each quad threw a rectangle. The effects are now in meshes of their own that cast
+  no shadow (`get_first_shadowless_mesh`). Some of what the shadow-strength survey showed was this: Centropolis' dark
+  floor, Abyss' shaded rock - the remaster now as the original there (0.038 -> 0.018 and 0.017 -> 0.009 from Original
+  lighting); the Sun's shadows only from solid geometry.
+- **See-through layers out of order** (Valhalla: a truss behind a glass pillar drawn over it): Metropolis' merge put
+  all of a material's see-through runs in one surface at its first place. Now a batch joins its material's last surface
+  only when nothing of another material drawn since overlaps it on screen (its box from the clip coordinates), else it
+  starts a run in the game's order: Metropolis ~190 surfaces, still 120 fps.
+
 ## Metropolis at 120, and the particles' glows (2026-11-10)
 
 Metropolis' ~490 surfaces a frame were nearly all (474) effect runs of a few triangles: the map's see-through
