@@ -21,6 +21,7 @@
 
 #include <cstring>
 #include <chrono>
+#include <map>
 #include <cstdlib>
 
 using namespace godot;
@@ -1150,7 +1151,7 @@ TypedArray<ArrayMesh> AxisReplay::build_map_meshes() {
 	static const bool timed = getenv("AXIS_BUILD_TIMES") != nullptr;   // (a check: the build's stages, every 120 frames)
 	static int timedFrames = 0;
 	static double tStage[4] = { 0, 0, 0, 0 };
-	static int64_t tVerts = 0, tSurfaces = 0, tSame = 0, tSameVerts = 0;
+	static int64_t tVerts = 0, tSurfaces = 0, tSame = 0, tSameVerts = 0, tFxSurf = 0, tFxVerts = 0;
 	static std::unordered_map<uint64_t, uint64_t> lastHash;
 	auto now = []() { return std::chrono::duration<double, std::milli>(std::chrono::steady_clock::now().time_since_epoch()).count(); };
 	double t0 = timed ? now() : 0.0;
@@ -1225,6 +1226,65 @@ TypedArray<ArrayMesh> AxisReplay::build_map_meshes() {
 		}
 	}
 	double t2 = timed ? now() : 0.0;
+	static int fxStatsCounter = 0;
+	if (getenv("AXIS_EFFECT_STATS") && (fxStatsCounter++ % 60) == 0) {   // (a check: the frame's effects - by kind, texture, blend - and the dynamic lights)
+		struct Fx { int tag, blend, runs = 0; uint32_t tex, tw = 0, th = 0; int64_t verts = 0; double col[4] = { 0, 0, 0, 0 }; Vector3 lo, hi; };
+		std::map<uint64_t, Fx> fx;
+		for (const EmuCmd &c : emu.cmds) {
+			const EmuBatch &b = c.batch;
+			if (c.kind != EmuCmd::BATCH) continue;
+			const int bc = godot_class(b, 0x7ff, effects);   // (every kind: which of them Godot draws is told below)
+			if (bc < 1 || bc == 5) continue;
+			const uint64_t k = (uint64_t)b.tag << 48 | (uint64_t)bc << 40 | b.texture;
+			Fx &f = fx[k];
+			if (f.runs == 0) {
+				f.tag = b.tag; f.blend = bc; f.tex = b.texture;
+				auto it = b.texture ? emu.textures.find(b.texture - 1) : emu.textures.end();
+				if (it != emu.textures.end() && !it->second.sizes.empty()) { f.tw = it->second.sizes[0].first; f.th = it->second.sizes[0].second; }
+				f.lo = Vector3(1e30, 1e30, 1e30); f.hi = -f.lo;
+			}
+			f.runs++;
+			for (uint32_t i = 0; i < b.count; i++) {
+				const EmuVertex &v = emu.verts[b.first + i];
+				for (int j = 0; j < 4; j++) f.col[j] += v.col[j];
+				const Vector3 w = u.world(v, b, nullptr);
+				f.lo = f.lo.min(w); f.hi = f.hi.max(w);
+			}
+			f.verts += b.count;
+		}
+		String st = "effects:";
+		for (auto &kv : fx) {
+			const Fx &f = kv.second;
+			const double n = f.verts ? (double)f.verts : 1.0;
+			st += String("\n  tag ") + String::num_int64(f.tag) + ((godotKinds >> f.tag) & 1 ? " (Godot)" : " (game)") + " class " + String::num_int64(f.blend) + " tex " + String::num_int64(f.tex) + " " +
+			      String::num_int64(f.tw) + "x" + String::num_int64(f.th) + " batches " + String::num_int64(f.runs) + " verts " + String::num_int64(f.verts) +
+			      " colour " + String::num(f.col[0] / n, 2) + "," + String::num(f.col[1] / n, 2) + "," + String::num(f.col[2] / n, 2) + "," + String::num(f.col[3] / n, 2) +
+			      " size " + String::num((f.hi - f.lo).length(), 0);
+		}
+		{	// (the bullets' and particles' batches of any primitive - lines and points too - and their state)
+			std::map<uint64_t, int> other;
+			for (const EmuCmd &c : emu.cmds) {
+				const EmuBatch &bb = c.batch;
+				if (c.kind != EmuCmd::BATCH || (bb.tag != 6 && bb.tag != 7 && bb.tag != 4)) continue;
+				const uint64_t k = (uint64_t)bb.tag << 56 | (uint64_t)bb.pipe.prim << 48 | (uint64_t)(bb.pipe.blend ? 1 : 0) << 47 |
+				                   (uint64_t)(bb.pipe.src & 0xfff) << 32 | (uint64_t)(bb.pipe.dst & 0xfff) << 20 | (uint64_t)(bb.persp ? 1 : 0) << 19 | (bb.texture & 0x7ffff);
+				other[k] += (int)bb.count;
+			}
+			for (auto &kv : other)
+				st += String("\n  any: tag ") + String::num_int64(kv.first >> 56) + " prim " + String::num_int64((kv.first >> 48) & 0xff) + " blend " +
+				      String::num_int64((kv.first >> 47) & 1) + " " + String::num_int64((kv.first >> 32) & 0xfff, 16) + "/" + String::num_int64((kv.first >> 20) & 0xfff, 16) +
+				      " persp " + String::num_int64((kv.first >> 19) & 1) + " tex " + String::num_int64(kv.first & 0x7ffff) + " verts " + String::num_int64(kv.second);
+		}
+		int dyn = 0;
+		std::map<uint64_t, int> kinds;   // (the dynamic lights by kind, colour and radius)
+		for (const EmuLight &l : emu.lights)
+			if (l.pool == 1) { dyn++; kinds[(uint64_t)l.kind << 56 | (uint64_t)(l.colour & 0xffffff) << 24 | (uint64_t)(uint32_t)l.radius]++; }
+		for (auto &kv : kinds)
+			st += String("\n  light: kind ") + String::num_int64(kv.first >> 56) + " colour " + String::num_int64((kv.first >> 24) & 0xffffff, 16) +
+			      " radius " + String::num_int64(kv.first & 0xffffff) + " x" + String::num_int64(kv.second);
+		st += String("\n  dynamic lights ") + String::num_int64(dyn);
+		UtilityFunctions::print(st);
+	}
 	if (getenv("AXIS_MAP_STATS")) {   // (a check: the map's batches and their depth state)
 		String st;
 		for (const EmuCmd &c : emu.cmds) {
@@ -1302,6 +1362,7 @@ TypedArray<ArrayMesh> AxisReplay::build_map_meshes() {
 		for (uint64_t key : order) {
 			const Surface &s = surfaces[key];
 			tVerts += (int64_t)s.v.size();
+			if (s.blend >= 2) { tFxSurf++; tFxVerts += (int64_t)s.v.size(); }
 			uint64_t h = 1469598103934665603ull;
 			auto mixin = [&h](const void *data, size_t n) { const uint8_t *b = (const uint8_t *)data; for (size_t i = 0; i < n; i++) h = (h ^ b[i]) * 1099511628211ull; };
 			mixin(s.v.data(), s.v.size() * sizeof(Vector3));
@@ -1316,8 +1377,8 @@ TypedArray<ArrayMesh> AxisReplay::build_map_meshes() {
 		if (++timedFrames == 120) {
 			UtilityFunctions::print("build_map_meshes (ms a frame): textures ", tStage[0] / 120, ", gather ", tStage[1] / 120, ", smooth ", tStage[2] / 120,
 			                        ", meshes ", tStage[3] / 120, "; ", tVerts / 120, " vertices, ", tSurfaces / 120, " surfaces; unchanged from the frame before ",
-			                        tSame / 120, " surfaces, ", tSameVerts / 120, " vertices");
-			timedFrames = 0; tVerts = tSurfaces = tSame = tSameVerts = 0;
+			                        tSame / 120, " surfaces, ", tSameVerts / 120, " vertices; effects ", tFxSurf / 120, " surfaces, ", tFxVerts / 120, " vertices");
+			timedFrames = 0; tVerts = tSurfaces = tSame = tSameVerts = tFxSurf = tFxVerts = 0;
 			for (double &x : tStage) x = 0;
 		}
 	}
