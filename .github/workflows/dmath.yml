@@ -1,0 +1,42 @@
+name: dmath-check
+# AxisDMath (the GDScript rewrite's machine-independent sine, cosine and arctangent) on every platform: the "ours"
+# fingerprints must be the same everywhere; the platform's own functions may differ.
+on: [push, workflow_dispatch]
+jobs:
+  check:
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - os: macos-latest        # Apple Silicon (arm64)
+            zip: Godot_v4.7.2-stable_macos.universal.zip
+            bin: Godot.app/Contents/MacOS/Godot
+          - os: macos-15-intel      # Intel (x86_64)
+            zip: Godot_v4.7.2-stable_macos.universal.zip
+            bin: Godot.app/Contents/MacOS/Godot
+          - os: ubuntu-latest
+            zip: Godot_v4.7.2-stable_linux.x86_64.zip
+            bin: Godot_v4.7.2-stable_linux.x86_64
+          - os: ubuntu-24.04-arm    # Linux on arm64
+            zip: Godot_v4.7.2-stable_linux.arm64.zip
+            bin: Godot_v4.7.2-stable_linux.arm64
+          - os: windows-latest
+            zip: Godot_v4.7.2-stable_win64.exe.zip
+            bin: Godot_v4.7.2-stable_win64_console.exe
+    runs-on: ${{ matrix.os }}
+    defaults:
+      run:
+        shell: bash
+    steps:
+      - uses: actions/checkout@v4
+      - name: Godot 4.7.2
+        run: |
+          curl -sSL -o godot.zip "https://github.com/godotengine/godot/releases/download/4.7.2-stable/${{ matrix.zip }}"
+          mkdir -p godot && cd godot && unzip -q ../godot.zip && chmod +x "${{ matrix.bin }}" || true
+      - name: dmath_check
+        run: |
+          echo "machine: $(uname -s) $(uname -m)"
+          G="godot/${{ matrix.bin }}"
+          "$G" --headless --path . --import > /dev/null 2>&1 || true
+          "$G" --headless --path . -s res://tests/dmath_check.gd 2>&1 | grep -v "^Godot\|^$" | tee result.txt
+          grep -q "ours 901897065956d053" result.txt && grep -q "ours 40b189498b574d66" result.txt && grep -q "ours 909a4ba747015641" result.txt
