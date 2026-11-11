@@ -172,6 +172,9 @@ int godot_class(const EmuBatch &b, int kinds, bool effects) {
 	if (effects && b.tag == 1 && b.scissor[2] > 0) return 5;   // (the sky, Godot's in the remaster: its colour as it is)
 	if (b.pipe.prim != 0 || b.scissor[2] <= 0 || b.count < 3 || !(kinds & (1 << b.tag))) return -1;
 	const bool mix = b.pipe.src == 0x302 && b.pipe.dst == 0x303;
+	// (alpha-blended particles and bullets - smoke puffs, flames - are effects, blended in order: as a cut-out (1) their
+	// soft edges, most of a puff, went - the booster smoke nearly vanished)
+	if (b.persp && mix && b.pipe.blend && (b.tag == 6 || b.tag == 7) && effects) return 2;
 	if (b.persp && (!b.pipe.blend || mix)) return b.pipe.blend ? 1 : 0;
 	if (!effects || !b.pipe.blend) return -1;
 	if (mix) return 2;

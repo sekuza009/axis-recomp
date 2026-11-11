@@ -220,11 +220,13 @@ func _process(_delta: float) -> void:
 ## (a check: AXIS_SHOT_LIGHTS=<n> - the held frame's shot waits, past its frame, for n lights of the action at least:
 ## explosions and impacts (pool 1) and the particles' glows (pool 3) - the muzzle flashes, shots and booster puffs)
 func action_enough() -> bool:
-	var kind := OS.get_environment("AXIS_SHOT_KIND").to_int()   # (or a particle of that kind glowing within 30 m)
+	var kinds := OS.get_environment("AXIS_SHOT_KIND").split("-")   # (or a particle of that kind - or a-b - glowing within 30 m)
+	var kind := kinds[0].to_int()
+	var kind_last := kinds[kinds.size() - 1].to_int()
 	if kind > 0 and remaster and remaster.map_cam:
 		var eye: Vector3 = remaster.map_cam.global_position / remaster.WORLD_SCALE
 		for l in game.get_lights():
-			if l.pool == 3 and int(l.direction.x) == kind and (l.position as Vector3).distance_to(eye) < 3000.0:
+			if l.pool == 3 and int(l.direction.x) >= kind and int(l.direction.x) <= kind_last and (l.position as Vector3).distance_to(eye) < 3000.0:
 				return true
 		return false
 	var need := OS.get_environment("AXIS_SHOT_LIGHTS").to_int()

@@ -51,7 +51,7 @@ var _shadow_applied := ""
 ## glows the game has not got (its light pool 3, objects.c draw_particleGlows): a soft light of the particle's colour
 ## at each booster thrust puff, muzzle flash and shot in flight (the tracers), fading with it
 @export var particle_glows := true
-@export_range(0.0, 4.0, 0.01) var booster_glow_energy := 2.0
+@export_range(0.0, 4.0, 0.01) var booster_glow_energy := 1.0
 @export_range(0.0, 4.0, 0.01) var muzzle_glow_energy := 1.0
 @export_range(0.0, 4.0, 0.01) var shot_glow_energy := 1.5   # (remaster_view.update_sky: the frame drew a sky)
 ## (per pixel only) the lights on a lit map surface summed no higher than this (AxisReplay.light_cap), rolled off towards it: the game

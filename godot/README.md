@@ -260,7 +260,11 @@ at seven points inside each (times the vertex colour; a coarse mip level mixed i
 PLA-16's flash came out pink), weighted by alpha and brightness - the hue, its strength the settings - so a
 plasma shot glows its sprite's colour whatever the weapon (the game's records say white for nearly all). A particle
 the game did not draw (too far from the camera) keeps white. Checked with the PLA-16 (item 8, a new profile's slot 3) on Abyss: its muzzle flash and plasma shot
-glow e5e6ff, the bluish white of its sprite (game.gd `AXIS_SHOT_KIND=<particle kind>`: the shot waits for one near). The tracer lines themselves the game draws in screen
+glow e5e6ff, the bluish white of its sprite (game.gd `AXIS_SHOT_KIND=<particle kind>`: the shot waits for one near).
+The booster's, in third person (V twice; sess5/dyn_play.sh VIEWS=2 FIRE=0, `AXIS_SHOT_KIND=5-7`): its thrust puffs glow
+e5ffb7, their sprites' pale green; at `booster_glow_energy` 2 the mech washed out, 1 kept. The puffs themselves had
+nearly vanished in the remaster: alpha-blended particles drawn with perspective were taken as cut-outs (alpha 0.5
+scissor, most of a soft puff gone) - particles and bullets (tags 6, 7) are now blended effects (godot_class). The tracer lines themselves the game draws in screen
 space (lines), over Godot's picture. Checked in play (sess5/dyn_play.sh, game.gd `AXIS_SHOT_LIGHTS=<n>`: the held
 frame's shot waits for that many action lights; `AXIS_EFFECT_STATS`): a muzzle flash lights the player's own gun.
 
