@@ -64,6 +64,7 @@ public:
 	float originalLight = 0.6f;
 	bool vertexLighting = true;   // (the map lit as the game lights it, per vertex, with Godot's shadows: k_game_light)
 	float shadowStrength = 0.5f;
+	bool glowsAsSprites = true;   // (the particles' glows coloured as their sprites: particle_glow_colours)
 	float lightCap = 1.0f;   // (the lit map surfaces' lights summed no higher than this: k_map_light)
 	// what Godot draws in picture modes 1 and 2, by kind (1 << tag, src/render/draw_tags.h): the ground, map objects,
 	// actors and items by default (the actors' view pass, over a cleared depth buffer, and the effects stay the game's)

@@ -927,14 +927,23 @@ Transform3D AxisReplay::get_camera_view() const {
 	return Transform3D(Basis(Vector3(m[0], m[1], m[2]), Vector3(m[4], m[5], m[6]), Vector3(m[8], m[9], m[10])), Vector3(m[12], m[13], m[14]));   // (Basis from columns)
 }
 
+namespace { std::vector<Color> particle_glow_colours(const GLEmu &e); }   // (below: the particles' glows coloured as their sprites)
+
 Array AxisReplay::get_lights(bool points, bool mapPoints) const {
 	Array out;
+	std::vector<Color> glowColours;
+	if (points && glowsAsSprites) glowColours = particle_glow_colours(emu);
+	size_t glow = 0;
 	for (const EmuLight &l : emu.lights) {
 		if ((l.kind == 2 || l.kind == 3) && (!points || (!mapPoints && l.pool == 0))) continue;   // (Metropolis has 511 of its own)
 		Dictionary d;
 		d["pool"] = l.pool;
 		d["kind"] = l.kind;
 		d["colour"] = Color((l.colour & 0xff) / 255.0f, ((l.colour >> 8) & 0xff) / 255.0f, ((l.colour >> 16) & 0xff) / 255.0f, ((l.colour >> 24) & 0xff) / 255.0f);
+		if (l.pool == 3 && glow < glowColours.size()) {   // (a particle's glow: its sprite's colour, its own fading alpha)
+			const Color c = glowColours[glow++];
+			if (c.a > 0) d["colour"] = Color(c.r, c.g, c.b, ((l.colour >> 24) & 0xff) / 255.0f);
+		}
 		d["position"] = Vector3(l.pos[0], l.pos[1], l.pos[2]);
 		d["direction"] = Vector3(l.dir[0], l.dir[1], l.dir[2]);
 		d["radius"] = l.radius;
@@ -1004,6 +1013,74 @@ struct Unproject {
 		return Vector3((real_t)r[0], (real_t)r[1], (real_t)r[2]);
 	}
 };
+Unproject unprojector(const GLEmu &e);
+
+// the particles' glows (light pool 3, in order) coloured as the particles look: the particle triangles (tag 7) drawn
+// within a few metres of each glow, their texture sampled at a coarse mip level at their corners and centre (times the
+// vertex colour, as the texture environment combines them), weighted by alpha and brightness - a plasma shot's glow
+// its sprite's green or blue, whatever the weapon. The hue only (brightest channel 1): the glow settings give the
+// strength. Alpha 0: none found (the glow keeps the particle's own colour)
+std::vector<Color> particle_glow_colours(const GLEmu &e) {
+	std::vector<Color> out;
+	std::vector<const EmuLight *> glows;
+	for (const EmuLight &l : e.lights)
+		if (l.pool == 3 && (l.kind == 2 || l.kind == 3)) glows.push_back(&l);
+	if (glows.empty()) return out;
+	const Unproject u = unprojector(e);
+	struct Spot { Vector3 at; Vector3 rgb; float w; };
+	std::vector<Spot> spots;
+	if (u.ok) {
+		for (const EmuCmd &c : e.cmds) {
+			const EmuBatch &b = c.batch;
+			if (c.kind != EmuCmd::BATCH || b.tag != 7 || b.pipe.prim != 0 || b.count < 3) continue;
+			auto it = b.texture ? e.textures.find(b.texture - 1) : e.textures.end();
+			const EmuTexture *tex = it != e.textures.end() && !it->second.levels.empty() ? &it->second : nullptr;
+			size_t lv = 0;
+			if (tex)
+				while (lv + 1 < tex->sizes.size() && std::max(tex->sizes[lv].first, tex->sizes[lv].second) > 32) lv++;
+			auto sample = [&](float s, float tt) {
+				if (!tex) return Color(1, 1, 1, 1);
+				const int w = tex->sizes[lv].first, h = tex->sizes[lv].second;
+				if (w <= 0 || h <= 0 || tex->levels[lv].size() < (size_t)w * h * 4) return Color(1, 1, 1, 1);
+				int x = (int)Math::floor(s * w) % w, y = (int)Math::floor(tt * h) % h;
+				if (x < 0) x += w;
+				if (y < 0) y += h;
+				const uint8_t *px = &tex->levels[lv][((size_t)y * w + x) * 4];
+				return Color(px[0] / 255.0f, px[1] / 255.0f, px[2] / 255.0f, px[3] / 255.0f);
+			};
+			for (uint32_t i = 0; i + 2 < b.count; i += 3) {
+				const EmuVertex *v[3] = { &e.verts[b.first + i], &e.verts[b.first + i + 1], &e.verts[b.first + i + 2] };
+				const Vector3 at = (u.world(*v[0], b, nullptr) + u.world(*v[1], b, nullptr) + u.world(*v[2], b, nullptr)) / 3.0f;
+				Vector3 rgb;
+				float w = 0;
+				for (int k = 0; k < 4; k++) {
+					const float s = k < 3 ? v[k]->uv[0] : (v[0]->uv[0] + v[1]->uv[0] + v[2]->uv[0]) / 3.0f;
+					const float tt = k < 3 ? v[k]->uv[1] : (v[0]->uv[1] + v[1]->uv[1] + v[2]->uv[1]) / 3.0f;
+					const EmuVertex &cv = *v[k < 3 ? k : 0];
+					const Color tc = sample(s, tt);
+					const Color c = b.env == 0x1E01 ? tc : Color(tc.r * cv.col[0], tc.g * cv.col[1], tc.b * cv.col[2], tc.a * cv.col[3]);
+					const float weight = c.a * std::max(c.r, std::max(c.g, c.b));
+					rgb += Vector3(c.r, c.g, c.b) * weight;
+					w += weight;
+				}
+				if (w > 0.01f) spots.push_back({ at, rgb / w, w });
+			}
+		}
+	}
+	for (const EmuLight *l : glows) {
+		const Vector3 p(l->pos[0], l->pos[1], l->pos[2]);
+		Vector3 rgb;
+		float w = 0;
+		for (const Spot &s : spots)
+			if (s.at.distance_squared_to(p) < 400.0f * 400.0f) { rgb += s.rgb * s.w; w += s.w; }
+		if (w <= 0.01f) { out.push_back(Color(0, 0, 0, 0)); continue; }
+		rgb /= w;
+		const float top = std::max(rgb.x, std::max(rgb.y, rgb.z));
+		out.push_back(top > 0.001f ? Color(rgb.x / top, rgb.y / top, rgb.z / top, 1) : Color(0, 0, 0, 0));
+	}
+	return out;
+}
+
 Unproject unprojector(const GLEmu &e) {
 	Unproject u;
 	if (!e.hasCamera) return u;
@@ -1288,6 +1365,18 @@ TypedArray<ArrayMesh> AxisReplay::build_map_meshes() {
 		for (auto &kv : kinds)
 			st += String("\n  light: pool ") + String::num_int64(kv.first >> 60) + " particle " + String::num_int64((kv.first >> 48) & 0xff) + " kind " + String::num_int64((kv.first >> 56) & 0xf) + " colour " + String::num_int64((kv.first >> 24) & 0xffffff, 16) +
 			      " radius " + String::num_int64(kv.first & 0xffffff) + " x" + String::num_int64(kv.second);
+		{	// (the particles' glows as coloured from their sprites: particle kind, colour)
+			const std::vector<Color> gc = particle_glow_colours(emu);
+			std::map<String, int> seen;
+			size_t g = 0;
+			for (const EmuLight &l : emu.lights) {
+				if (l.pool != 3) continue;
+				const Color c = g < gc.size() ? gc[g] : Color(0, 0, 0, 0);
+				g++;
+				seen[String::num_int64((int)l.dir[0]) + " " + (c.a > 0 ? c.to_html(false) : String("none"))]++;
+			}
+			for (auto &kv : seen) st += String("\n  glow: particle ") + kv.first + " x" + String::num_int64(kv.second);
+		}
 		st += String("\n  dynamic lights ") + String::num_int64(dyn);
 		UtilityFunctions::print(st);
 	}
