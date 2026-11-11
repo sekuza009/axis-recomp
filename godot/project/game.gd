@@ -289,18 +289,32 @@ func shoot_modes() -> void:
 			img.save_png("%s_m%d.png" % [mode_shot_prefix, m])
 			print("AxisGame: picture mode ", m, " saved")
 	# (a check: AXIS_SHADOW_SET=0,0.5,1 - the remaster at the same frame with each shadow strength, <prefix>_s<n>.png,
-	# n the strength in hundredths)
+	# n the strength in hundredths; AXIS_WORLD_SET=<remaster_world.gd setting>=<v>,<v>... any setting so, <prefix>_w<n>.png)
+	var prop := "shadow_strength"
+	var tag := "s"
 	var set := OS.get_environment("AXIS_SHADOW_SET")
+	if OS.get_environment("AXIS_WORLD_SET") != "":
+		var parts := OS.get_environment("AXIS_WORLD_SET").split("=", true, 1)
+		prop = parts[0]
+		set = parts[1]
+		tag = "w"
 	if set != "" and remaster:
 		game.picture_mode = 2
+		var dyn := 0
+		for l in game.get_lights():
+			if l.pool == 1 and (l.kind == 2 or l.kind == 3):
+				dyn += 1
+		print("AxisGame: at the shot ", dyn, " dynamic lights")
+		var keep = remaster.world.get(prop)
 		for v in set.split(","):
-			remaster.world.shadow_strength = float(v)
+			remaster.world.set(prop, float(v))
 			for _k in 4:
 				remaster.update(game.get_game_size())
 				game.redraw()
 				await get_tree().process_frame
 			var img := get_viewport().get_texture().get_image()
 			if img:
-				img.save_png("%s_s%03d.png" % [mode_shot_prefix, int(round(float(v) * 100.0))])
+				img.save_png("%s_%s%03d.png" % [mode_shot_prefix, tag, int(round(float(v) * 100.0))])
+		remaster.world.set(prop, keep)
 	game.stop_recording()
 	get_tree().quit()

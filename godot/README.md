@@ -241,6 +241,16 @@ sess5/map_survey.sh drives all 32, survey_sheet.py makes the contact sheets).
   light, and only the lit result reaches Godot: Godot's lit surfaces have the texture alone as their colour. The fix is
   the base colours sent from the game (the 64-bit build) for Godot's albedo.
 
+## Dynamic highlights (2026-11-10)
+
+Lit as the game lights it, the game's dynamic lights (pool 1: explosions, muzzle flashes, the mechs' glow) are also
+Godot's point lights (`dynamic_highlights`, `dynamic_highlight_energy` 0.5): each adds a soft per-pixel glow on the
+surfaces' textures (`k_game_light`: SPECULAR_LIGHT, so not multiplied by the game's already lit colour) over the game's
+own per-vertex light of them; the map's own point lights stay the game's alone. Checked during a fight on Bloodbath
+(sess5/dyn_play.sh: a round joined and played, `AXIS_WORLD_SET=dynamic_highlight_energy=0,0.5,1,2` - game.gd's held
+frame shot with each value of any remaster_world.gd setting): 0 as the original (0.261), 0.5 a gentle lift near the
+fight (0.273), 1.0 a clear glow (0.285), 2.0 washes the grey ceiling out (0.305).
+
 ## The remaster's cost (2026-11-10)
 
 Measured with the release export on a 120 Hz screen (`AXIS_PERF_LOG=<file>`: every second the frames, the frame time,

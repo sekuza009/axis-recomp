@@ -257,12 +257,17 @@ void light() {
 // models' base colours - as the surface, and from Godot what the game has not got: the Sun's shadow, darkening a
 // surface by how much it faces the Sun where the shadow falls on it (shadow_strength), and the ambient occlusion (SSAO's
 // light affect). One directional light only (remaster_world.gd: the Sun - shadowless on a map without a directional
-// light of its own); no ambient (the game's colour has it))
+// light of its own); no ambient (the game's colour has it). The point lights are the dynamic ones only (explosions,
+// muzzle flashes, the mechs' glow: remaster_world.gd dynamic_highlights): each adds a soft glow per pixel on the
+// surface's texture, over the game's colour (its own per-vertex light of them stays))
 const char *k_game_light = R"(
 uniform float shadow_strength = 0.5;
+varying vec3 surface_texture;
 void light() {
 	if (LIGHT_IS_DIRECTIONAL)
 		DIFFUSE_LIGHT += vec3(1.0 - shadow_strength * clamp(dot(NORMAL, LIGHT), 0.0, 1.0) * (1.0 - ATTENUATION));
+	else
+		SPECULAR_LIGHT += surface_texture * LIGHT_COLOR * ATTENUATION * (0.5 + 0.5 * dot(NORMAL, LIGHT)) / PI;
 }
 )";
 
@@ -320,7 +325,7 @@ void AxisReplay::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_camera_view"), &AxisReplay::get_camera_view);
 	ClassDB::bind_method(D_METHOD("get_tag_stats"), &AxisReplay::get_tag_stats);
 	ClassDB::bind_method(D_METHOD("get_camera_viewport"), &AxisReplay::get_camera_viewport);
-	ClassDB::bind_method(D_METHOD("get_lights", "points"), &AxisReplay::get_lights, DEFVAL(true));
+	ClassDB::bind_method(D_METHOD("get_lights", "points", "map_points"), &AxisReplay::get_lights, DEFVAL(true), DEFVAL(true));
 	ClassDB::bind_method(D_METHOD("get_world_triangles", "mask"), &AxisReplay::get_world_triangles);
 	ClassDB::bind_method(D_METHOD("get_world_samples", "mask", "count"), &AxisReplay::get_world_samples);
 	ClassDB::bind_method(D_METHOD("set_picture_mode", "mode"), &AxisReplay::set_picture_mode);
@@ -921,10 +926,10 @@ Transform3D AxisReplay::get_camera_view() const {
 	return Transform3D(Basis(Vector3(m[0], m[1], m[2]), Vector3(m[4], m[5], m[6]), Vector3(m[8], m[9], m[10])), Vector3(m[12], m[13], m[14]));   // (Basis from columns)
 }
 
-Array AxisReplay::get_lights(bool points) const {
+Array AxisReplay::get_lights(bool points, bool mapPoints) const {
 	Array out;
 	for (const EmuLight &l : emu.lights) {
-		if (!points && (l.kind == 2 || l.kind == 3)) continue;   // (without the point lights: Metropolis has 511)
+		if ((l.kind == 2 || l.kind == 3) && (!points || (!mapPoints && l.pool == 0))) continue;   // (Metropolis has 511 of its own)
 		Dictionary d;
 		d["pool"] = l.pool;
 		d["kind"] = l.kind;
@@ -1114,7 +1119,7 @@ Ref<ShaderMaterial> AxisReplay::map_material(uint32_t texture, uint32_t env, int
 		else if (!lit)
 			code += String("void fragment() {\n\tvec4 o = game_colour(COLOR, UV);\n\tALBEDO = pow(o.rgb, vec3(2.2));\n") + (blendClass ? "\tALPHA = o.a;\n\tALPHA_SCISSOR_THRESHOLD = 0.5;\n" : "") + "}\n";
 		else if (vtx)
-			code += String(k_game_light) + String("void fragment() {\n\tvec4 o = game_colour(COLOR, UV);\n\tALBEDO = pow(o.rgb, vec3(2.2));\n") +
+			code += String(k_game_light) + String("void fragment() {\n\tvec4 o = game_colour(COLOR, UV);\n\tALBEDO = pow(o.rgb, vec3(2.2));\n\tsurface_texture = pow(texture_only(UV).rgb, vec3(2.2));\n") +
 			        (blendClass ? "\tALPHA = o.a;\n\tALPHA_SCISSOR_THRESHOLD = 0.5;\n" : "") + "}\n";
 		else   // (lit by Godot: the texture as the surface, the game's own lighting kept as a glow of original_light; wrapped
 		       // diffuse light as the game's - half light at right angles to a light, none only facing away)

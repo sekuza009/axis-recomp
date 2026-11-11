@@ -172,7 +172,8 @@ func update(frame: Vector2i) -> void:
 			map_meshes[i].cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF if i == weapon else GeometryInstance3D.SHADOW_CASTING_SETTING_ON
 		var t2 := Time.get_ticks_usec()
 		timing.assign = (t2 - t1) / 1000.0
-		world.apply_lights(replay.get_lights(not world.per_vertex_lighting), WORLD_SCALE, map_cam.global_position)
+		var pv: bool = world.per_vertex_lighting
+		world.apply_lights(replay.get_lights(not pv or world.dynamic_highlights, not pv), WORLD_SCALE, map_cam.global_position)
 		timing.lights = (Time.get_ticks_usec() - t2) / 1000.0
 		var keep: float = world.original_light_with_map_lights if world.map_has_lights else world.original_light_without
 		if absf(replay.original_light - keep) > 0.001:
